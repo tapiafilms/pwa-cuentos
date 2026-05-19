@@ -1,12 +1,20 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 type TVState = 'waiting' | 'playing'
 
 export default function TVPage() {
+  return (
+    <Suspense fallback={<div className="tv-page"><div className="tv-spinner" /></div>}>
+      <TVPageInner />
+    </Suspense>
+  )
+}
+
+function TVPageInner() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session')
   const [state, setState] = useState<TVState>('waiting')
