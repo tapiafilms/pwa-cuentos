@@ -17,6 +17,7 @@ function TVPageInner() {
   const [state, setState] = useState<TVState>('input')
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
+  const [imageKey, setImageKey] = useState(0) // incrementar = remonta TVImage sin recargar página
 
   const handleConnect = () => {
     const trimmed = code.trim().toUpperCase()
@@ -27,6 +28,12 @@ function TVPageInner() {
     const channel = supabase.channel(`session:${trimmed}`)
     channel
       .on('broadcast', { event: 'show_content' }, () => setState('playing'))
+      .on('broadcast', { event: 'interaction' }, ({ payload }) => {
+        if (payload.action === 'reload') {
+          // Reinicia solo el contenido, mantiene la sesión activa
+          setImageKey(k => k + 1)
+        }
+      })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           channel.send({ type: 'broadcast', event: 'tv_ready', payload: {} })
@@ -44,7 +51,7 @@ function TVPageInner() {
       {state === 'input'      && <TVInput code={code} setCode={setCode} onConnect={handleConnect} error={error} />}
       {state === 'connecting' && <TVSpinner label="Conectando..." />}
       {state === 'waiting'    && <TVWaiting />}
-      {state === 'playing'    && <TVImage code={code.trim().toUpperCase()} />}
+      {state === 'playing'    && <TVImage key={imageKey} />}
     </div>
   )
 }
@@ -135,24 +142,12 @@ function TVWaiting() {
   )
 }
 
-function TVImage({ code }: { code: string }) {
+function TVImage() {
   const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    if (!code) return
-    const channel = supabase.channel(`session:${code}`)
-    channel
-      .on('broadcast', { event: 'interaction' }, ({ payload }) => {
-        if (payload.action === 'reload') window.location.reload()
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [code])
 
   return (
     <div style={{
-      width: '100vw',
-      height: '100vh',
+      width: '100vw', height: '100vh',
       background: '#000',
       position: 'relative',
       overflow: 'hidden',
@@ -167,7 +162,7 @@ function TVImage({ code }: { code: string }) {
           inset: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'contain',   // mantiene proporciones, fondo negro en los bordes
+          objectFit: 'contain',
           objectPosition: 'center',
           opacity: loaded ? 1 : 0,
           transition: 'opacity 0.6s ease',
