@@ -138,18 +138,40 @@ function TVPlaying({ code }: { code: string }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Cargar Rive
-    import('@rive-app/canvas').then(({ Rive }) => {
+    const canvas = document.getElementById('rive-canvas') as HTMLCanvasElement
+    if (!canvas) return
+
+    // Ajustar canvas a la resolución real de la pantalla con devicePixelRatio
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width  = window.innerWidth  * dpr
+      canvas.height = window.innerHeight * dpr
+      canvas.style.width  = window.innerWidth  + 'px'
+      canvas.style.height = window.innerHeight + 'px'
+      riveRef.current?.resizeDrawingSurfaceToCanvas()
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    import('@rive-app/canvas').then(({ Rive, Fit, Alignment, Layout }) => {
       const r = new Rive({
         src: '/animation.riv',
-        canvas: document.getElementById('rive-canvas') as HTMLCanvasElement,
+        canvas,
         autoplay: true,
+        // Cover: llena toda la pantalla manteniendo aspect ratio
+        layout: new Layout({
+          fit: Fit.Cover,
+          alignment: Alignment.Center,
+        }),
         onLoad: () => {
+          r.resizeDrawingSurfaceToCanvas()
           riveRef.current = r
           setReady(true)
         },
       })
     })
+
+    return () => window.removeEventListener('resize', resize)
   }, [])
 
   useEffect(() => {
@@ -160,22 +182,15 @@ function TVPlaying({ code }: { code: string }) {
       .on('broadcast', { event: 'interaction' }, ({ payload }) => {
         const r = riveRef.current
         if (!r) return
-
         const { action } = payload
-
         if (action === 'play')    { r.play() }
         if (action === 'pause')   { r.pause() }
         if (action === 'restart') { r.reset(); r.play() }
-
         if (action?.startsWith('seek:')) {
           const pct = parseFloat(action.split(':')[1]) / 100
-          // Para animación lineal: mover al tiempo relativo
           r.pause()
           const anim = r.animationNames[0]
-          if (anim) {
-            // scrub: establecer tiempo dentro de la animación
-            r.scrub(anim, pct)
-          }
+          if (anim) { r.scrub(anim, pct) }
         }
       })
       .subscribe()
@@ -184,12 +199,15 @@ function TVPlaying({ code }: { code: string }) {
   }, [ready, code])
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#050508', position: 'relative' }}>
+    <div style={{
+      width: '100vw', height: '100vh',
+      background: '#000',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
       <canvas
         id="rive-canvas"
-        style={{ width: '100%', height: '100%', display: 'block' }}
-        width={window.innerWidth}
-        height={window.innerHeight}
+        style={{ position: 'absolute', top: 0, left: 0, display: 'block' }}
       />
       {!ready && (
         <div style={{
