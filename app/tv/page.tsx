@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, Suspense } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function TVPage() {
@@ -44,7 +44,7 @@ function TVPageInner() {
       {state === 'input'      && <TVInput code={code} setCode={setCode} onConnect={handleConnect} error={error} />}
       {state === 'connecting' && <TVSpinner label="Conectando..." />}
       {state === 'waiting'    && <TVWaiting />}
-      {state === 'playing'    && <TVPlaying code={code.trim().toUpperCase()} />}
+      {state === 'playing'    && <TVImage />}
     </div>
   )
 }
@@ -93,7 +93,9 @@ function TVInput({ code, setCode, onConnect, error }: {
         }}
       />
 
-      {error && <p style={{ color: '#f87171', fontSize: '0.9rem', fontFamily: 'var(--font-display)' }}>{error}</p>}
+      {error && (
+        <p style={{ color: '#f87171', fontSize: '0.9rem', fontFamily: 'var(--font-display)' }}>{error}</p>
+      )}
 
       <button
         className="tv-button"
@@ -127,96 +129,47 @@ function TVWaiting() {
         fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.05em',
       }}>Listo para recibir</p>
       <p style={{ fontSize: 'clamp(0.8rem, 1.5vw, 1rem)', color: 'var(--muted)', opacity: 0.5 }}>
-        Presiona "Enviar animación" en tu teléfono
+        Presiona "Enviar" en tu teléfono
       </p>
     </div>
   )
 }
 
-function TVPlaying({ code }: { code: string }) {
-  const riveRef = useRef<any>(null)
-  const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    const canvas = document.getElementById('rive-canvas') as HTMLCanvasElement
-    if (!canvas) return
-
-    // Ajustar canvas a la resolución real de la pantalla con devicePixelRatio
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1
-      canvas.width  = window.innerWidth  * dpr
-      canvas.height = window.innerHeight * dpr
-      canvas.style.width  = window.innerWidth  + 'px'
-      canvas.style.height = window.innerHeight + 'px'
-      riveRef.current?.resizeDrawingSurfaceToCanvas()
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    import('@rive-app/canvas').then(({ Rive, Fit, Alignment, Layout }) => {
-      const r = new Rive({
-        src: '/animation.riv',
-        canvas,
-        autoplay: true,
-        // Cover: llena toda la pantalla manteniendo aspect ratio
-        layout: new Layout({
-          fit: Fit.Cover,
-          alignment: Alignment.Center,
-        }),
-        onLoad: () => {
-          r.resizeDrawingSurfaceToCanvas()
-          riveRef.current = r
-          setReady(true)
-        },
-      })
-    })
-
-    return () => window.removeEventListener('resize', resize)
-  }, [])
-
-  useEffect(() => {
-    if (!ready || !code) return
-
-    const channel = supabase.channel(`session:${code}`)
-    channel
-      .on('broadcast', { event: 'interaction' }, ({ payload }) => {
-        const r = riveRef.current
-        if (!r) return
-        const { action } = payload
-        if (action === 'play')    { r.play() }
-        if (action === 'pause')   { r.pause() }
-        if (action === 'restart') { r.reset(); r.play() }
-        if (action?.startsWith('seek:')) {
-          const pct = parseFloat(action.split(':')[1]) / 100
-          r.pause()
-          const anim = r.animationNames[0]
-          if (anim) { r.scrub(anim, pct) }
-        }
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [ready, code])
+function TVImage() {
+  const [loaded, setLoaded] = useState(false)
 
   return (
     <div style={{
-      width: '100vw', height: '100vh',
+      width: '100vw',
+      height: '100vh',
       background: '#000',
       position: 'relative',
       overflow: 'hidden',
     }}>
-      <canvas
-        id="rive-canvas"
-        style={{ position: 'absolute', top: 0, left: 0, display: 'block' }}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/test-cuento.png"
+        alt="Cuento"
+        onLoad={() => setLoaded(true)}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',   // mantiene proporciones, fondo negro en los bordes
+          objectPosition: 'center',
+          opacity: loaded ? 1 : 0,
+          transition: 'opacity 0.6s ease',
+        }}
       />
-      {!ready && (
+      {!loaded && (
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: 16,
         }}>
           <div className="tv-spinner" />
-          <p style={{ fontFamily: 'var(--font-display)', color: 'var(--muted)' }}>Cargando...</p>
+          <p style={{ fontFamily: 'var(--font-display)', color: 'var(--muted)' }}>Cargando imagen...</p>
         </div>
       )}
     </div>
