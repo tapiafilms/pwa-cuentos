@@ -44,7 +44,7 @@ function TVPageInner() {
       {state === 'input'      && <TVInput code={code} setCode={setCode} onConnect={handleConnect} error={error} />}
       {state === 'connecting' && <TVSpinner label="Conectando..." />}
       {state === 'waiting'    && <TVWaiting />}
-      {state === 'playing'    && <TVImage />}
+      {state === 'playing'    && <TVImage code={code.trim().toUpperCase()} />}
     </div>
   )
 }
@@ -135,8 +135,19 @@ function TVWaiting() {
   )
 }
 
-function TVImage() {
+function TVImage({ code }: { code: string }) {
   const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!code) return
+    const channel = supabase.channel(`session:${code}`)
+    channel
+      .on('broadcast', { event: 'interaction' }, ({ payload }) => {
+        if (payload.action === 'reload') window.location.reload()
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [code])
 
   return (
     <div style={{

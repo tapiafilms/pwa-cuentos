@@ -14,6 +14,7 @@ const ACTIONS = [
   { id: 'play',    label: '▶ Play',    color: '#7c6af7' },
   { id: 'pause',   label: '⏸ Pause',   color: '#4a4a6a' },
   { id: 'restart', label: '↺ Restart', color: '#2a2a4a' },
+  { id: 'reload',  label: '⟳ Recargar TV', color: '#b45309' },
 ]
 
 export default function Home() {
