@@ -96,7 +96,7 @@ function Paragraph({ text, active, onDone, isLast }: {
 
   useEffect(() => { if (done) onDone() }, [done])
 
-  if (!active && !done && displayed === '') return null
+  if (!active && !done && displayed === '') { return <p style={{ minHeight: '1.9em' }} /> }
 
   return (
     <p style={{
