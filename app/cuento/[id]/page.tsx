@@ -100,7 +100,7 @@ function Paragraph({ text, active, onDone, isLast }: {
 
   return (
     <p style={{
-      fontFamily: 'Playfair Display, serif',
+      fontFamily: ''Beau Rivage', cursive',
       fontSize: 'clamp(1.1rem, 2.2vw, 1.35rem)',
       lineHeight: 1.9,
       color: done ? 'rgba(255,255,255,0.85)' : 'white',
@@ -161,7 +161,7 @@ export default function CuentoPage() {
   }
 
   if (!cuento) return (
-    <div style={{ minHeight: '100vh', background: '#060608', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#060608', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: ''Nunito', sans-serif' }}>
       <a href="/" style={{ color: '#7c6af7' }}>← Volver</a>
     </div>
   )
@@ -169,7 +169,7 @@ export default function CuentoPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#060608', position: 'relative', overflow: 'hidden' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; }
 
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
@@ -207,7 +207,7 @@ export default function CuentoPage() {
           background: transparent;
           border: 1px solid rgba(255,255,255,0.2);
           color: white;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Nunito', sans-serif;
           font-size: 0.85rem;
           letter-spacing: 0.15em;
           text-transform: uppercase;
@@ -225,7 +225,7 @@ export default function CuentoPage() {
 
         .tv-btn {
           display: inline-flex; align-items: center; gap: 8px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+          font-family: 'Nunito', sans-serif; font-size: 0.85rem;
           letter-spacing: 0.1em; text-transform: uppercase;
           padding: 14px 28px; border-radius: 4px; cursor: pointer;
           transition: all 0.25s; border: none; font-weight: 500;
@@ -252,7 +252,7 @@ export default function CuentoPage() {
       {/* Back */}
       <a href="/" style={{
         position: 'fixed', top: '1.5rem', left: '2rem', zIndex: 10,
-        color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Sans', fontSize: '0.8rem',
+        color: 'rgba(255,255,255,0.3)', fontFamily: 'Nunito', fontSize: '0.8rem',
         letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
         transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: 6,
       }}
@@ -282,12 +282,12 @@ export default function CuentoPage() {
             </span>
           </div>
 
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'DM Sans', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: 100, border: `1px solid ${cuento.accent}44`, color: cuento.accent, marginBottom: '1.25rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: 100, border: `1px solid ${cuento.accent}44`, color: cuento.accent, marginBottom: '1.25rem' }}>
             {cuento.tag}
           </div>
 
           <h1 style={{
-            fontFamily: 'Playfair Display, serif',
+            fontFamily: ''Beau Rivage', cursive',
             fontSize: 'clamp(2.2rem, 6vw, 4rem)',
             fontWeight: 900, lineHeight: 1.05, color: 'white',
             letterSpacing: '-0.02em',
@@ -310,7 +310,7 @@ export default function CuentoPage() {
         {/* Start state */}
         {!started && (
           <div style={{ textAlign: 'center', animation: 'fadeUp 0.8s ease 0.7s both', opacity: 0 }}>
-            <p style={{ fontFamily: 'DM Sans', color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem', marginBottom: '2rem', letterSpacing: '0.05em' }}>
+            <p style={{ fontFamily: 'Nunito', color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem', marginBottom: '2rem', letterSpacing: '0.05em' }}>
               Cuando estés listo, comienza la historia
             </p>
             <button className="start-btn" onClick={start}>
@@ -350,14 +350,14 @@ export default function CuentoPage() {
             </div>
 
             <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
-              <p style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', color: 'rgba(255,255,255,0.4)', fontSize: '1rem' }}>
+              <p style={{ fontFamily: ''Beau Rivage', cursive', fontStyle: 'italic', color: 'rgba(255,255,255,0.4)', fontSize: '1rem' }}>
                 ¿Quieres vivirlo en la pantalla grande?
               </p>
               <button className="tv-btn" style={{ background: cuento.glow, color: 'white' }}
                 onClick={() => window.history.back()}>
                 📺 &nbsp; Ver en TV
               </button>
-              <a href="/" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Sans', fontSize: '0.8rem', textDecoration: 'none', letterSpacing: '0.08em' }}>
+              <a href="/" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Nunito', fontSize: '0.8rem', textDecoration: 'none', letterSpacing: '0.08em' }}>
                 Explorar otros cuentos →
               </a>
             </div>

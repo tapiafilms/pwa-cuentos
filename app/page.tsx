@@ -88,21 +88,21 @@ export default function Home() {
   return (
     <div style={{ background: '#060608', overflowX: 'hidden' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         ::selection { background: rgba(255,255,255,0.15); }
 
         .nav-link {
           color: rgba(255,255,255,0.5); text-decoration: none;
-          font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+          font-family: 'Nunito', sans-serif; font-size: 0.85rem;
           letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.3s;
         }
         .nav-link:hover { color: white; }
 
         .btn {
           display: inline-flex; align-items: center; gap: 8px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+          font-family: 'Nunito', sans-serif; font-size: 0.82rem;
           letter-spacing: 0.1em; text-transform: uppercase;
           padding: 13px 24px; border-radius: 4px; cursor: pointer;
           transition: all 0.25s; border: 1px solid transparent;
@@ -144,7 +144,7 @@ export default function Home() {
         .float { animation: floatSlow 6s ease-in-out infinite; }
 
         .section-num {
-          font-family: 'Playfair Display', serif;
+          font-family: 'Beau Rivage', cursive;
           font-size: clamp(6rem, 14vw, 13rem);
           font-weight: 900; line-height: 1; color: transparent;
           -webkit-text-stroke: 1px rgba(255,255,255,0.05);
@@ -175,7 +175,7 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,0.12);
           border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
-          font-family: 'Playfair Display', serif;
+          font-family: 'Beau Rivage', cursive;
           font-size: 2rem; font-weight: 900; color: white;
         }
 
@@ -243,7 +243,7 @@ export default function Home() {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '2rem', animation: 'fadeUp 0.8s ease 0s both' }}>
               <div style={{ width: 28, height: 1, background: 'rgba(255,255,255,0.25)' }} />
-              <span style={{ fontFamily: 'DM Sans', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>
+              <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>
                 Historias que cobran vida
               </span>
             </div>
@@ -253,7 +253,7 @@ export default function Home() {
               <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(200px, 30vw, 340px)', height: 'auto', objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 0 40px rgba(124,106,247,0.3))' }} />
             </div>
             <h1 style={{
-              fontFamily: 'Playfair Display, serif',
+              fontFamily: "'Beau Rivage', cursive",
               fontSize: 'clamp(3.5rem, 8vw, 7.5rem)',
               fontWeight: 900, lineHeight: 0.95, color: 'white',
               letterSpacing: '-0.02em',
@@ -264,7 +264,7 @@ export default function Home() {
               se viven
             </h1>
             <p style={{
-              fontFamily: 'DM Sans', fontSize: 'clamp(0.95rem, 1.6vw, 1.1rem)',
+              fontFamily: 'Nunito', fontSize: 'clamp(0.95rem, 1.6vw, 1.1rem)',
               color: 'rgba(255,255,255,0.4)', fontWeight: 300, lineHeight: 1.75,
               marginTop: '2rem', maxWidth: 400,
               animation: 'fadeUp 0.8s ease 0.3s both',
@@ -314,7 +314,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="scroll-hint" style={{ position: 'absolute', bottom: '2.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.2)', fontFamily: 'DM Sans', fontSize: '0.65rem', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+        <div className="scroll-hint" style={{ position: 'absolute', bottom: '2.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.2)', fontFamily: 'Nunito', fontSize: '0.65rem', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
           <div style={{ width: 1, height: 36, background: 'rgba(255,255,255,0.12)' }} />
           scroll
         </div>
@@ -331,8 +331,8 @@ export default function Home() {
       <section style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8rem 3rem', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(124,106,247,0.08), transparent)' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ fontFamily: 'DM Sans', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '1.5rem' }}>¿Listo para empezar?</p>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 900, color: 'white', lineHeight: 1.05, marginBottom: '2rem', letterSpacing: '-0.02em' }}>
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '1.5rem' }}>¿Listo para empezar?</p>
+          <h2 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 900, color: 'white', lineHeight: 1.05, marginBottom: '2rem', letterSpacing: '-0.02em' }}>
             La historia<br /><em style={{ color: 'rgba(255,255,255,0.4)' }}>te espera</em>
           </h2>
           <button className="btn btn-solid" style={{ fontSize: '0.9rem', padding: '15px 34px' }}
@@ -342,7 +342,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.18)', fontFamily: 'DM Sans', fontSize: '0.78rem' }}>
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.18)', fontFamily: 'Nunito', fontSize: '0.78rem' }}>
         <span>Cuentajoy © 2025</span>
         <span>Hecho con ✨ para pequeños exploradores</span>
       </footer>
@@ -398,21 +398,21 @@ function StorySection({ cuento, index, onOpenTV }: {
         <div className="story-text" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1.25rem', position: 'relative', transform: visible ? 'translateX(0)' : `translateX(${isEven ? 40 : -40}px)`, opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
           <span className="section-num">0{cuento.id}</span>
 
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'DM Sans', fontSize: '0.7rem', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '5px 13px', borderRadius: 100, border: `1px solid ${cuento.accent}55`, color: cuento.accent, opacity: 0.85 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '5px 13px', borderRadius: 100, border: `1px solid ${cuento.accent}55`, color: cuento.accent, opacity: 0.85 }}>
             {cuento.emoji} {cuento.tag}
           </span>
 
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: 900, lineHeight: 1.05, whiteSpace: 'pre-line', color: 'white', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: 900, lineHeight: 1.05, whiteSpace: 'pre-line', color: 'white', letterSpacing: '-0.02em' }}>
             {cuento.title}
           </h2>
 
-          <p style={{ fontFamily: 'Playfair Display, serif', fontSize: '1rem', fontStyle: 'italic', color: `${cuento.accent}cc` }}>
+          <p style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1rem', fontStyle: 'italic', color: `${cuento.accent}cc` }}>
             {cuento.subtitle}
           </p>
 
           <div style={{ width: 36, height: 1, background: cuento.glow, opacity: 0.4 }} />
 
-          <p style={{ fontFamily: 'DM Sans', fontSize: '0.95rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.45)', maxWidth: 460, fontWeight: 300 }}>
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.95rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.45)', maxWidth: 460, fontWeight: 300 }}>
             {cuento.desc}
           </p>
 
@@ -466,24 +466,24 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
         {/* Header */}
         <div style={{ marginBottom: '1.75rem' }}>
           <span style={{ fontSize: '2rem' }}>{cuento.emoji}</span>
-          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 700, color: 'white', marginTop: 8, whiteSpace: 'pre-line', lineHeight: 1.2 }}>
+          <h3 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.4rem', fontWeight: 700, color: 'white', marginTop: 8, whiteSpace: 'pre-line', lineHeight: 1.2 }}>
             {cuento.title}
           </h3>
-          <p style={{ fontFamily: 'DM Sans', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
             {step === 'code' ? 'Conecta tu TV para ver este cuento' : '¡TV conectada! Envía el cuento'}
           </p>
         </div>
 
         {step === 'code' && (
           <>
-            <p style={{ fontFamily: 'DM Sans', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>
+            <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>
               1. En tu TV abre el navegador y ve a
             </p>
             <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '10px 16px', marginBottom: '1.5rem' }}>
-              <span style={{ fontFamily: 'DM Sans', fontSize: '0.95rem', color: 'white', fontWeight: 500 }}>{tvUrl}</span>
+              <span style={{ fontFamily: 'Nunito', fontSize: '0.95rem', color: 'white', fontWeight: 500 }}>{tvUrl}</span>
             </div>
 
-            <p style={{ fontFamily: 'DM Sans', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>
+            <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>
               2. Ingresa este código
             </p>
             <div style={{ display: 'flex', gap: 10, marginBottom: '1.75rem' }}>
@@ -492,7 +492,7 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'DM Sans', fontSize: '0.82rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', fontSize: '0.82rem' }}>
               <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: cuento.glow, borderRadius: '50%', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
               Esperando conexión de la TV...
             </div>
@@ -503,7 +503,7 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: '1.5rem' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', flexShrink: 0 }} />
-              <span style={{ fontFamily: 'DM Sans', fontWeight: 500, color: '#4ade80', fontSize: '0.88rem' }}>TV conectada y lista</span>
+              <span style={{ fontFamily: 'Nunito', fontWeight: 500, color: '#4ade80', fontSize: '0.88rem' }}>TV conectada y lista</span>
             </div>
             <button className="btn" onClick={handleSend} style={{ width: '100%', justifyContent: 'center', background: cuento.glow, border: `1px solid ${cuento.glow}`, color: 'white', fontWeight: 500, fontSize: '0.9rem', padding: '15px' }}>
               ▶ &nbsp; Enviar cuento a la TV

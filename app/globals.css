@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
 :root {
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Beau Rivage', cursive;
+  --font-body: 'Nunito', sans-serif;
   --bg: #0a0a0f;
   --surface: #13131a;
   --border: #2a2a38;
@@ -25,7 +25,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-body);
+  font-family: 'Nunito', sans-serif;
   min-height: 100dvh;
 }
 
@@ -61,7 +61,7 @@ body {
   position: relative;
   background: var(--accent);
   color: white;
-  font-family: var(--font-display);
+  font-family: 'Beau Rivage', cursive;
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: 0.05em;
@@ -127,7 +127,7 @@ body {
   align-items: center;
   gap: 24px;
   color: var(--muted);
-  font-family: var(--font-display);
+  font-family: 'Beau Rivage', cursive;
 }
 
 .tv-spinner {
