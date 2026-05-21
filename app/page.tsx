@@ -222,7 +222,7 @@ export default function Home() {
     padding: '0 3rem',
     position: 'relative',
     overflow: 'hidden',
-    backgroundImage: "url('/public/bg1.jpg')",
+    backgroundImage: "url('/public/bg1.png')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
