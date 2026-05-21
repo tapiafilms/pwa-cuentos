@@ -1,21 +1,22 @@
 {
-  "name": "Cuentos TV",
-  "short_name": "CuentosTV",
-  "description": "Experiencia interactiva en tu televisor",
+  "name": "Cuentajoy",
+  "short_name": "Cuentajoy",
+  "description": "Historias que cobran vida en tu televisor",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#0a0a0f",
+  "background_color": "#060608",
+  "theme_color": "#060608",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icon-app192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-app512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
