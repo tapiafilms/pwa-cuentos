@@ -216,9 +216,17 @@ export default function Home() {
 
       {/* HERO */}
       <section style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center',
-        padding: '0 3rem', position: 'relative', overflow: 'hidden',
-      }}>
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 3rem',
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundImage: "url('/public/bg1.jpg')",
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  }}>
         <div style={{
           position: 'absolute', inset: 0,
           background: 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(124,106,247,0.1) 0%, transparent 70%)',
