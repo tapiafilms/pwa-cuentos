@@ -69,7 +69,7 @@ const CUENTOS: Record<string, {
   },
 }
 
-function useTypewriter(text: string, speed = 28, active = false) {
+function useTypewriter(text: string, speed: number, active: boolean) {
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
 
@@ -89,27 +89,33 @@ function useTypewriter(text: string, speed = 28, active = false) {
   return { displayed, done }
 }
 
-function Paragraph({ text, active, onDone, isLast }: {
+function Paragraph({ text, active, onDone }: {
   text: string; active: boolean; onDone: () => void; isLast: boolean
 }) {
   const { displayed, done } = useTypewriter(text, 22, active)
 
-  useEffect(() => { if (done) onDone() }, [done])
+  useEffect(() => { if (done) onDone() }, [done, onDone])
 
-  if (!active && !done && displayed === '') { return <p style={{ minHeight: '1.9em' }} /> }
+  const isVisible = active || done || displayed !== ''
 
   return (
     <p style={{
-      fontFamily: ''Beau Rivage', cursive',
+      fontFamily: "'Nunito', sans-serif",
       fontSize: 'clamp(1.1rem, 2.2vw, 1.35rem)',
       lineHeight: 1.9,
       color: done ? 'rgba(255,255,255,0.85)' : 'white',
-      transition: 'color 1s ease',
+      transition: 'color 1s ease, opacity 0.4s ease',
       minHeight: '1.9em',
+      opacity: isVisible ? 1 : 0,
     }}>
       {displayed}
       {active && !done && (
-        <span style={{ display: 'inline-block', width: 2, height: '1.1em', background: 'white', marginLeft: 2, verticalAlign: 'text-bottom', animation: 'blink 0.8s ease infinite' }} />
+        <span style={{
+          display: 'inline-block', width: 2, height: '1.1em',
+          background: 'white', marginLeft: 2,
+          verticalAlign: 'text-bottom',
+          animation: 'blink 0.8s ease infinite',
+        }} />
       )}
     </p>
   )
@@ -133,7 +139,6 @@ function Particle({ glow, index }: { glow: string; index: number }) {
       background: index % 3 === 0 ? glow : 'white',
       opacity: 0.15 + (index % 5) * 0.08,
       animation: `particleFloat ${duration}s ease-in-out ${delay}s infinite`,
-      filter: index % 4 === 0 ? `blur(1px)` : 'none',
     }} />
   )
 }
@@ -160,11 +165,13 @@ export default function CuentoPage() {
     }
   }
 
-  if (!cuento) return (
-    <div style={{ minHeight: '100vh', background: '#060608', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: ''Nunito', sans-serif' }}>
-      <a href="/" style={{ color: '#7c6af7' }}>← Volver</a>
-    </div>
-  )
+  if (!cuento) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#060608', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: "'Nunito', sans-serif" }}>
+        <a href="/" style={{ color: '#7c6af7' }}>← Volver</a>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#060608', position: 'relative', overflow: 'hidden' }}>
@@ -174,15 +181,14 @@ export default function CuentoPage() {
 
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes particleFloat {
-          0%   { transform: translateY(0px) translateX(0px); opacity: 0; }
+          0%   { transform: translateY(0px); opacity: 0; }
           10%  { opacity: 1; }
-          50%  { transform: translateY(-60px) translateX(${Math.random() > 0.5 ? '' : '-'}20px); }
           90%  { opacity: 0.6; }
-          100% { transform: translateY(-120px) translateX(10px); opacity: 0; }
+          100% { transform: translateY(-120px); opacity: 0; }
         }
         @keyframes breathe {
-          0%,100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
-          50%      { transform: scale(1.08) rotate(2deg); opacity: 0.9; }
+          0%,100% { transform: scale(1); opacity: 0.6; }
+          50%      { transform: scale(1.08); opacity: 0.9; }
         }
         @keyframes fadeUp {
           from { opacity:0; transform:translateY(24px); }
@@ -190,17 +196,13 @@ export default function CuentoPage() {
         }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes dropIn {
-          0%   { opacity:0; transform:translateY(-40px) scale(0.8); }
-          60%  { transform:translateY(6px) scale(1.05); }
+          0%   { opacity:0; transform:translateY(-40px) scale(0.85); }
+          60%  { transform:translateY(6px) scale(1.04); }
           100% { opacity:1; transform:translateY(0) scale(1); }
         }
         @keyframes glowPulse {
           0%,100% { opacity:0.4; transform:scale(1); }
           50%      { opacity:0.7; transform:scale(1.1); }
-        }
-        @keyframes shimmer {
-          0%   { background-position: -200% center; }
-          100% { background-position: 200% center; }
         }
 
         .start-btn {
@@ -208,89 +210,70 @@ export default function CuentoPage() {
           border: 1px solid rgba(255,255,255,0.2);
           color: white;
           font-family: 'Nunito', sans-serif;
-          font-size: 0.85rem;
-          letter-spacing: 0.15em;
+          font-size: 0.9rem;
+          font-weight: 600;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           padding: 16px 40px;
           border-radius: 4px;
           cursor: pointer;
           transition: all 0.3s;
-          position: relative;
-          overflow: hidden;
         }
         .start-btn:hover {
           border-color: rgba(255,255,255,0.5);
           background: rgba(255,255,255,0.04);
         }
-
         .tv-btn {
           display: inline-flex; align-items: center; gap: 8px;
           font-family: 'Nunito', sans-serif; font-size: 0.85rem;
-          letter-spacing: 0.1em; text-transform: uppercase;
+          font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
           padding: 14px 28px; border-radius: 4px; cursor: pointer;
-          transition: all 0.25s; border: none; font-weight: 500;
+          transition: all 0.25s; border: none;
         }
+        .back-link {
+          color: rgba(255,255,255,0.3); font-family: 'Nunito', sans-serif;
+          font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+          text-decoration: none; transition: color 0.2s;
+          display: flex; align-items: center; gap: 6px;
+        }
+        .back-link:hover { color: rgba(255,255,255,0.7); }
       `}</style>
 
       {/* Particles */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        {[...Array(28)].map((_, i) => <Particle key={i} glow={cuento.glow} index={i} />)}
+        {[...Array(24)].map((_, i) => <Particle key={i} glow={cuento.glow} index={i} />)}
       </div>
 
-      {/* Background glow — respira */}
-      <div style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
-        background: `radial-gradient(ellipse 60% 60% at 50% 40%, ${cuento.glow}18 0%, transparent 70%)`,
-        animation: 'breathe 6s ease-in-out infinite',
-      }} />
-      <div style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
-        background: `radial-gradient(ellipse 40% 40% at 80% 70%, ${cuento.accent}0a 0%, transparent 60%)`,
-        animation: 'breathe 9s ease-in-out 2s infinite',
-      }} />
+      {/* Background glow */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: `radial-gradient(ellipse 60% 60% at 50% 40%, ${cuento.glow}18 0%, transparent 70%)`, animation: 'breathe 6s ease-in-out infinite' }} />
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: `radial-gradient(ellipse 40% 40% at 80% 70%, ${cuento.accent}0a 0%, transparent 60%)`, animation: 'breathe 9s ease-in-out 2s infinite' }} />
 
       {/* Back */}
-      <a href="/" style={{
-        position: 'fixed', top: '1.5rem', left: '2rem', zIndex: 10,
-        color: 'rgba(255,255,255,0.3)', fontFamily: 'Nunito', fontSize: '0.8rem',
-        letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
-        transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: 6,
-      }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
-      >
-        ← Volver
-      </a>
+      <div style={{ position: 'fixed', top: '1.5rem', left: '2rem', zIndex: 10 }}>
+        <a href="/" className="back-link">← Volver</a>
+      </div>
 
-      <div style={{
-        maxWidth: 700, margin: '0 auto', padding: '8rem 2rem 6rem',
-        position: 'relative', zIndex: 1,
-      }}>
+      <div style={{ maxWidth: 700, margin: '0 auto', padding: '8rem 2rem 6rem', position: 'relative', zIndex: 1 }}>
 
-        {/* Header: cae desde arriba */}
+        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '4rem', animation: 'dropIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s both' }}>
-          {/* Emoji con glow */}
           <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1.5rem' }}>
-            <div style={{
-              position: 'absolute', inset: -20,
-              background: `radial-gradient(circle, ${cuento.glow}30, transparent 70%)`,
-              animation: 'glowPulse 3s ease-in-out infinite',
-              borderRadius: '50%',
-            }} />
+            <div style={{ position: 'absolute', inset: -20, background: `radial-gradient(circle, ${cuento.glow}30, transparent 70%)`, animation: 'glowPulse 3s ease-in-out infinite', borderRadius: '50%' }} />
             <span style={{ fontSize: 'clamp(4rem, 10vw, 6rem)', display: 'block', filter: `drop-shadow(0 0 30px ${cuento.glow})`, animation: 'breathe 5s ease-in-out infinite' }}>
               {cuento.emoji}
             </span>
           </div>
 
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: 100, border: `1px solid ${cuento.accent}44`, color: cuento.accent, marginBottom: '1.25rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: "'Nunito', sans-serif", fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: 100, border: `1px solid ${cuento.accent}44`, color: cuento.accent, marginBottom: '1.25rem' }}>
             {cuento.tag}
           </div>
 
           <h1 style={{
-            fontFamily: ''Beau Rivage', cursive',
-            fontSize: 'clamp(2.2rem, 6vw, 4rem)',
-            fontWeight: 900, lineHeight: 1.05, color: 'white',
-            letterSpacing: '-0.02em',
+            fontFamily: "'Beau Rivage', cursive",
+            fontSize: 'clamp(3rem, 8vw, 5.5rem)',
+            fontWeight: 400,
+            lineHeight: 1.1,
+            color: 'white',
             background: `linear-gradient(135deg, white 0%, ${cuento.accent} 100%)`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
@@ -300,22 +283,20 @@ export default function CuentoPage() {
           </h1>
         </div>
 
-        {/* Línea separadora */}
+        {/* Separador */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '3rem', animation: 'fadeIn 1s ease 0.5s both' }}>
           <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${cuento.glow}40)` }} />
-          <span style={{ fontSize: '1rem' }}>✦</span>
+          <span style={{ color: cuento.accent }}>✦</span>
           <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${cuento.glow}40)` }} />
         </div>
 
-        {/* Start state */}
+        {/* Start */}
         {!started && (
           <div style={{ textAlign: 'center', animation: 'fadeUp 0.8s ease 0.7s both', opacity: 0 }}>
-            <p style={{ fontFamily: 'Nunito', color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem', marginBottom: '2rem', letterSpacing: '0.05em' }}>
+            <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem', marginBottom: '2rem' }}>
               Cuando estés listo, comienza la historia
             </p>
-            <button className="start-btn" onClick={start}>
-              ✨ &nbsp; Comenzar historia
-            </button>
+            <button className="start-btn" onClick={start}>✨ Comenzar historia</button>
           </div>
         )}
 
@@ -339,25 +320,23 @@ export default function CuentoPage() {
           </div>
         )}
 
-        {/* End state */}
+        {/* End */}
         {allDone && (
           <div style={{ marginTop: '4rem', animation: 'fadeUp 1s ease 0.3s both', opacity: 0 }}>
-            {/* Separador */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '3rem' }}>
               <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${cuento.glow}40)` }} />
-              <span style={{ color: cuento.accent, fontSize: '1rem' }}>✦</span>
+              <span style={{ color: cuento.accent }}>✦</span>
               <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${cuento.glow}40)` }} />
             </div>
-
             <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
-              <p style={{ fontFamily: ''Beau Rivage', cursive', fontStyle: 'italic', color: 'rgba(255,255,255,0.4)', fontSize: '1rem' }}>
+              <p style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.8rem', color: 'rgba(255,255,255,0.5)' }}>
                 ¿Quieres vivirlo en la pantalla grande?
               </p>
               <button className="tv-btn" style={{ background: cuento.glow, color: 'white' }}
                 onClick={() => window.history.back()}>
-                📺 &nbsp; Ver en TV
+                📺 Ver en TV
               </button>
-              <a href="/" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Nunito', fontSize: '0.8rem', textDecoration: 'none', letterSpacing: '0.08em' }}>
+              <a href="/" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: "'Nunito', sans-serif", fontSize: '0.8rem', textDecoration: 'none', letterSpacing: '0.08em' }}>
                 Explorar otros cuentos →
               </a>
             </div>
