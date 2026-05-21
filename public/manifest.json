@@ -1,7 +1,7 @@
 {
-  "name": "Cuentajoy",
-  "short_name": "Cuentajoy",
-  "description": "Historias que cobran vida en tu televisor",
+  "name": "CuentaJoy",
+  "short_name": "CuentaJoy",
+  "description": "Historias que cobran vida",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#060608",

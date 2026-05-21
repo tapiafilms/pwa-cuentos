@@ -200,9 +200,10 @@ export default function Home() {
         borderBottom: scrollY > 20 ? '1px solid rgba(255,255,255,0.05)' : 'none',
         transition: 'all 0.4s ease',
       }}>
-        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.2rem', fontWeight: 700, color: 'white' }}>
-          Cuenta<span style={{ color: 'rgba(255,255,255,0.3)' }}>joy</span>
-        </span>
+        <a href="/">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ height: 38, width: 'auto', objectFit: 'contain', display: 'block' }} />
+        </a>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <a href="#cuentos" className="nav-link">Cuentos</a>
           <a href="#" className="nav-link">Nosotros</a>
@@ -245,6 +246,11 @@ export default function Home() {
               <span style={{ fontFamily: 'DM Sans', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>
                 Historias que cobran vida
               </span>
+            </div>
+            {/* Logo grande en hero */}
+            <div style={{ animation: 'fadeUp 0.8s ease 0.15s both', marginBottom: '0.5rem' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(200px, 30vw, 340px)', height: 'auto', objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 0 40px rgba(124,106,247,0.3))' }} />
             </div>
             <h1 style={{
               fontFamily: 'Playfair Display, serif',
