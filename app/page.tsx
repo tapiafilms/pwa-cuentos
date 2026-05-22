@@ -244,7 +244,7 @@ export default function Home() {
 
         {/* Logo grande arriba izquierda */}
         <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 9rem', animation: 'fadeIn 1s ease 0s both' }}>
-          <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}>Genofy</span>
+          <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}><img style={{ width: '50px'}} src="/logo-genofy.png"/></span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(220px, 28vw, 420px)', height: 'auto', objectFit: 'contain', display: 'block' }} />
         </div>
@@ -256,7 +256,7 @@ export default function Home() {
             <h1 style={{
               fontFamily: 'Cinzel, serif',
               fontSize: '50px',
-              fontWeight: 700, lineHeight: 1, color: 'white',
+              fontWeight: 500, lineHeight: 1, color: 'white',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
               animation: 'fadeUp 0.8s ease 0.1s both',
