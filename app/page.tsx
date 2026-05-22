@@ -376,11 +376,10 @@ function StorySection({ cuento, index, onOpenTV }: {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [progress, setProgress] = useState(0)
-  const isEven = index % 2 === 0
 
   useEffect(() => {
     const el = ref.current; if (!el) return
-    const obs = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.2 })
+    const obs = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.15 })
     obs.observe(el)
     const onScroll = () => {
       const rect = el.getBoundingClientRect()
@@ -390,7 +389,6 @@ function StorySection({ cuento, index, onOpenTV }: {
     return () => { obs.disconnect(); window.removeEventListener('scroll', onScroll) }
   }, [])
 
-  // Parallax: el fondo se mueve más lento que el scroll
   const parallaxY = (progress - 0.5) * -80
 
   return (
@@ -404,55 +402,64 @@ function StorySection({ cuento, index, onOpenTV }: {
         backgroundRepeat: 'no-repeat',
       } : {}),
     }}>
-      {/* Overlay oscuro sobre la imagen para mantener legibilidad */}
-      {cuento.bgImage && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,8,0.33)' }} />
-      )}
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 70% 70% at ${isEven ? '70%' : '30%'} 50%, ${cuento.glow}15 0%, transparent 70%)`, transform: `translateY(${(progress - 0.5) * -40}px)`, transition: 'transform 0.1s linear' }} />
+      {/* Overlay base */}
+      {cuento.bgImage && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.28)' }} />}
+      {/* Gradiente izquierda: texto legible */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.4) 45%, transparent 70%)' }} />
+      {/* Gradiente derecha: personaje */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.55) 0%, transparent 50%)' }} />
 
-      <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', flexDirection: isEven ? 'row' : 'row-reverse', alignItems: 'center', gap: '5rem' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
-        {/* Emoji */}
-        <div style={{ flex: '0 0 auto', width: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transform: visible ? 'translateY(0) scale(1)' : `translateY(${isEven ? 50 : -50}px) scale(0.92)`, opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.1s' }}>
-          <div style={{ position: 'absolute', width: 240, height: 240, borderRadius: '50%', background: `radial-gradient(circle, ${cuento.glow}18, transparent 70%)` }} />
-          <div style={{ position: 'absolute', width: 190, height: 190, borderRadius: '50%', border: `1px solid ${cuento.glow}28` }} />
-          <span className="float" style={{ fontSize: 'clamp(5rem, 10vw, 8rem)', filter: `drop-shadow(0 0 40px ${cuento.glow}88)`, display: 'block', animationDelay: `${index * 0.4}s` }}>
-            {cuento.emoji}
-          </span>
-        </div>
+        {/* COLUMNA IZQUIERDA: texto */}
+        <div style={{ flex: '0 0 42%', display: 'flex', flexDirection: 'column', gap: '1.1rem', transform: visible ? 'translateX(0)' : 'translateX(-40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.1s' }}>
 
-        {/* Text */}
-        <div className="story-text" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1.25rem', position: 'relative', transform: visible ? 'translateX(0)' : `translateX(${isEven ? 40 : -40}px)`, opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
-          <span className="section-num">0{cuento.id}</span>
-
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '5px 13px', borderRadius: 100, border: `1px solid ${cuento.accent}55`, color: cuento.accent, opacity: 0.85 }}>
+          {/* Tag pill */}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 100, background: `${cuento.glow}22`, border: `1px solid ${cuento.glow}55`, color: cuento.accent, width: 'fit-content' }}>
             {cuento.emoji} {cuento.tag}
           </span>
 
-          <h2 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: 900, lineHeight: 1.05, whiteSpace: 'pre-line', color: 'white', letterSpacing: '-0.02em' }}>
+          {/* Título serif uppercase */}
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(2.2rem, 4.5vw, 4rem)', fontWeight: 700, lineHeight: 1.0, whiteSpace: 'pre-line', color: 'white', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
             {cuento.title}
           </h2>
 
-          <p style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1rem', fontStyle: 'italic', color: `${cuento.accent}cc` }}>
+          {/* Subtítulo cursiva */}
+          <p style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.1rem', fontStyle: 'italic', color: `${cuento.accent}cc`, marginTop: '-0.25rem' }}>
             {cuento.subtitle}
           </p>
 
-          <div style={{ width: 36, height: 1, background: cuento.glow, opacity: 0.4 }} />
-
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.95rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.45)', maxWidth: 460, fontWeight: 300 }}>
+          {/* Descripción */}
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.9rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', maxWidth: 400, fontWeight: 300, marginTop: '0.25rem' }}>
             {cuento.desc}
           </p>
 
-          <div className="story-btns" style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-            <button className="btn" onClick={onOpenTV} style={{ background: cuento.glow, border: `1px solid ${cuento.glow}`, color: 'white', fontWeight: 500 }}>
+          {/* Botones */}
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            <button onClick={onOpenTV} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer' }}>
               📺 Ver en TV
             </button>
-            <button className="btn btn-ghost" style={{ borderColor: `${cuento.glow}44`, color: cuento.accent }}
-              onClick={() => window.location.href = `/cuento/${cuento.id}`}>
+            <button onClick={() => window.location.href = `/cuento/${cuento.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer' }}>
               Abrir cuento →
             </button>
           </div>
         </div>
+
+        {/* COLUMNA DERECHA: card QR + pills */}
+        <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
+
+          {/* Placeholder card blanca (donde irá el personaje) */}
+          <div style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+
+          {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
+          {['TE HABLA', 'TE ESCUCHA', 'TE ENSEÑA'].map((label, i) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, background: cuento.glow, borderRadius: 8, padding: '10px 20px', minWidth: 180, boxShadow: `0 4px 20px ${cuento.glow}44`, transform: visible ? 'translateX(0)' : 'translateX(30px)', opacity: visible ? 1 : 0, transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.1}s` }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />
+              <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', color: 'white' }}>{label}</span>
+            </div>
+          ))}
+        </div>
+
       </div>
     </section>
   )
