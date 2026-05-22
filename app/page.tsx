@@ -91,7 +91,7 @@ export default function Home() {
   const closeModal = () => setModal({ open: false })
 
   return (
-    <div style={{ background: '#0e0e12', overflowX: 'hidden' }}>
+    <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
