@@ -437,17 +437,17 @@ function StorySection({ cuento, index, onOpenTV }: {
           </span>
 
           {/* Título serif uppercase */}
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(2.2rem, 4.5vw, 4rem)', fontWeight: 700, lineHeight: 1.0, whiteSpace: 'pre-line', color: 'white', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
+          <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(2.2rem, 4.5vw, 4rem)', fontWeight: 500, lineHeight: 1.0, whiteSpace: 'pre-line', color: 'white', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
             {cuento.title}
           </h2>
 
           {/* Subtítulo cursiva */}
-          <p style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.1rem', fontStyle: 'italic', color: `${cuento.accent}cc`, marginTop: '-0.25rem' }}>
+          <p style={{ fontFamily: "'Cinzel, serif', cursive", fontSize: '1.1rem', fontStyle: 'italic', color: `${cuento.accent}cc`, marginTop: '-0.25rem' }}>
             {cuento.subtitle}
           </p>
 
           {/* Descripción */}
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.9rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', maxWidth: 400, fontWeight: 300, marginTop: '0.25rem' }}>
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.9rem', lineHeight: 1.2, color: '#ffffff', maxWidth: 400, fontWeight: 300, marginTop: '0.25rem' }}>
             {cuento.desc}
           </p>
 
