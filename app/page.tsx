@@ -14,6 +14,7 @@ const CUENTOS = [
     accent: '#95d5b2',
     emoji: '🌿',
     desc: 'Mía descubre que los árboles de su jardín susurran nombres al anochecer. Cuando sigue su llamado, encuentra un mundo enterrado bajo las raíces donde el tiempo fluye al revés.',
+    bgImage: '/bg2.png',
   },
   {
     id: 2,
@@ -25,6 +26,7 @@ const CUENTOS = [
     accent: '#90caf9',
     emoji: '🐋',
     desc: 'En el océano de nubes que flota sobre la ciudad, una ballena de cristal recoge sueños perdidos. Solo quien se atreve a saltar desde el tejado más alto puede montarla.',
+    bgImage: '/bg3.png',
   },
   {
     id: 3,
@@ -36,6 +38,7 @@ const CUENTOS = [
     accent: '#ffb74d',
     emoji: '⏰',
     desc: 'Una mañana, todos los relojes del mundo perdieron sus agujas. El pequeño Theo encuentra las agujas escondidas en el mercado de los sueños, pero devolverlas tiene un precio.',
+    bgImage: '/bg4.png',
   },
   {
     id: 4,
@@ -47,6 +50,7 @@ const CUENTOS = [
     accent: '#ce93d8',
     emoji: '👑',
     desc: 'Cada amanecer, cuando la niebla cubre el valle, aparece un castillo que no existe en ningún mapa. La reina que lo habita lleva cien años esperando a alguien que sepa leer el lenguaje de las nubes.',
+    bgImage: '/bg5.png',
   },
   {
     id: 5,
@@ -58,6 +62,7 @@ const CUENTOS = [
     accent: '#ffd54f',
     emoji: '✉️',
     desc: 'Cada estrella fugaz es una carta en camino. Luna descubre el buzón secreto en la cima de la montaña más fría del mundo, y con él, la responsabilidad de entregar mensajes entre galaxias.',
+    bgImage: undefined,
   },
 ]
 
@@ -224,7 +229,7 @@ export default function Home() {
     overflow: 'hidden',
     backgroundImage: "url('/bg1.png')",
     backgroundSize: 'cover',
-    backgroundPosition: 'center',
+    backgroundPosition: `center ${scrollY * 0.4}px`,
     backgroundRepeat: 'no-repeat',
   }}>
         <div style={{
@@ -386,8 +391,24 @@ function StorySection({ cuento, index, onOpenTV }: {
     return () => { obs.disconnect(); window.removeEventListener('scroll', onScroll) }
   }, [])
 
+  // Parallax: el fondo se mueve más lento que el scroll
+  const parallaxY = (progress - 0.5) * -80
+
   return (
-    <section id={`cuento-${cuento.id}`} ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '6rem 0' }}>
+    <section id={`cuento-${cuento.id}`} ref={ref} style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      position: 'relative', overflow: 'hidden', padding: '6rem 0',
+      ...(cuento.bgImage ? {
+        backgroundImage: `url('${cuento.bgImage}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: `center ${parallaxY}px`,
+        backgroundRepeat: 'no-repeat',
+      } : {}),
+    }}>
+      {/* Overlay oscuro sobre la imagen para mantener legibilidad */}
+      {cuento.bgImage && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,8,0.68)' }} />
+      )}
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 70% 70% at ${isEven ? '70%' : '30%'} 50%, ${cuento.glow}15 0%, transparent 70%)`, transform: `translateY(${(progress - 0.5) * -40}px)`, transition: 'transform 0.1s linear' }} />
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.04)' }} />
 
