@@ -91,7 +91,7 @@ export default function Home() {
   const closeModal = () => setModal({ open: false })
 
   return (
-    <div style={{ background: '#060608', overflowX: 'hidden' }}>
+    <div style={{ background: '#000000', overflowX: 'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -410,7 +410,6 @@ function StorySection({ cuento, index, onOpenTV }: {
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,8,0.68)' }} />
       )}
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 70% 70% at ${isEven ? '70%' : '30%'} 50%, ${cuento.glow}15 0%, transparent 70%)`, transform: `translateY(${(progress - 0.5) * -40}px)`, transition: 'transform 0.1s linear' }} />
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.04)' }} />
 
       <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', flexDirection: isEven ? 'row' : 'row-reverse', alignItems: 'center', gap: '5rem' }}>
 
