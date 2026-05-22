@@ -209,11 +209,34 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
-          .story-inner { flex-direction: column !important; padding: 5rem 1.5rem !important; gap: 2.5rem !important; }
+          .story-inner { flex-direction: column !important; padding: 5rem 1.5rem !important; gap: 2rem !important; }
           .story-text { align-items: center !important; text-align: center !important; }
           .section-num { display: none; }
           .story-desc { max-width: 100% !important; }
           .story-btns { justify-content: center !important; }
+          .nav-link { display: none; }
+          .nav-inner { padding: 1rem 1.25rem !important; }
+          .hero-logo-area { padding: 2rem 1.5rem !important; }
+          .hero-bottom { padding: 0 1.5rem 2.5rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 1.25rem !important; }
+          .hero-title { font-size: 2.2rem !important; }
+          .hero-subtitle { font-size: 0.85rem !important; }
+          .hero-btns { flex-direction: column !important; width: 100% !important; }
+          .hero-btns .btn { width: 100% !important; justify-content: center !important; }
+          .story-right { align-items: center !important; width: 100% !important; }
+          .story-card { width: 160px !important; height: 160px !important; }
+          .story-pills { flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; }
+          .story-pill { min-width: auto !important; padding: 8px 14px !important; }
+          .footer-inner { flex-direction: column !important; gap: 0.5rem !important; align-items: center !important; text-align: center !important; padding: 1.5rem !important; }
+          .cta-section { padding: 5rem 1.5rem !important; }
+          .code-char { width: 48px !important; height: 60px !important; font-size: 1.6rem !important; }
+          .modal-box { padding: 1.75rem !important; }
+        }
+
+        @media (max-width: 400px) {
+          .hero-title { font-size: 1.9rem !important; }
+          .story-pills { gap: 0.4rem !important; }
+          .story-pill { font-size: 0.7rem !important; padding: 7px 10px !important; }
+          .code-char { width: 42px !important; height: 54px !important; font-size: 1.4rem !important; }
         }
       `}</style>
 
@@ -230,7 +253,7 @@ export default function Home() {
         transition: 'all 0.4s ease',
         opacity: scrollY > 60 ? 1 : 0,
         pointerEvents: scrollY > 60 ? 'auto' : 'none',
-      }}>
+      }} className="nav-inner">
         <a href="/">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ height: 38, width: 'auto', objectFit: 'contain', display: 'block' }} />
@@ -267,17 +290,16 @@ export default function Home() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 45%)' }} />
 
         {/* Logo grande arriba izquierda */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 9rem', animation: 'fadeIn 1s ease 0s both' }}>
+        <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 9rem', animation: 'fadeIn 1s ease 0s both' }} className="hero-logo-area">
           <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}><img style={{ width: '90px'}} src="/logo-genofy.png"/></span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(220px, 28vw, 420px)', height: 'auto', objectFit: 'contain', display: 'block' }} />
         </div>
 
-        {/* Contenido inferior: título izquierda, botones derecha */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '0 9rem 3.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem' }}>
+        <div style={{ position: 'relative', zIndex: 2, padding: '0 9rem 3.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem' }} className="hero-bottom">
           {/* Título + descripción */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <h1 style={{
+            <h1 className="hero-title" style={{
               fontFamily: 'Cinzel, serif',
               fontSize: '50px',
               fontWeight: 500, lineHeight: 1, color: 'white',
@@ -287,7 +309,7 @@ export default function Home() {
             }}>
               Historias Vivas
             </h1>
-            <p style={{
+            <p className="hero-subtitle" style={{
               fontFamily: 'Cinzel', fontSize: 'clamp(0.8rem, 1.2vw, 1.95rem)',
               color: 'rgb(109 98 163)', fontWeight: 300, lineHeight: 1.2,
               animation: 'fadeUp 0.8s ease 0.25s both',
@@ -298,7 +320,7 @@ export default function Home() {
           </div>
 
           {/* Botones abajo derecha */}
-          <div style={{ display: 'flex', gap: '1rem', flexShrink: 0, animation: 'fadeUp 0.8s ease 0.4s both' }}>
+          <div className="hero-btns" style={{ display: 'flex', gap: '1rem', flexShrink: 0, animation: 'fadeUp 0.8s ease 0.4s both' }}>
             <button className="btn btn-solid"
               onClick={() => document.getElementById('cuentos')?.scrollIntoView({ behavior: 'smooth' })}>
               Explorar cuentos
@@ -340,7 +362,7 @@ export default function Home() {
       </div>
 
       {/* FOOTER CTA */}
-      <section style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8rem 3rem', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
+      <section className="cta-section" style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8rem 3rem', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(124,106,247,0.08), transparent)' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <p style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '1.5rem' }}>¿Listo para empezar?</p>
@@ -354,7 +376,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.18)', fontFamily: 'Nunito', fontSize: '0.78rem' }}>
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.18)', fontFamily: 'Nunito', fontSize: '0.78rem' }} className="footer-inner">
         <span>Cuentajoy © 2025</span>
         <span>Hecho con ✨ para pequeños exploradores</span>
       </footer>
@@ -446,18 +468,20 @@ function StorySection({ cuento, index, onOpenTV }: {
         </div>
 
         {/* COLUMNA DERECHA: card QR + pills */}
-        <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
+        <div className="story-right" style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
 
           {/* Placeholder card blanca (donde irá el personaje) */}
-          <div style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+          <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
 
           {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
+          <div className="story-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end' }}>
           {['TE HABLA', 'TE ESCUCHA', 'TE ENSEÑA'].map((label, i) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, background: cuento.glow, borderRadius: 8, padding: '10px 20px', minWidth: 180, boxShadow: `0 4px 20px ${cuento.glow}44`, transform: visible ? 'translateX(0)' : 'translateX(30px)', opacity: visible ? 1 : 0, transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.1}s` }}>
+            <div key={label} className="story-pill" style={{ display: 'flex', alignItems: 'center', gap: 10, background: cuento.glow, borderRadius: 8, padding: '10px 20px', minWidth: 180, boxShadow: `0 4px 20px ${cuento.glow}44`, transform: visible ? 'translateX(0)' : 'translateX(30px)', opacity: visible ? 1 : 0, transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.1}s` }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />
               <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', color: 'white' }}>{label}</span>
             </div>
           ))}
+          </div>
         </div>
 
       </div>
