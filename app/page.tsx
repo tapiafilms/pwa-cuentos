@@ -221,114 +221,59 @@ export default function Home() {
 
       {/* HERO */}
       <section style={{
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 3rem',
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundImage: "url('/bg1.png')",
-    backgroundSize: 'cover',
-    backgroundPosition: `center ${scrollY * 0.4}px`,
-    backgroundRepeat: 'no-repeat',
-  }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(124,106,247,0.1) 0%, transparent 70%)',
-          transform: `translateY(${scrollY * 0.3}px)`,
-        }} />
-        {[...Array(35)].map((_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            left: `${(i * 37 + 13) % 100}%`, top: `${(i * 53 + 7) % 100}%`,
-            width: i % 5 === 0 ? 2 : 1, height: i % 5 === 0 ? 2 : 1,
-            background: 'white', borderRadius: '50%',
-            opacity: 0.08 + (i % 7) * 0.04,
-            transform: `translateY(${scrollY * (0.05 + (i % 5) * 0.04)}px)`,
-          }} />
-        ))}
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '0',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundImage: "url('/bg1.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: `center ${scrollY * 0.4}px`,
+        backgroundRepeat: 'no-repeat',
+      }}>
+        {/* Overlay sutil para legibilidad */}
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.18)' }} />
 
-        <div style={{
-          maxWidth: 1200, margin: '0 auto', width: '100%',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: '4rem', paddingTop: '6rem',
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '2rem', animation: 'fadeUp 0.8s ease 0s both' }}>
-              <div style={{ width: 28, height: 1, background: 'rgba(255,255,255,0.25)' }} />
-              <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>
-                Historias que cobran vida
-              </span>
-            </div>
-            {/* Logo grande en hero */}
-            <div style={{ animation: 'fadeUp 0.8s ease 0.15s both', marginBottom: '0.5rem' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(200px, 30vw, 340px)', height: 'auto', objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 0 40px rgba(124,106,247,0.3))' }} />
-            </div>
-            <h1 style={{
-              fontFamily: "'Beau Rivage', cursive",
-              fontSize: 'clamp(3.5rem, 8vw, 7.5rem)',
-              fontWeight: 900, lineHeight: 0.95, color: 'white',
-              letterSpacing: '-0.02em',
-              animation: 'fadeUp 0.8s ease 0.15s both',
-            }}>
-              Donde los<br />
-              <em style={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.65)' }}>cuentos</em><br />
-              se viven
-            </h1>
-            <p style={{
-              fontFamily: 'Nunito', fontSize: 'clamp(0.95rem, 1.6vw, 1.1rem)',
-              color: 'rgba(255,255,255,0.4)', fontWeight: 300, lineHeight: 1.75,
-              marginTop: '2rem', maxWidth: 400,
-              animation: 'fadeUp 0.8s ease 0.3s both',
-            }}>
-              Cinco historias únicas para la pantalla grande. Tu celular es la llave. La TV, el portal.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem', animation: 'fadeUp 0.8s ease 0.45s both' }}>
-              <button className="btn btn-solid"
-                onClick={() => document.getElementById('cuentos')?.scrollIntoView({ behavior: 'smooth' })}>
-                Explorar cuentos
-              </button>
-              <button className="btn btn-ghost">▶ Ver demo</button>
-            </div>
-          </div>
+        {/* Logo arriba izquierda */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '2.2rem 3rem', animation: 'fadeIn 0.8s ease 0s both' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ height: 56, width: 'auto', objectFit: 'contain', display: 'block' }} />
+        </div>
 
-          {/* Orb visual */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', height: 480, animation: 'fadeIn 1.2s ease 0.3s both' }}>
-            {CUENTOS.map((c, i) => {
-              const angle = (i / CUENTOS.length) * Math.PI * 2 - Math.PI / 2
-              const r = 175
-              return (
-                <div key={c.id} onClick={() => document.getElementById(`cuento-${c.id}`)?.scrollIntoView({ behavior: 'smooth' })}
-                  style={{
-                    position: 'absolute',
-                    left: `calc(50% + ${Math.cos(angle) * r}px)`,
-                    top: `calc(50% + ${Math.sin(angle) * r}px)`,
-                    transform: 'translate(-50%,-50%)',
-                    width: 60, height: 60,
-                    background: `radial-gradient(circle, ${c.glow}25, transparent)`,
-                    border: `1px solid ${c.glow}40`,
-                    borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '1.6rem', cursor: 'pointer',
-                    animation: `floatSlow ${5 + i}s ease-in-out infinite`,
-                    animationDelay: `${i * 0.6}s`,
-                    transition: 'transform 0.3s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.transform = 'translate(-50%,-50%) scale(1.25)')}
-                  onMouseLeave={e => (e.currentTarget.style.transform = 'translate(-50%,-50%) scale(1)')}
-                >{c.emoji}</div>
-              )
-            })}
-            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 110, height: 110, border: '1px solid rgba(255,255,255,0.07)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: 72, height: 72, background: 'radial-gradient(circle, rgba(255,255,255,0.07), transparent)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem' }}>✨</div>
-            </div>
-            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 380, height: 380, border: '1px solid rgba(255,255,255,0.03)', borderRadius: '50%' }} />
+        {/* Contenido inferior */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '0 3rem 4rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: 800 }}>
+          <h1 style={{
+            fontFamily: "'Beau Rivage', cursive",
+            fontSize: 'clamp(4rem, 10vw, 9rem)',
+            fontWeight: 900, lineHeight: 0.9, color: 'white',
+            letterSpacing: '-0.02em',
+            animation: 'fadeUp 0.8s ease 0.1s both',
+          }}>
+            Historias Vivas
+          </h1>
+          <p style={{
+            fontFamily: 'Nunito', fontSize: 'clamp(0.9rem, 1.4vw, 1rem)',
+            color: 'rgba(255,255,255,0.6)', fontWeight: 300, lineHeight: 1.7,
+            maxWidth: 380,
+            animation: 'fadeUp 0.8s ease 0.25s both',
+          }}>
+            Cinco historias únicas para la pantalla grande.<br />
+            Tu celular es la llave. La TV, el portal.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', animation: 'fadeUp 0.8s ease 0.4s both' }}>
+            <button className="btn btn-solid"
+              onClick={() => document.getElementById('cuentos')?.scrollIntoView({ behavior: 'smooth' })}>
+              Explorar cuentos
+            </button>
+            <button className="btn btn-ghost">▶ Ver demo</button>
           </div>
         </div>
 
-        <div className="scroll-hint" style={{ position: 'absolute', bottom: '2.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.2)', fontFamily: 'Nunito', fontSize: '0.65rem', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-          <div style={{ width: 1, height: 36, background: 'rgba(255,255,255,0.12)' }} />
+        {/* Scroll hint */}
+        <div className="scroll-hint" style={{ position: 'absolute', bottom: '2rem', right: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.25)', fontFamily: 'Nunito', fontSize: '0.6rem', letterSpacing: '0.18em', textTransform: 'uppercase', zIndex: 2 }}>
+          <div style={{ width: 1, height: 36, background: 'rgba(255,255,255,0.15)' }} />
           scroll
         </div>
       </section>
