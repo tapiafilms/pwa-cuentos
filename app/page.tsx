@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 const CUENTOS = [
@@ -90,6 +90,19 @@ export default function Home() {
 
   const closeModal = () => setModal({ open: false })
 
+
+  const fireflies = useMemo(() => Array.from({ length: 28 }, (_, i) => ({
+    id: i,
+    x: 10 + (i * 37.3 + 13.7) % 80,
+    y: 10 + (i * 53.1 + 7.3) % 80,
+    size: 1.5 + (i % 4) * 0.6,
+    duration: 4 + (i % 7) * 1.2,
+    delay: (i % 11) * 0.7,
+    driftX: ((i * 17 + 3) % 40) - 20,
+    driftY: ((i * 23 + 5) % 40) - 20,
+    glowColor: i % 3 === 0 ? '#ffe878' : i % 3 === 1 ? '#b8ff78' : '#ffd54f',
+  })), [])
+
   return (
     <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
       <style>{`
@@ -128,6 +141,17 @@ export default function Home() {
           background-size: 200px 200px;
         }
 
+        @keyframes fireflyFloat {
+          0%   { transform: translate(0px, 0px) scale(1);   opacity: 0; }
+          15%  { opacity: 1; }
+          50%  { transform: translate(var(--dx), var(--dy)) scale(1.3); opacity: 0.9; }
+          85%  { opacity: 0.7; }
+          100% { transform: translate(0px, 0px) scale(1);   opacity: 0; }
+        }
+        @keyframes fireflyGlow {
+          0%, 100% { box-shadow: 0 0 3px 1px var(--gc), 0 0 6px 2px var(--gc); }
+          50%       { box-shadow: 0 0 6px 3px var(--gc), 0 0 14px 5px var(--gc); }
+        }
         @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes floatSlow {
@@ -244,7 +268,7 @@ export default function Home() {
 
         {/* Logo grande arriba izquierda */}
         <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 9rem', animation: 'fadeIn 1s ease 0s both' }}>
-          <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}><img style={{ width: '50px'}} src="/logo-genofy.png"/></span>
+          <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}><img style={{ width: '90px'}} src="/logo-genofy.png"/></span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(220px, 28vw, 420px)', height: 'auto', objectFit: 'contain', display: 'block' }} />
         </div>
@@ -264,8 +288,8 @@ export default function Home() {
               Historias Vivas
             </h1>
             <p style={{
-              fontFamily: 'Nunito', fontSize: 'clamp(0.8rem, 1.2vw, 0.95rem)',
-              color: 'rgba(255,255,255,0.55)', fontWeight: 300, lineHeight: 1.65,
+              fontFamily: 'Cinzel', fontSize: 'clamp(0.8rem, 1.2vw, 1.95rem)',
+              color: 'rgb(109 98 163)', fontWeight: 300, lineHeight: 1.2,
               animation: 'fadeUp 0.8s ease 0.25s both',
             }}>
               Cinco historias únicas para la pantalla grande.<br />
@@ -282,6 +306,24 @@ export default function Home() {
             <button className="btn btn-ghost">▶ Ver demo</button>
           </div>
         </div>
+
+        {/* Luciérnagas */}
+        {fireflies.map(f => (
+          <div key={f.id} style={{
+            position: 'absolute',
+            left: `${f.x}%`,
+            top: `${f.y}%`,
+            width: f.size,
+            height: f.size,
+            borderRadius: '50%',
+            background: f.glowColor,
+            zIndex: 3,
+            '--dx': `${f.driftX}px`,
+            '--dy': `${f.driftY}px`,
+            '--gc': f.glowColor,
+            animation: `fireflyFloat ${f.duration}s ease-in-out ${f.delay}s infinite, fireflyGlow ${f.duration * 0.7}s ease-in-out ${f.delay}s infinite`,
+          } as React.CSSProperties} />
+        ))}
 
         {/* Scroll hint */}
         <div className="scroll-hint" style={{ position: 'absolute', bottom: '2rem', right: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.25)', fontFamily: 'Nunito', fontSize: '0.6rem', letterSpacing: '0.18em', textTransform: 'uppercase', zIndex: 2 }}>
