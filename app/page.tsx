@@ -200,10 +200,12 @@ export default function Home() {
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
         padding: '1.4rem 3rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: `rgba(6,6,8,${Math.min(scrollY / 200, 0.95)})`,
+        background: `rgba(6,6,8,${Math.min(Math.max((scrollY - 80) / 150, 0), 0.95)})`,
         backdropFilter: scrollY > 20 ? 'blur(12px)' : 'none',
         borderBottom: scrollY > 20 ? '1px solid rgba(255,255,255,0.05)' : 'none',
         transition: 'all 0.4s ease',
+        opacity: scrollY > 60 ? 1 : 0,
+        pointerEvents: scrollY > 60 ? 'auto' : 'none',
       }}>
         <a href="/">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -233,36 +235,46 @@ export default function Home() {
         backgroundPosition: `center ${scrollY * 0.4}px`,
         backgroundRepeat: 'no-repeat',
       }}>
-        {/* Overlay sutil para legibilidad */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.18)' }} />
+        {/* Overlay sutil */}
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)' }} />
+        {/* Gradiente izquierda para legibilidad del logo y texto */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 60%)' }} />
+        {/* Gradiente inferior para legibilidad del texto */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 45%)' }} />
 
-        {/* Logo arriba izquierda */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '2.2rem 3rem', animation: 'fadeIn 0.8s ease 0s both' }}>
+        {/* Logo grande arriba izquierda */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 3rem', animation: 'fadeIn 1s ease 0s both' }}>
+          <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}>Genofy</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ height: 56, width: 'auto', objectFit: 'contain', display: 'block' }} />
+          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(220px, 28vw, 420px)', height: 'auto', objectFit: 'contain', display: 'block' }} />
         </div>
 
-        {/* Contenido inferior */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '0 3rem 4rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: 800 }}>
-          <h1 style={{
-            fontFamily: "'Beau Rivage', cursive",
-            fontSize: 'clamp(4rem, 10vw, 9rem)',
-            fontWeight: 900, lineHeight: 0.9, color: 'white',
-            letterSpacing: '-0.02em',
-            animation: 'fadeUp 0.8s ease 0.1s both',
-          }}>
-            Historias Vivas
-          </h1>
-          <p style={{
-            fontFamily: 'Nunito', fontSize: 'clamp(0.9rem, 1.4vw, 1rem)',
-            color: 'rgba(255,255,255,0.6)', fontWeight: 300, lineHeight: 1.7,
-            maxWidth: 380,
-            animation: 'fadeUp 0.8s ease 0.25s both',
-          }}>
-            Cinco historias únicas para la pantalla grande.<br />
-            Tu celular es la llave. La TV, el portal.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', animation: 'fadeUp 0.8s ease 0.4s both' }}>
+        {/* Contenido inferior: título izquierda, botones derecha */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '0 3rem 3.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem' }}>
+          {/* Título + descripción */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h1 style={{
+              fontFamily: 'Georgia, serif',
+              fontSize: 'clamp(3rem, 7vw, 7rem)',
+              fontWeight: 700, lineHeight: 1, color: 'white',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              animation: 'fadeUp 0.8s ease 0.1s both',
+            }}>
+              Historias Vivas
+            </h1>
+            <p style={{
+              fontFamily: 'Nunito', fontSize: 'clamp(0.8rem, 1.2vw, 0.95rem)',
+              color: 'rgba(255,255,255,0.55)', fontWeight: 300, lineHeight: 1.65,
+              animation: 'fadeUp 0.8s ease 0.25s both',
+            }}>
+              Cinco historias únicas para la pantalla grande.<br />
+              Tu celular es la llave. La TV, el portal.
+            </p>
+          </div>
+
+          {/* Botones abajo derecha */}
+          <div style={{ display: 'flex', gap: '1rem', flexShrink: 0, animation: 'fadeUp 0.8s ease 0.4s both' }}>
             <button className="btn btn-solid"
               onClick={() => document.getElementById('cuentos')?.scrollIntoView({ behavior: 'smooth' })}>
               Explorar cuentos
