@@ -93,7 +93,7 @@ export default function Home() {
   return (
     <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel:wght@400..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         ::selection { background: rgba(255,255,255,0.15); }
@@ -254,8 +254,8 @@ export default function Home() {
           {/* Título + descripción */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <h1 style={{
-              fontFamily: 'Georgia, serif',
-              fontSize: 'clamp(3rem, 7vw, 7rem)',
+              fontFamily: 'Cinzel, serif',
+              fontSize: '50px',
               fontWeight: 700, lineHeight: 1, color: 'white',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
