@@ -243,14 +243,14 @@ export default function Home() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 45%)' }} />
 
         {/* Logo grande arriba izquierda */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 3rem', animation: 'fadeIn 1s ease 0s both' }}>
+        <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 9rem', animation: 'fadeIn 1s ease 0s both' }}>
           <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}>Genofy</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(220px, 28vw, 420px)', height: 'auto', objectFit: 'contain', display: 'block' }} />
         </div>
 
         {/* Contenido inferior: título izquierda, botones derecha */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '0 3rem 3.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem' }}>
+        <div style={{ position: 'relative', zIndex: 2, padding: '0 9rem 3.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem' }}>
           {/* Título + descripción */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <h1 style={{
