@@ -91,7 +91,7 @@ export default function Home() {
   const closeModal = () => setModal({ open: false })
 
   return (
-    <div style={{ background: '#0c0d0e', overflowX: 'hidden' }}>
+    <div style={{ background: '#000000', overflowX: 'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -407,7 +407,7 @@ function StorySection({ cuento, index, onOpenTV }: {
     }}>
       {/* Overlay oscuro sobre la imagen para mantener legibilidad */}
       {cuento.bgImage && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,8,0.68)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,8,0.33)' }} />
       )}
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 70% 70% at ${isEven ? '70%' : '30%'} 50%, ${cuento.glow}15 0%, transparent 70%)`, transform: `translateY(${(progress - 0.5) * -40}px)`, transition: 'transform 0.1s linear' }} />
 
