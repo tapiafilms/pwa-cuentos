@@ -424,12 +424,7 @@ function StorySection({ cuento, index, onOpenTV }: {
         backgroundRepeat: 'no-repeat',
       } : {}),
     }}>
-      {/* Overlay base */}
-      {cuento.bgImage && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.28)' }} />}
-      {/* Gradiente izquierda: texto legible */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.4) 45%, transparent 70%)' }} />
-      {/* Gradiente derecha: personaje */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.55) 0%, transparent 50%)' }} />
+
 
       <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
