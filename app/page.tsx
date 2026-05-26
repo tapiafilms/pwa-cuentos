@@ -152,6 +152,17 @@ export default function Home() {
           0%, 100% { box-shadow: 0 0 3px 1px var(--gc), 0 0 6px 2px var(--gc); }
           50%       { box-shadow: 0 0 6px 3px var(--gc), 0 0 14px 5px var(--gc); }
         }
+        @keyframes fireflyFloatWhite {
+          0%   { transform: translate(0px, 0px) scale(1);   opacity: 0; }
+          15%  { opacity: 0.8; }
+          50%  { transform: translate(var(--dx), var(--dy)) scale(1.2); opacity: 0.9; }
+          85%  { opacity: 0.5; }
+          100% { transform: translate(0px, 0px) scale(1);   opacity: 0; }
+        }
+        @keyframes fireflyGlowWhite {
+          0%, 100% { box-shadow: 0 0 4px 1px #ffffff, 0 0 8px 2px #f0f0ff, 0 0 16px 4px #e0e0ff; }
+          50%      { box-shadow: 0 0 8px 3px #ffffff, 0 0 16px 5px #f0f0ff, 0 0 24px 8px #e0e0ff; }
+        }
         @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes floatSlow {
@@ -424,7 +435,47 @@ function StorySection({ cuento, index, onOpenTV }: {
         backgroundRepeat: 'no-repeat',
       } : {}),
     }}>
-
+      {/* CONTENEDOR DE LUCIÉRNAGAS BLANCAS - Solo para El Bosque que Respira */}
+      {cuento.id === 1 && (
+        <div style={{
+          position: 'absolute',
+          bottom: '10%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100%',
+          maxWidth: '600px',
+          height: '300px',
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          zIndex: 10,
+        }}>
+          {Array.from({ length: 20 }, (_, i) => {
+            const x = 15 + (i * 37.3 + 13.7) % 70;
+            const y = 10 + (i * 53.1 + 7.3) % 80;
+            const size = 1.5 + (i % 4) * 0.5;
+            const duration = 5 + (i % 6) * 0.8;
+            const delay = (i % 8) * 0.6;
+            const driftX = ((i * 17 + 3) % 30) - 15;
+            const driftY = ((i * 23 + 5) % 30) - 15;
+            
+            return (
+              <div key={`white-firefly-${i}`} style={{
+                position: 'absolute',
+                left: `${x}%`,
+                top: `${y}%`,
+                width: size,
+                height: size,
+                borderRadius: '50%',
+                background: '#ffffff',
+                zIndex: 10,
+                '--dx': `${driftX}px`,
+                '--dy': `${driftY}px`,
+                animation: `fireflyFloatWhite ${duration}s ease-in-out ${delay}s infinite, fireflyGlowWhite ${duration * 0.7}s ease-in-out ${delay}s infinite`,
+              } as React.CSSProperties} />
+            );
+          })}
+        </div>
+      )}
 
       <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
