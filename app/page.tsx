@@ -675,13 +675,21 @@ function StorySection({ cuento, index, onOpenTV }: {
       )}
 
       {/* 🌊 BURBUJAS MARINAS - Cuento 2 */}
-      {cuento.id === 2 ? (
-  <div className="ripple-subtle story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
-    <img src={cuento.bgImage || '/placeholder-ocean.png'} alt={cuento.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-  </div>
-) : (
-  <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
-)}
+      {cuento.id === 2 && (
+        <div 
+          ref={bubblesRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: 5,
+          }}
+        />
+      )}
 
       <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
@@ -722,8 +730,12 @@ function StorySection({ cuento, index, onOpenTV }: {
         {/* COLUMNA DERECHA: card QR + pills */}
         <div className="story-right" style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
 
-          {/* Placeholder card blanca (donde irá el personaje) */}
-          <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+          {/* Card con efecto ripple SOLO para el cuento 2 */}
+          {cuento.id === 2 ? (
+            <div className="ripple-subtle story-card" style={{ width: 200, height: 200, borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)', background: `url('${cuento.bgImage}') center/cover` }} />
+          ) : (
+            <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+          )}
 
           {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
           <div className="story-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end' }}>
