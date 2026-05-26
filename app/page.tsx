@@ -450,6 +450,7 @@ function StorySection({ cuento, index, onOpenTV }: {
   const firefliesRef = useRef<HTMLDivElement>(null)
   const bubblesRef = useRef<HTMLDivElement>(null)
   const butterfliesRef = useRef<HTMLDivElement>(null)
+  const lanternsRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [progress, setProgress] = useState(0)
 
@@ -802,6 +803,100 @@ function StorySection({ cuento, index, onOpenTV }: {
       cancelAnimationFrame(animationId);
     };
   }, [cuento.id]);
+  
+  
+    // 🏮 Efecto de faroles mágicos - Cuento 3: El Reloj Sin Agujas
+  useEffect(() => {
+    if (cuento.id !== 3) return;
+    
+    const contenedor = lanternsRef.current;
+    if (!contenedor) return;
+
+    const NUMERO_FAROLES = 8;
+    
+    contenedor.innerHTML = '';
+
+    for (let i = 0; i < NUMERO_FAROLES; i++) {
+      const farol = document.createElement('div');
+      
+      const posiciones = [
+        { x: 20, y: 60 },
+        { x: 40, y: 55 },
+        { x: 60, y: 58 },
+        { x: 80, y: 62 },
+        { x: 30, y: 40 },
+        { x: 50, y: 35 },
+        { x: 70, y: 42 },
+        { x: 15, y: 30 },
+      ];
+      
+      const pos = posiciones[i] || { 
+        x: 20 + Math.random() * 60, 
+        y: 30 + Math.random() * 40 
+      };
+      
+      farol.style.cssText = `
+        position: absolute;
+        left: ${pos.x}%;
+        top: ${pos.y}%;
+        width: 20px;
+        height: 30px;
+        pointer-events: none;
+        z-index: 5;
+      `;
+      
+      const halo = document.createElement('div');
+      halo.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: radial-gradient(circle, rgba(255, 180, 50, 0.4) 0%, rgba(255, 140, 30, 0.2) 30%, transparent 70%);
+        border-radius: 50%;
+        animation: lanternGlow 2s ease-in-out ${Math.random() * 2}s infinite;
+      `;
+      
+      const llama = document.createElement('div');
+      llama.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: 6px;
+        background: #fff8e7;
+        border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        box-shadow: 0 0 8px #ffaa30, 0 0 15px #ff8800;
+        animation: lanternFlicker 0.5s ease-in-out ${Math.random() * 0.5}s infinite;
+      `;
+      
+      farol.appendChild(halo);
+      farol.appendChild(llama);
+      contenedor.appendChild(farol);
+    }
+
+    if (!document.getElementById('lanternStyle')) {
+      const style = document.createElement('style');
+      style.id = 'lanternStyle';
+      style.textContent = `
+        @keyframes lanternGlow {
+          0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        @keyframes lanternFlicker {
+          0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+          25% { opacity: 1; transform: translate(-50%, -50%) scale(1.3, 0.8); }
+          50% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.9, 1.1); }
+          75% { opacity: 1; transform: translate(-50%, -50%) scale(1.2, 0.9); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, [cuento.id]);
+  
+  
 
   const parallaxY = (progress - 0.5) * -80
 
@@ -854,6 +949,23 @@ function StorySection({ cuento, index, onOpenTV }: {
       {cuento.id === 4 && (
         <div 
           ref={butterfliesRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: 5,
+          }}
+        />
+      )}
+      
+            {/* 🏮 FAROLES MÁGICOS - Cuento 3: El Reloj Sin Agujas */}
+      {cuento.id === 3 && (
+        <div 
+          ref={lanternsRef}
           style={{
             position: 'absolute',
             top: 0,
