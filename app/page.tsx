@@ -407,16 +407,10 @@ function StorySection({ cuento, index, onOpenTV }: {
   cuento: typeof CUENTOS[0]; index: number; onOpenTV: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const firefliesRef = useRef<HTMLDivElement>(null)
+  const bubblesRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [progress, setProgress] = useState(0)
-  const firefliesRef = useRef<HTMLDivElement>(null)
-  const firefliesDataRef = useRef<Array<{
-    element: HTMLDivElement;
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-  }>>([])
 
   useEffect(() => {
     const el = ref.current; if (!el) return
@@ -430,14 +424,14 @@ function StorySection({ cuento, index, onOpenTV }: {
     return () => { obs.disconnect(); window.removeEventListener('scroll', onScroll) }
   }, [])
 
-  // Efecto de luciérnagas revoloteando (solo para cuento 1)
+  // 🌿 Efecto de luciérnagas revoloteando - Cuento 1: El Bosque que Respira
   useEffect(() => {
     if (cuento.id !== 1) return;
     
     const contenedor = firefliesRef.current;
     if (!contenedor) return;
 
-    const NUMERO_LUCIERNAGAS = 25; // Más luciérnagas para el pantano
+    const NUMERO_LUCIERNAGAS = 25;
     const luciernagas: Array<{
       element: HTMLDivElement;
       x: number;
@@ -446,18 +440,13 @@ function StorySection({ cuento, index, onOpenTV }: {
       vy: number;
     }> = [];
 
-    // Limpiar luciérnagas anteriores
     contenedor.innerHTML = '';
 
-    // Crear luciérnagas
     for (let i = 0; i < NUMERO_LUCIERNAGAS; i++) {
       const luciernaga = document.createElement('div');
       
-      // Posición inicial aleatoria dentro del contenedor
       const x = 10 + Math.random() * 80;
       const y = 10 + Math.random() * 80;
-      
-      // Tamaño muy pequeño
       const tamaño = Math.random() * 1.5 + 1;
       
       luciernaga.style.cssText = `
@@ -488,36 +477,27 @@ function StorySection({ cuento, index, onOpenTV }: {
       });
     }
 
-    firefliesDataRef.current = luciernagas;
-
-    // Animar posición
     let animationId: number;
     function animarLuciernagas() {
       luciernagas.forEach(lucy => {
-        // Movimiento aleatorio suave
         lucy.vx += (Math.random() - 0.5) * 0.06;
         lucy.vy += (Math.random() - 0.5) * 0.06;
         
-        // Limitar velocidad (más lento para revoloteo suave)
         const maxVel = 0.25;
         lucy.vx = Math.max(-maxVel, Math.min(maxVel, lucy.vx));
         lucy.vy = Math.max(-maxVel, Math.min(maxVel, lucy.vy));
         
-        // Actualizar posición
         lucy.x += lucy.vx;
         lucy.y += lucy.vy;
         
-        // Mantener dentro del área central del contenedor
         if (lucy.x < 5) { lucy.x = 5; lucy.vx *= -1; }
         if (lucy.x > 95) { lucy.x = 95; lucy.vx *= -1; }
         if (lucy.y < 5) { lucy.y = 5; lucy.vy *= -1; }
         if (lucy.y > 95) { lucy.y = 95; lucy.vy *= -1; }
         
-        // Aplicar posición
         lucy.element.style.left = lucy.x + '%';
         lucy.element.style.top = lucy.y + '%';
         
-        // Efecto de brillo pulsante
         const brillo = 0.4 + Math.sin(Date.now() * 0.003 + lucy.x) * 0.3;
         lucy.element.style.opacity = brillo.toString();
       });
@@ -526,6 +506,98 @@ function StorySection({ cuento, index, onOpenTV }: {
     }
 
     animarLuciernagas();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [cuento.id]);
+
+  // 🌊 Efecto de burbujas marinas - Cuento 2: La Ballena de Cristal
+  useEffect(() => {
+    if (cuento.id !== 2) return;
+    
+    const contenedor = bubblesRef.current;
+    if (!contenedor) return;
+
+    const NUMERO_BURBUJAS = 30;
+    const bubbles: Array<{
+      element: HTMLDivElement;
+      x: number;
+      y: number;
+      size: number;
+      speed: number;
+      opacity: number;
+      phase: number;
+    }> = [];
+
+    contenedor.innerHTML = '';
+
+    for (let i = 0; i < NUMERO_BURBUJAS; i++) {
+      const bubble = document.createElement('div');
+      
+      const x = Math.random() * 100;
+      const y = 60 + Math.random() * 40;
+      const size = Math.random() * 3 + 1;
+      const speed = 0.3 + Math.random() * 0.7;
+      
+      bubble.style.cssText = `
+        position: absolute;
+        left: ${x}%;
+        top: ${y}%;
+        width: ${size}px;
+        height: ${size}px;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(144,202,249,0.2));
+        border-radius: 50%;
+        box-shadow: 0 0 ${size * 2}px rgba(144,202,249,0.3);
+        pointer-events: none;
+        will-change: transform;
+        opacity: 0;
+      `;
+      
+      contenedor.appendChild(bubble);
+      
+      bubbles.push({
+        element: bubble,
+        x: x,
+        y: y,
+        size: size,
+        speed: speed,
+        opacity: 0.2 + Math.random() * 0.3,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    let animationId: number;
+    const startTime = Date.now();
+    
+    function animarBurbujas() {
+      const elapsed = (Date.now() - startTime) * 0.001;
+      
+      bubbles.forEach(bubble => {
+        bubble.y -= bubble.speed * 0.15;
+        
+        const sway = Math.sin(elapsed * 0.5 + bubble.phase) * 0.3;
+        bubble.x += sway * 0.1;
+        
+        if (bubble.y < -5) {
+          bubble.y = 105;
+          bubble.x = Math.random() * 100;
+        }
+        
+        if (bubble.x < -5) bubble.x = 105;
+        if (bubble.x > 105) bubble.x = -5;
+        
+        const glow = bubble.opacity + Math.sin(elapsed * 2 + bubble.phase) * 0.15;
+        
+        bubble.element.style.left = bubble.x + '%';
+        bubble.element.style.top = bubble.y + '%';
+        bubble.element.style.opacity = Math.min(1, Math.max(0.1, glow)).toString();
+      });
+      
+      animationId = requestAnimationFrame(animarBurbujas);
+    }
+
+    animarBurbujas();
 
     return () => {
       cancelAnimationFrame(animationId);
@@ -545,10 +617,27 @@ function StorySection({ cuento, index, onOpenTV }: {
         backgroundRepeat: 'no-repeat',
       } : {}),
     }}>
-      {/* CONTENEDOR DE LUCIÉRNAGAS REVOLOTEANDO - Solo para El Bosque que Respira */}
+      {/* 🌿 LUCIÉRNAGAS DEL BOSQUE - Cuento 1 */}
       {cuento.id === 1 && (
         <div 
           ref={firefliesRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: 5,
+          }}
+        />
+      )}
+
+      {/* 🌊 BURBUJAS MARINAS - Cuento 2 */}
+      {cuento.id === 2 && (
+        <div 
+          ref={bubblesRef}
           style={{
             position: 'absolute',
             top: 0,
