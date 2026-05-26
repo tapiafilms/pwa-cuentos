@@ -449,6 +449,7 @@ function StorySection({ cuento, index, onOpenTV }: {
   const ref = useRef<HTMLDivElement>(null)
   const firefliesRef = useRef<HTMLDivElement>(null)
   const bubblesRef = useRef<HTMLDivElement>(null)
+  const butterfliesRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [progress, setProgress] = useState(0)
 
@@ -644,6 +645,164 @@ function StorySection({ cuento, index, onOpenTV }: {
     };
   }, [cuento.id]);
 
+  // 🦋 Efecto de mariposas revoloteando - Cuento 4: La Reina de la Niebla
+  useEffect(() => {
+    if (cuento.id !== 4) return;
+    
+    const contenedor = butterfliesRef.current;
+    if (!contenedor) return;
+
+    const NUMERO_MARIPOSAS = 15;
+    const mariposas: Array<{
+      element: HTMLDivElement;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      phase: number;
+    }> = [];
+
+    contenedor.innerHTML = '';
+
+    for (let i = 0; i < NUMERO_MARIPOSAS; i++) {
+      const mariposa = document.createElement('div');
+      
+      const x = 10 + Math.random() * 80;
+      const y = 10 + Math.random() * 80;
+      const size = 6 + Math.random() * 8;
+      
+      // Colores violetas/morados para combinar con el tema de niebla
+      const color1 = `hsla(${270 + Math.random() * 30}, 70%, 75%, 0.9)`;
+      const color2 = `hsla(${270 + Math.random() * 30}, 50%, 55%, 0.4)`;
+      
+      // Crear alas
+      const alaIzq = document.createElement('div');
+      alaIzq.style.cssText = `
+        position: absolute;
+        right: 0;
+        width: ${size}px;
+        height: ${size * 0.6}px;
+        background: radial-gradient(ellipse at center, ${color1}, ${color2});
+        border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+        transform-origin: right center;
+        animation: wingFlap 0.3s ease-in-out infinite;
+      `;
+      
+      const alaDer = document.createElement('div');
+      alaDer.style.cssText = `
+        position: absolute;
+        left: 0;
+        width: ${size}px;
+        height: ${size * 0.6}px;
+        background: radial-gradient(ellipse at center, ${color1}, ${color2});
+        border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        transform-origin: right center;
+        animation: wingFlap 0.3s ease-in-out infinite;
+        animation-delay: 0.15s;
+      `;
+      
+      // Crear cuerpo
+      const cuerpo = document.createElement('div');
+      cuerpo.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 1.5px;
+        height: ${size * 0.8}px;
+        background: rgba(100, 70, 140, 0.8);
+        border-radius: 1px;
+      `;
+      
+      mariposa.appendChild(alaIzq);
+      mariposa.appendChild(alaDer);
+      mariposa.appendChild(cuerpo);
+      
+      mariposa.style.cssText = `
+        position: absolute;
+        left: ${x}%;
+        top: ${y}%;
+        width: ${size}px;
+        height: ${size}px;
+        pointer-events: none;
+        z-index: 5;
+      `;
+      
+      contenedor.appendChild(mariposa);
+      
+      mariposas.push({
+        element: mariposa,
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // Agregar keyframes de aleteo si no existen
+    if (!document.getElementById('wingFlapStyle')) {
+      const style = document.createElement('style');
+      style.id = 'wingFlapStyle';
+      style.textContent = `
+        @keyframes wingFlap {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(0.2); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    let animationId: number;
+    
+    function animarMariposas() {
+      mariposas.forEach(mariposa => {
+        // Movimiento visible
+        mariposa.x += mariposa.vx * 0.05;
+        mariposa.y += mariposa.vy * 0.05;
+        
+        // Cambio de dirección aleatorio
+        if (Math.random() < 0.02) {
+          mariposa.vx += (Math.random() - 0.5) * 1;
+          mariposa.vy += (Math.random() - 0.5) * 1;
+          
+          // Limitar velocidad
+          const maxSpeed = 3;
+          const speed = Math.sqrt(mariposa.vx ** 2 + mariposa.vy ** 2);
+          if (speed > maxSpeed) {
+            mariposa.vx = (mariposa.vx / speed) * maxSpeed;
+            mariposa.vy = (mariposa.vy / speed) * maxSpeed;
+          }
+        }
+        
+        // Rebote en bordes
+        if (mariposa.x < 5 || mariposa.x > 95) {
+          mariposa.vx *= -1;
+          mariposa.x = Math.max(5, Math.min(95, mariposa.x));
+        }
+        if (mariposa.y < 5 || mariposa.y > 95) {
+          mariposa.vy *= -1;
+          mariposa.y = Math.max(5, Math.min(95, mariposa.y));
+        }
+        
+        // Rotación según dirección
+        const angle = Math.atan2(mariposa.vy, mariposa.vx) * (180 / Math.PI);
+        
+        mariposa.element.style.left = mariposa.x + '%';
+        mariposa.element.style.top = mariposa.y + '%';
+        mariposa.element.style.transform = `rotate(${angle + 90}deg)`;
+      });
+      
+      animationId = requestAnimationFrame(animarMariposas);
+    }
+
+    animarMariposas();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [cuento.id]);
+
   const parallaxY = (progress - 0.5) * -80
 
   return (
@@ -678,6 +837,23 @@ function StorySection({ cuento, index, onOpenTV }: {
       {cuento.id === 2 && (
         <div 
           ref={bubblesRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: 5,
+          }}
+        />
+      )}
+
+      {/* 🦋 MARIPOSAS - Cuento 4: La Reina de la Niebla */}
+      {cuento.id === 4 && (
+        <div 
+          ref={butterfliesRef}
           style={{
             position: 'absolute',
             top: 0,
