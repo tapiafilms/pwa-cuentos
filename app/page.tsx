@@ -409,6 +409,14 @@ function StorySection({ cuento, index, onOpenTV }: {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [progress, setProgress] = useState(0)
+  const firefliesRef = useRef<HTMLDivElement>(null)
+  const firefliesDataRef = useRef<Array<{
+    element: HTMLDivElement;
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+  }>>([])
 
   useEffect(() => {
     const el = ref.current; if (!el) return
@@ -421,6 +429,108 @@ function StorySection({ cuento, index, onOpenTV }: {
     window.addEventListener('scroll', onScroll, { passive: true }); onScroll()
     return () => { obs.disconnect(); window.removeEventListener('scroll', onScroll) }
   }, [])
+
+  // Efecto de luciérnagas revoloteando (solo para cuento 1)
+  useEffect(() => {
+    if (cuento.id !== 1) return;
+    
+    const contenedor = firefliesRef.current;
+    if (!contenedor) return;
+
+    const NUMERO_LUCIERNAGAS = 25; // Más luciérnagas para el pantano
+    const luciernagas: Array<{
+      element: HTMLDivElement;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+    }> = [];
+
+    // Limpiar luciérnagas anteriores
+    contenedor.innerHTML = '';
+
+    // Crear luciérnagas
+    for (let i = 0; i < NUMERO_LUCIERNAGAS; i++) {
+      const luciernaga = document.createElement('div');
+      
+      // Posición inicial aleatoria dentro del contenedor
+      const x = 10 + Math.random() * 80;
+      const y = 10 + Math.random() * 80;
+      
+      // Tamaño muy pequeño
+      const tamaño = Math.random() * 1.5 + 1;
+      
+      luciernaga.style.cssText = `
+        position: absolute;
+        left: ${x}%;
+        top: ${y}%;
+        width: ${tamaño}px;
+        height: ${tamaño}px;
+        background: #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 0 ${tamaño * 1.5}px #ffffff,
+                   0 0 ${tamaño * 3}px #f0f0ff,
+                   0 0 ${tamaño * 6}px #e0e0ff;
+        pointer-events: none;
+        will-change: transform, opacity;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+      `;
+      
+      contenedor.appendChild(luciernaga);
+      
+      luciernagas.push({
+        element: luciernaga,
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.2
+      });
+    }
+
+    firefliesDataRef.current = luciernagas;
+
+    // Animar posición
+    let animationId: number;
+    function animarLuciernagas() {
+      luciernagas.forEach(lucy => {
+        // Movimiento aleatorio suave
+        lucy.vx += (Math.random() - 0.5) * 0.06;
+        lucy.vy += (Math.random() - 0.5) * 0.06;
+        
+        // Limitar velocidad (más lento para revoloteo suave)
+        const maxVel = 0.25;
+        lucy.vx = Math.max(-maxVel, Math.min(maxVel, lucy.vx));
+        lucy.vy = Math.max(-maxVel, Math.min(maxVel, lucy.vy));
+        
+        // Actualizar posición
+        lucy.x += lucy.vx;
+        lucy.y += lucy.vy;
+        
+        // Mantener dentro del área central del contenedor
+        if (lucy.x < 5) { lucy.x = 5; lucy.vx *= -1; }
+        if (lucy.x > 95) { lucy.x = 95; lucy.vx *= -1; }
+        if (lucy.y < 5) { lucy.y = 5; lucy.vy *= -1; }
+        if (lucy.y > 95) { lucy.y = 95; lucy.vy *= -1; }
+        
+        // Aplicar posición
+        lucy.element.style.left = lucy.x + '%';
+        lucy.element.style.top = lucy.y + '%';
+        
+        // Efecto de brillo pulsante
+        const brillo = 0.4 + Math.sin(Date.now() * 0.003 + lucy.x) * 0.3;
+        lucy.element.style.opacity = brillo.toString();
+      });
+      
+      animationId = requestAnimationFrame(animarLuciernagas);
+    }
+
+    animarLuciernagas();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [cuento.id]);
 
   const parallaxY = (progress - 0.5) * -80
 
@@ -435,46 +545,21 @@ function StorySection({ cuento, index, onOpenTV }: {
         backgroundRepeat: 'no-repeat',
       } : {}),
     }}>
-      {/* CONTENEDOR DE LUCIÉRNAGAS BLANCAS - Solo para El Bosque que Respira */}
+      {/* CONTENEDOR DE LUCIÉRNAGAS REVOLOTEANDO - Solo para El Bosque que Respira */}
       {cuento.id === 1 && (
-        <div style={{
-          position: 'absolute',
-          bottom: '10%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%',
-          maxWidth: '600px',
-          height: '300px',
-          overflow: 'hidden',
-          pointerEvents: 'none',
-          zIndex: 10,
-        }}>
-          {Array.from({ length: 20 }, (_, i) => {
-            const x = 15 + (i * 37.3 + 13.7) % 70;
-            const y = 10 + (i * 53.1 + 7.3) % 80;
-            const size = 1.5 + (i % 4) * 0.5;
-            const duration = 5 + (i % 6) * 0.8;
-            const delay = (i % 8) * 0.6;
-            const driftX = ((i * 17 + 3) % 30) - 15;
-            const driftY = ((i * 23 + 5) % 30) - 15;
-            
-            return (
-              <div key={`white-firefly-${i}`} style={{
-                position: 'absolute',
-                left: `${x}%`,
-                top: `${y}%`,
-                width: size,
-                height: size,
-                borderRadius: '50%',
-                background: '#ffffff',
-                zIndex: 10,
-                '--dx': `${driftX}px`,
-                '--dy': `${driftY}px`,
-                animation: `fireflyFloatWhite ${duration}s ease-in-out ${delay}s infinite, fireflyGlowWhite ${duration * 0.7}s ease-in-out ${delay}s infinite`,
-              } as React.CSSProperties} />
-            );
-          })}
-        </div>
+        <div 
+          ref={firefliesRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: 5,
+          }}
+        />
       )}
 
       <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
