@@ -140,6 +140,54 @@ export default function Home() {
           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
           background-size: 200px 200px;
         }
+        
+        .ripple-container {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+          cursor: pointer;
+        }
+
+        .ripple-container img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+
+        .ripple-container:hover img {
+          transform: scale(1.05);
+        }
+
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          border: 2px solid rgba(144, 202, 249, 0.6);
+          background: rgba(144, 202, 249, 0.1);
+          animation: ripple-effect 1.5s ease-out infinite;
+          pointer-events: none;
+          transform: scale(0);
+        }
+
+        @keyframes ripple-effect {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+
+        /* Ondas adicionales con retraso */
+        .ripple:nth-child(2) {
+          animation-delay: 0.5s;
+          border-color: rgba(144, 202, 249, 0.4);
+        }
+
+        .ripple:nth-child(3) {
+          animation-delay: 1s;
+          border-color: rgba(144, 202, 249, 0.2);
+        }
+
 
         @keyframes fireflyFloat {
           0%   { transform: translate(0px, 0px) scale(1);   opacity: 0; }
@@ -691,7 +739,54 @@ function StorySection({ cuento, index, onOpenTV }: {
         <div className="story-right" style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
 
           {/* Placeholder card blanca (donde irá el personaje) */}
-          <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+          {cuento.id === 2 ? (
+  <div 
+    className="ripple-container story-card"
+    style={{ width: 200, height: 200, borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}
+    onMouseEnter={(e) => {
+      const container = e.currentTarget;
+      // Crear ondas al entrar
+      for (let i = 0; i < 3; i++) {
+        const ripple = document.createElement('div');
+        ripple.className = 'ripple';
+        ripple.style.left = '50%';
+        ripple.style.top = '50%';
+        ripple.style.width = '50px';
+        ripple.style.height = '50px';
+        ripple.style.marginLeft = '-25px';
+        ripple.style.marginTop = '-25px';
+        ripple.style.animationDelay = `${i * 0.4}s`;
+        container.appendChild(ripple);
+        
+        // Eliminar después de la animación
+        setTimeout(() => ripple.remove(), 2000);
+      }
+    }}
+    onMouseMove={(e) => {
+      const container = e.currentTarget;
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Crear onda en la posición del mouse
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      ripple.style.width = '30px';
+      ripple.style.height = '30px';
+      ripple.style.marginLeft = '-15px';
+      ripple.style.marginTop = '-15px';
+      container.appendChild(ripple);
+      
+      setTimeout(() => ripple.remove(), 1500);
+    }}
+  >
+    <img src={cuento.bgImage || '/placeholder-ocean.png'} alt={cuento.title} />
+  </div>
+) : (
+  <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+)}
 
           {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
           <div className="story-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end' }}>
