@@ -141,52 +141,44 @@ export default function Home() {
           background-size: 200px 200px;
         }
         
-        .ripple-container {
+        .ripple-subtle {
           position: relative;
           overflow: hidden;
           border-radius: 16px;
-          cursor: pointer;
         }
 
-        .ripple-container img {
-          display: block;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.3s ease;
-        }
-
-        .ripple-container:hover img {
-          transform: scale(1.05);
-        }
-
-        .ripple {
+        .ripple-subtle::before,
+        .ripple-subtle::after {
+          content: '';
           position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
           border-radius: 50%;
-          border: 2px solid rgba(144, 202, 249, 0.6);
-          background: rgba(144, 202, 249, 0.1);
-          animation: ripple-effect 1.5s ease-out infinite;
+          border: 1px solid rgba(144, 202, 249, 0.4);
+          transform: translate(-50%, -50%);
+          animation: subtle-ripple 3s ease-out infinite;
           pointer-events: none;
-          transform: scale(0);
         }
 
-        @keyframes ripple-effect {
-          to {
-            transform: scale(4);
+        .ripple-subtle::after {
+          animation-delay: 1.5s;
+        }
+
+        @keyframes subtle-ripple {
+          0% {
+            width: 20px;
+            height: 20px;
+            opacity: 0.8;
+          }
+          100% {
+            width: 200px;
+            height: 200px;
             opacity: 0;
           }
         }
 
-        /* Ondas adicionales con retraso */
-        .ripple:nth-child(2) {
-          animation-delay: 0.5s;
-          border-color: rgba(144, 202, 249, 0.4);
-        }
-
-        .ripple:nth-child(3) {
-          animation-delay: 1s;
-          border-color: rgba(144, 202, 249, 0.2);
-        }
 
 
         @keyframes fireflyFloat {
@@ -683,21 +675,13 @@ function StorySection({ cuento, index, onOpenTV }: {
       )}
 
       {/* 🌊 BURBUJAS MARINAS - Cuento 2 */}
-      {cuento.id === 2 && (
-        <div 
-          ref={bubblesRef}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            zIndex: 5,
-          }}
-        />
-      )}
+      {cuento.id === 2 ? (
+  <div className="ripple-subtle story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
+    <img src={cuento.bgImage || '/placeholder-ocean.png'} alt={cuento.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+  </div>
+) : (
+  <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+)}
 
       <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
@@ -739,54 +723,7 @@ function StorySection({ cuento, index, onOpenTV }: {
         <div className="story-right" style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
 
           {/* Placeholder card blanca (donde irá el personaje) */}
-          {cuento.id === 2 ? (
-  <div 
-    className="ripple-container story-card"
-    style={{ width: 200, height: 200, borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}
-    onMouseEnter={(e) => {
-      const container = e.currentTarget;
-      // Crear ondas al entrar
-      for (let i = 0; i < 3; i++) {
-        const ripple = document.createElement('div');
-        ripple.className = 'ripple';
-        ripple.style.left = '50%';
-        ripple.style.top = '50%';
-        ripple.style.width = '50px';
-        ripple.style.height = '50px';
-        ripple.style.marginLeft = '-25px';
-        ripple.style.marginTop = '-25px';
-        ripple.style.animationDelay = `${i * 0.4}s`;
-        container.appendChild(ripple);
-        
-        // Eliminar después de la animación
-        setTimeout(() => ripple.remove(), 2000);
-      }
-    }}
-    onMouseMove={(e) => {
-      const container = e.currentTarget;
-      const rect = container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      // Crear onda en la posición del mouse
-      const ripple = document.createElement('div');
-      ripple.className = 'ripple';
-      ripple.style.left = x + 'px';
-      ripple.style.top = y + 'px';
-      ripple.style.width = '30px';
-      ripple.style.height = '30px';
-      ripple.style.marginLeft = '-15px';
-      ripple.style.marginTop = '-15px';
-      container.appendChild(ripple);
-      
-      setTimeout(() => ripple.remove(), 1500);
-    }}
-  >
-    <img src={cuento.bgImage || '/placeholder-ocean.png'} alt={cuento.title} />
-  </div>
-) : (
-  <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
-)}
+          <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
 
           {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
           <div className="story-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end' }}>
