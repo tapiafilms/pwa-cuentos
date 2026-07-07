@@ -47,6 +47,9 @@ function TVPageInner() {
   const [activeCuento, setActiveCuento] = useState<CuentoInfo | null>(null)
   const [remoteState, setRemoteState] = useState<RemoteState | null>(null)
   const [lastAction, setLastAction] = useState<string | null>(null)
+  
+  // Estado para la respuesta de la Inteligencia Artificial
+  const [aiResponse, setAiResponse] = useState<{ question: string; answer: string } | null>(null)
 
   // Autoconexión si el parámetro de sesión existe en la URL
   useEffect(() => {
@@ -71,14 +74,24 @@ function TVPageInner() {
       .on('broadcast', { event: 'show_content' }, ({ payload }) => {
         setActiveCuento(payload)
         setState('playing')
+        setAiResponse(null) // resetear chat
       })
       .on('broadcast', { event: 'sync_state' }, ({ payload }) => {
         setRemoteState(payload)
+        // Ocultar globo de IA al avanzar de párrafo o bifurcar
+        setAiResponse(null)
       })
       .on('broadcast', { event: 'interaction' }, ({ payload }) => {
         setLastAction(payload.action)
         // Limpiar la acción después de un corto tiempo para permitir volver a dispararla
         setTimeout(() => setLastAction(null), 1500)
+      })
+      .on('broadcast', { event: 'character_response' }, ({ payload }) => {
+        if (payload.clear) {
+          setAiResponse(null)
+        } else {
+          setAiResponse(payload)
+        }
       })
       .subscribe((status, err) => {
         console.log('Realtime subscription status:', status, err)
@@ -154,6 +167,11 @@ function TVPageInner() {
           WebkitBackgroundClip: 'text';
           WebkitTextFillColor: 'transparent';
         }
+
+        @keyframes bubbleAppear {
+          0% { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
+          100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+        }
       `}</style>
 
       {state === 'input' && (
@@ -166,7 +184,7 @@ function TVPageInner() {
         <TVWaiting code={code} />
       )}
       {state === 'playing' && (
-        <TVPlaying cuento={activeCuento} remoteState={remoteState} lastAction={lastAction} />
+        <TVPlaying cuento={activeCuento} remoteState={remoteState} lastAction={lastAction} aiResponse={aiResponse} />
       )}
     </div>
   )
@@ -282,13 +300,12 @@ function RiveCharacter({ action }: { action: string | null }) {
   return <RiveComponent style={{ width: '100%', height: '100%', minHeight: 400 }} />
 }
 
-function TVPlaying({ cuento, remoteState, lastAction }: {
+function TVPlaying({ cuento, remoteState, lastAction, aiResponse }: {
   cuento: CuentoInfo | null
   remoteState: RemoteState | null
   lastAction: string | null
+  aiResponse: { question: string; answer: string } | null
 }) {
-  const [loaded, setLoaded] = useState(false)
-
   if (!cuento) return null
 
   // Si no ha empezado la lectura en el control remoto
@@ -315,7 +332,7 @@ function TVPlaying({ cuento, remoteState, lastAction }: {
       {/* Partículas de ambiente del cuento */}
       <BackgroundAmbientEffects cuentoId={cuento.cuentoId} glow={cuento.glow} />
 
-      {/* COLUMNA IZQUIERDA: Personaje Rive */}
+      {/* COLUMNA IZQUIERDA: Personaje Rive y Globo de Diálogo de la IA */}
       <div style={{
         flex: '0 0 45%',
         height: '100%',
@@ -337,6 +354,67 @@ function TVPlaying({ cuento, remoteState, lastAction }: {
           animation: 'pulseGlow 8s ease-in-out infinite',
           zIndex: 1
         }} />
+
+        {/* Globo de diálogo flotante (IA) */}
+        {aiResponse && aiResponse.answer && (
+          <div style={{
+            position: 'absolute',
+            top: '8%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '85%',
+            maxWidth: '380px',
+            background: 'rgba(15, 15, 23, 0.95)',
+            border: `1.5px solid ${cuento.glow}`,
+            borderRadius: '24px',
+            padding: '1.25rem 1.5rem',
+            boxShadow: `0 15px 40px rgba(0,0,0,0.6), 0 0 25px ${cuento.glow}44`,
+            zIndex: 20,
+            animation: 'bubbleAppear 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+          }}>
+            {/* Colita del globo */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-10px',
+              left: '50%',
+              transform: 'translateX(-50%) rotate(45deg)',
+              width: '18px',
+              height: '18px',
+              background: 'rgba(15, 15, 23, 0.95)',
+              borderBottom: `1.5px solid ${cuento.glow}`,
+              borderRight: `1.5px solid ${cuento.glow}`,
+              zIndex: -1
+            }} />
+            
+            {/* Pregunta del niño */}
+            <p style={{
+              fontFamily: 'Nunito',
+              fontSize: '0.85rem',
+              fontStyle: 'italic',
+              color: cuento.accent,
+              opacity: 0.85,
+              textAlign: 'center',
+              lineHeight: 1.3
+            }}>
+              Pregunta: "{aiResponse.question}"
+            </p>
+            
+            {/* Respuesta del Personaje */}
+            <p style={{
+              fontFamily: 'Nunito',
+              fontSize: '1.25rem',
+              fontWeight: 700,
+              color: 'white',
+              textAlign: 'center',
+              lineHeight: 1.45
+            }}>
+              {aiResponse.answer}
+            </p>
+          </div>
+        )}
 
         <div className="char-float" style={{ width: '100%', height: '80%', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Suspense fallback={<div className="tv-spinner" />}>

@@ -63,7 +63,7 @@ const CUENTOS: Record<string, {
     title: 'El Reloj Sin Agujas', emoji: '⏰', glow: '#e07b39', accent: '#ffb74d',
     tag: 'Misterio · 7–11 años',
     paragraphs: [
-      'El martes 14 de octubre, a las ocho de la mañana, todos los relojes del mundo dejaron de tener agujas.',
+      'El martes 14 de octubre, a las hace ocho de la mañana, todos los relojes del mundo dejaron de tener agujas.',
       'No desaparecieron de golpe. Simplemente... se fueron. Como si nunca hubieran estado.',
       'El mundo entró en pánico. Nadie sabía qué hora era. Nadie sabía cuánto tiempo había pasado.',
       'Pero Theo, de nueve años, encontró algo debajo de su cama: una aguja de reloj. Pequeña, dorada, temblorosa.',
@@ -240,6 +240,129 @@ function CuentoPageInner() {
   
   const doneRef = useRef(0)
 
+  // Estados de micrófono e Inteligencia Artificial
+  const [isListening, setIsListening] = useState(false)
+  const [chatInput, setChatInput] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [micSupported, setMicSupported] = useState(false)
+  const [speechError, setSpeechError] = useState('')
+
+  const recognitionRef = useRef<any>(null)
+
+  // Configuración del reconocimiento de voz nativo en el cliente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (SpeechRecognition) {
+        setMicSupported(true)
+        const rec = new SpeechRecognition()
+        rec.lang = 'es-ES'
+        rec.interimResults = false
+        rec.continuous = false
+
+        rec.onstart = () => {
+          setIsListening(true)
+          setSpeechError('')
+          // Cambiar animación del personaje en la TV a "pensar"
+          sendInteraction('think')
+        }
+
+        rec.onresult = async (event: any) => {
+          const text = event.results[0][0].transcript
+          setIsListening(false)
+          if (text && text.trim() !== '') {
+            await handleAskAI(text)
+          }
+        }
+
+        rec.onerror = (event: any) => {
+          setIsListening(false)
+          console.error('Speech recognition error:', event.error)
+          if (event.error === 'not-allowed') {
+            setSpeechError('Permiso de micrófono denegado')
+          } else {
+            setSpeechError(`Error: ${event.error}`)
+          }
+        }
+
+        rec.onend = () => {
+          setIsListening(false)
+        }
+
+        recognitionRef.current = rec
+      }
+    }
+  }, [])
+
+  const startListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start()
+      } catch (err) {
+        console.error('Failed to start recognition:', err)
+      }
+    }
+  }
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (err) {
+        console.error('Failed to stop recognition:', err)
+      }
+    }
+  }
+
+  const handleAskAI = async (messageText: string) => {
+    if (!messageText.trim()) return
+    setAiLoading(true)
+    setSpeechError('')
+    sendInteraction('think')
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: messageText, cuentoId: id })
+      })
+      const data = await res.json()
+      const replyText = data.response || "¡Hola! He sentido tu voz."
+
+      if (isRemote && session) {
+        // Enviar evento de respuesta a la TV
+        await supabase.channel(`session:${session}`).send({
+          type: 'broadcast',
+          event: 'character_response',
+          payload: {
+            question: messageText,
+            answer: replyText
+          }
+        })
+        // Activar gesto alegre en la TV
+        sendInteraction('celebrate')
+      }
+    } catch (err) {
+      console.error('Error asking AI:', err)
+      setSpeechError('Error de red al consultar a la IA')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  const clearTVBubble = async () => {
+    if (isRemote && session) {
+      await supabase.channel(`session:${session}`).send({
+        type: 'broadcast',
+        event: 'character_response',
+        payload: {
+          clear: true
+        }
+      })
+      sendInteraction('wave')
+    }
+  }
+
   // Sincronizar estado inicial al conectar el remoto
   useEffect(() => {
     if (!isRemote || !session) return
@@ -325,7 +448,6 @@ function CuentoPageInner() {
 
   const handlePrev = () => {
     if (bifurcationChoice !== null) {
-      // Si ya eligió bifurcación, volver al último párrafo
       setBifurcationChoice(null)
       setBifurcationShown(true)
       if (isRemote) {
@@ -443,6 +565,41 @@ function CuentoPageInner() {
             100% { transform: scale(1.6); opacity: 0; }
           }
           @keyframes spin { to { transform: rotate(360deg); } }
+
+          .mic-btn {
+            border-radius: 16px;
+            padding: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            width: 100%;
+            font-family: 'Nunito', sans-serif;
+          }
+          .mic-btn-inactive {
+            background: linear-gradient(135deg, #1b1c24 0%, #111218 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #d1d1e0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          }
+          .mic-btn-inactive:active {
+            transform: scale(0.97);
+            background: rgba(255,255,255,0.05);
+          }
+          .mic-btn-listening {
+            background: #ef4444;
+            color: white;
+            animation: pulseRecord 1.5s ease infinite;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+          }
+          @keyframes pulseRecord {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+          }
         `}</style>
 
         {/* Header del control */}
@@ -462,7 +619,7 @@ function CuentoPageInner() {
         </header>
 
         {/* Panel Central de Lectura */}
-        <main style={{ flex: 1, padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.5rem', zIndex: 5, overflowY: 'auto' }}>
+        <main style={{ flex: 1, padding: '1.5rem 1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', zIndex: 5, overflowY: 'auto' }}>
           
           {!started ? (
             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
@@ -474,15 +631,15 @@ function CuentoPageInner() {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%' }}>
               
               {/* Caja de texto del párrafo actual */}
               <div style={{
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 16,
-                padding: '1.5rem',
-                minHeight: 180,
+                padding: '1.25rem',
+                minHeight: 140,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -493,7 +650,7 @@ function CuentoPageInner() {
                   {bifurcationChoice ? 'FINAL ALTERNATIVO' : bifurcationShown ? 'BIFURCACIÓN DE HISTORIA' : `Párrafo ${currentPara + 1} de ${cuento.paragraphs.length}`}
                 </span>
                 
-                <p style={{ fontSize: '1.15rem', lineHeight: 1.6, color: 'white', fontWeight: 500, textAlign: 'center', margin: '1rem 0 0.5rem' }}>
+                <p style={{ fontSize: '1.1rem', lineHeight: 1.6, color: 'white', fontWeight: 500, textAlign: 'center', margin: '0.75rem 0 0.25rem' }}>
                   {bifurcationChoice === 'A' && cuento.bifurcation.optionA.text}
                   {bifurcationChoice === 'B' && cuento.bifurcation.optionB.text}
                   {!bifurcationChoice && bifurcationShown && cuento.bifurcation.question}
@@ -516,9 +673,107 @@ function CuentoPageInner() {
                 </div>
               )}
 
-              {/* Panel de interactividad del personaje Rive */}
+              {/* INTERFAZ DE MICRÓFONO Y PREGUNTAS IA (solo mientras lee la historia principal) */}
+              {!bifurcationShown && !bifurcationChoice && (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: 16,
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ fontSize: '0.72rem', color: cuento.accent, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
+                      Preguntarle al personaje (IA):
+                    </p>
+                    <button onClick={clearTVBubble} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', fontWeight: 700 }}>
+                      Ocultar globo 💬
+                    </button>
+                  </div>
+
+                  {/* Botón de micrófono */}
+                  {micSupported ? (
+                    <div>
+                      {isListening ? (
+                        <button className="mic-btn mic-btn-listening" onClick={stopListening}>
+                          🛑 DETENER GRABACIÓN
+                        </button>
+                      ) : (
+                        <button className="mic-btn mic-btn-inactive" onClick={startListening} disabled={aiLoading}>
+                          🎙️ HABLAR POR MICRÓFONO
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
+                      Reconocimiento de voz no soportado. Usa el teclado abajo.
+                    </p>
+                  )}
+
+                  {/* Input de texto alternativo / respaldo */}
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (chatInput.trim()) {
+                      handleAskAI(chatInput);
+                      setChatInput('');
+                    }
+                  }} style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                    <input
+                      type="text"
+                      placeholder="Escribe tu pregunta aquí..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      disabled={aiLoading}
+                      style={{
+                        flex: 1,
+                        padding: '10px 14px',
+                        borderRadius: 10,
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(0,0,0,0.3)',
+                        color: 'white',
+                        fontSize: '0.85rem',
+                        outline: 'none'
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={aiLoading || !chatInput.trim()}
+                      style={{
+                        padding: '10px 16px',
+                        background: cuento.glow,
+                        border: 'none',
+                        color: 'white',
+                        borderRadius: 10,
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Enviar
+                    </button>
+                  </form>
+
+                  {/* Estado de carga / errores */}
+                  {aiLoading && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: cuento.accent, fontSize: '0.78rem', fontWeight: 600 }}>
+                      <div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: cuento.glow, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                      Procesando respuesta del personaje...
+                    </div>
+                  )}
+                  
+                  {speechError && (
+                    <p style={{ color: '#ef4444', fontSize: '0.72rem', fontWeight: 600, textAlign: 'center' }}>
+                      {speechError}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Panel de interactividad de gestos */}
               {!bifurcationShown && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
                     Reacciones del Personaje Rive:
                   </p>
@@ -574,7 +829,6 @@ function CuentoPageInner() {
   }
 
   // INTERFAZ DE LECTOR LOCAL (SIN CONEXIÓN TV)
-
   return (
     <div style={{ minHeight: '100vh', background: '#060608', position: 'relative', overflow: 'hidden' }}>
       <style>{`
