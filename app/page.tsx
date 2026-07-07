@@ -256,8 +256,8 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,0.12);
           border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
-          font-family: 'Beau Rivage', cursive;
-          font-size: 2rem; font-weight: 900; color: white;
+          font-family: 'Nunito', 'Montserrat', 'Arial', sans-serif;
+          font-size: 1.8rem; font-weight: 800; color: white;
         }
 
         @media (max-width: 768px) {
