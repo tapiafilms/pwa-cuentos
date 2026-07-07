@@ -51,6 +51,22 @@ function TVPageInner() {
   // Estado para la respuesta de la Inteligencia Artificial
   const [aiResponse, setAiResponse] = useState<{ question: string; answer: string } | null>(null)
 
+  // Capa de transición cinematográfica (fundido a negro)
+  const [isFading, setIsFading] = useState(false)
+
+  // Transición suave entre pantallas
+  const transitionTo = (newState: TVState, callback?: () => void) => {
+    setIsFading(true)
+    setTimeout(() => {
+      setState(newState)
+      if (callback) callback()
+      // Dar un pequeño respiro antes de desvanecer el fondo negro
+      setTimeout(() => {
+        setIsFading(false)
+      }, 50)
+    }, 600) // Coincide con la duración de la transición CSS
+  }
+
   // Autoconexión si el parámetro de sesión existe en la URL (ej: /tv?session=K7MX)
   useEffect(() => {
     if (sessionParam && sessionParam.trim().length === 4 && state === 'input') {
@@ -73,7 +89,7 @@ function TVPageInner() {
     channel
       .on('broadcast', { event: 'show_content' }, ({ payload }) => {
         setActiveCuento(payload)
-        setState('playing')
+        transitionTo('playing')
         setAiResponse(null) // resetear chat
       })
       .on('broadcast', { event: 'sync_state' }, ({ payload }) => {
@@ -94,10 +110,11 @@ function TVPageInner() {
         }
       })
       .on('broadcast', { event: 'show_waiting' }, () => {
-        setState('waiting')
-        setActiveCuento(null)
-        setRemoteState(null)
-        setAiResponse(null)
+        transitionTo('waiting', () => {
+          setActiveCuento(null)
+          setRemoteState(null)
+          setAiResponse(null)
+        })
       })
       .subscribe((status, err) => {
         console.log('Realtime subscription status:', status, err)
@@ -178,6 +195,19 @@ function TVPageInner() {
           0% { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
           100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
+
+        .cinematic-fade-overlay {
+          position: fixed;
+          inset: 0;
+          background: #050508;
+          z-index: 9999;
+          pointer-events: none;
+          transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+          opacity: 0;
+        }
+        .cinematic-fade-overlay.active {
+          opacity: 1;
+        }
       `}</style>
 
       {state === 'input' && (
@@ -192,6 +222,9 @@ function TVPageInner() {
       {state === 'playing' && (
         <TVPlaying cuento={activeCuento} remoteState={remoteState} lastAction={lastAction} aiResponse={aiResponse} />
       )}
+
+      {/* Capa de transición cinematográfica (Dissolve) */}
+      <div className={`cinematic-fade-overlay ${isFading ? 'active' : ''}`} />
     </div>
   )
 }
@@ -269,7 +302,16 @@ function TVSpinner({ label }: { label: string }) {
 
 function TVWaiting({ code }: { code: string }) {
   return (
-    <div className="tv-card-glow" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '4rem', maxWidth: 720, width: '90%', textAlign: 'center' }}>
+    <div className="tv-card-glow" style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '4rem', maxWidth: 720, width: '90%', textAlign: 'center',
+      animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+    }}>
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo-cuentajoy.png" alt="CuentaJoy" style={{ width: 'clamp(280px, 40vw, 440px)', height: 'auto', marginBottom: '1.5rem', objectFit: 'contain', opacity: 0.95 }} />
       
@@ -323,7 +365,18 @@ function TVPlaying({ cuento, remoteState, lastAction, aiResponse }: {
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'row',
+      animation: 'fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     }}>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       {/* Resplandor de fondo radial del cuento */}
       <div style={{
         position: 'absolute',
