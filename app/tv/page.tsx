@@ -80,14 +80,18 @@ function TVPageInner() {
         // Limpiar la acción después de un corto tiempo para permitir volver a dispararla
         setTimeout(() => setLastAction(null), 1500)
       })
-      .subscribe((status) => {
+      .subscribe((status, err) => {
+        console.log('Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {
           // Avisarle al celular que la TV está lista
           channel.send({ type: 'broadcast', event: 'tv_ready', payload: {} })
           setState('waiting')
-        } else {
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           setState('input')
-          setError('Error al conectar con los servidores Realtime')
+          setError(`Error al conectar con los servidores Realtime (${status})`)
+          if (err) {
+            console.error('Realtime connection error:', err)
+          }
         }
       })
 
