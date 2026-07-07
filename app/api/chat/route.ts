@@ -45,47 +45,90 @@ export async function POST(request: Request) {
     }
 
     const systemPrompt = SYSTEM_PROMPTS[cuentoId as string] || "Eres un personaje mágico de un cuento infantil."
-    const apiKey = process.env.GEMINI_API_KEY
+    const anthropicKey = process.env.ANTHROPIC_API_KEY
+    const geminiKey = process.env.GEMINI_API_KEY
 
-    // Si la API Key de Gemini está configurada, hacemos la llamada real
-    if (apiKey && apiKey.trim() !== '') {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                {
-                  text: `${systemPrompt}\n\nUn niño te pregunta: "${message}"\nResponde directamente al niño en primera persona:`
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            maxOutputTokens: 120,
-            temperature: 0.7,
-          }
+    // 1. Si la API Key de Anthropic (Claude) está configurada, llamamos a Anthropic
+    if (anthropicKey && anthropicKey.trim() !== '') {
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': anthropicKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'claude-3-5-sonnet-20240620',
+            max_tokens: 120,
+            system: systemPrompt,
+            messages: [
+              {
+                role: 'user',
+                content: `Un niño te pregunta: "${message}"\nResponde directamente al niño en primera persona:`
+              }
+            ],
+            temperature: 0.7
+          })
         })
-      })
 
-      if (response.ok) {
-        const data = await response.json()
-        const textReply = data?.candidates?.[0]?.content?.parts?.[0]?.text
-        if (textReply && textReply.trim() !== '') {
-          return NextResponse.json({ response: textReply.trim() })
+        if (response.ok) {
+          const data = await response.json()
+          const textReply = data?.content?.[0]?.text
+          if (textReply && textReply.trim() !== '') {
+            return NextResponse.json({ response: textReply.trim() })
+          }
+        } else {
+          console.error('Anthropic API error response:', response.status, await response.text())
         }
-      } else {
-        console.error('Gemini API error response:', response.status, await response.text())
+      } catch (err) {
+        console.error('Error fetching Anthropic:', err)
       }
     }
 
-    // Fallback: Si no hay API key o la llamada falló, devolvemos una respuesta mágica simulada
+    // 2. Si la API Key de Gemini está configurada, llamamos a Gemini
+    if (geminiKey && geminiKey.trim() !== '') {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  {
+                    text: `${systemPrompt}\n\nUn niño te pregunta: "${message}"\nResponde directamente al niño en primera persona:`
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              maxOutputTokens: 120,
+              temperature: 0.7,
+            }
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const textReply = data?.candidates?.[0]?.content?.parts?.[0]?.text
+          if (textReply && textReply.trim() !== '') {
+            return NextResponse.json({ response: textReply.trim() })
+          }
+        } else {
+          console.error('Gemini API error response:', response.status, await response.text())
+        }
+      } catch (err) {
+        console.error('Error fetching Gemini:', err)
+      }
+    }
+
+    // Fallback: Si no hay API key o las llamadas fallaron, devolvemos una respuesta mágica simulada
     const list = FALLBACK_RESPONSES[cuentoId as string] || [
       "¡Hola! Qué pregunta tan bonita. Sigamos descubriendo juntos las sorpresas de esta mágica aventura."
     ]
