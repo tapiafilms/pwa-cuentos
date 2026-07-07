@@ -1,11 +1,17 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
+import { useParams, useSearchParams } from 'next/navigation'
+import { useEffect, useState, useRef, Suspense } from 'react'
+import { supabase } from '@/lib/supabase'
 
 const CUENTOS: Record<string, {
   title: string; emoji: string; glow: string; accent: string; tag: string;
   paragraphs: string[]
+  bifurcation: {
+    question: string;
+    optionA: { label: string; text: string };
+    optionB: { label: string; text: string };
+  }
 }> = {
   '1': {
     title: 'El Bosque que Respira', emoji: '🌿', glow: '#52b788', accent: '#95d5b2',
@@ -16,8 +22,19 @@ const CUENTOS: Record<string, {
       'Pronunciaban su nombre. Despacio. Con una calidez que hacía vibrar el aire.',
       'Mía se puso las botas, cruzó el jardín descalza sobre el pasto húmedo, y se detuvo frente al roble más viejo.',
       'Puso la mano sobre su corteza y sintió algo que nunca olvidaría: el árbol respiraba.',
-      'Y bajo sus raíces, esperaba un mundo donde el tiempo fluía al revés...',
+      'Y bajo sus raíces, esperaba un mundo donde el tiempo fluya al revés...',
     ],
+    bifurcation: {
+      question: '¿Qué debería hacer Mía ahora que está frente al portal de raíces?',
+      optionA: {
+        label: 'Cruzar el portal de raíces 🌿',
+        text: 'Mía cruzó con valentía el portal. Al otro lado, el bosque resplandecía con una aurora verde mágica. Los árboles hablaban de secretos antiguos y el tiempo retrocedía para sanar el bosque.'
+      },
+      optionB: {
+        label: 'Pedir ayuda al roble viejo 🌳',
+        text: 'Mía decidió quedarse y hablar con el roble. El anciano árbol le regaló una semilla de luz dorada para proteger su jardín y le prometió guiarla en su próxima gran aventura.'
+      }
+    }
   },
   '2': {
     title: 'La Ballena de Cristal', emoji: '🐋', glow: '#4a90d9', accent: '#90caf9',
@@ -30,6 +47,17 @@ const CUENTOS: Record<string, {
       'Tomás subió al tejado más alto de su edificio, extendió los brazos, y saltó.',
       'No cayó. Flotó. Y la ballena lo esperaba.',
     ],
+    bifurcation: {
+      question: '¿Qué sueño quiere rescatar Tomás primero junto a la ballena?',
+      optionA: {
+        label: 'El sueño de volar de los niños 🌟',
+        text: 'Tomás tocó un sueño dorado de vuelo. Al instante, la ballena los impulsó en un torbellino de nubes y Tomás pudo sentir el viento libre en sus manos mientras volaba alto.'
+      },
+      optionB: {
+        label: 'El sueño de la ciudad brillante 🏙️',
+        text: 'Tomás se sumergió en un sueño azul. La ballena por fin proyectó un domo resplandeciente sobre los tejados, transformando la noche en un hermoso concierto de destellos mágicos.'
+      }
+    }
   },
   '3': {
     title: 'El Reloj Sin Agujas', emoji: '⏰', glow: '#e07b39', accent: '#ffb74d',
@@ -42,6 +70,17 @@ const CUENTOS: Record<string, {
       'Y con ella, un mapa al mercado de los sueños, donde las demás agujas esperaban ser rescatadas.',
       'Devolverlas tenía un precio. Theo tendría que entregar algo que nunca más podría recuperar.',
     ],
+    bifurcation: {
+      question: '¿Qué precio está dispuesto a pagar Theo para devolver el tiempo?',
+      optionA: {
+        label: 'Entregar su recuerdo favorito 💭',
+        text: 'Theo entregó su recuerdo más feliz al guardián. Al instante, las agujas volvieron a los relojes del mundo y el tiempo reanudó su marcha, dejando a Theo con una cálida sonrisa de héroe.'
+      },
+      optionB: {
+        label: 'Buscar una llave secreta 🔑',
+        text: 'Theo se negó a entregar su recuerdo y resolvió un enigma para hallar la llave del reloj primordial. Al abrirlo, el tiempo regresó libre y sin deudas para toda la humanidad.'
+      }
+    }
   },
   '4': {
     title: 'La Reina de la Niebla', emoji: '👑', glow: '#9c6fde', accent: '#ce93d8',
@@ -54,6 +93,17 @@ const CUENTOS: Record<string, {
       '"Llevas cien años tardando", dijo la reina sin sorpresa. "Pensé que nunca aprenderías a leer las nubes."',
       'Sofía miró por la ventana. Las nubes formaban letras. Y por primera vez en su vida, las entendió.',
     ],
+    bifurcation: {
+      question: '¿Qué decide hacer Sofía con el reino de la niebla?',
+      optionA: {
+        label: 'Disipar la niebla del pueblo ☀️',
+        text: 'Sofía leyó la frase de disipación. La niebla se levantó, revelando un valle verde bajo un sol radiante, uniendo por fin el castillo mágico con el pueblo de Sofía.'
+      },
+      optionB: {
+        label: 'Quedarse como guardiana 🏰',
+        text: 'Sofía aceptó la corona de niebla. Se convirtió en la nueva guardiana del castillo, escribiendo hermosos mensajes en las nubes para que otros niños soñadores la encontraran.'
+      }
+    }
   },
   '5': {
     title: 'El Cartero de las Estrellas', emoji: '✉️', glow: '#5c8ee0', accent: '#ffd54f',
@@ -66,7 +116,18 @@ const CUENTOS: Record<string, {
       'En la cima de la montaña más fría del mundo había un buzón. Luna tenía que llegar antes del amanecer.',
       'Porque si la carta no llegaba a tiempo, una estrella moriría sin saber que alguien la había amado.',
     ],
-  },
+    bifurcation: {
+      question: '¿Cómo decide Luna entregar este importante mensaje espacial?',
+      optionA: {
+        label: 'Lanzarla en un cohete de viento 🚀',
+        text: 'Luna usó el viento helado para lanzar la carta en un cohete de luz. El mensaje llegó a tiempo, y la estrella volvió a brillar intensamente en el cielo nocturno.'
+      },
+      optionB: {
+        label: 'Crear una constelación de luz ✨',
+        text: 'Luna unió la carta a otras estrellas apagadas, dibujando una nueva constelación en el cielo. Así, el mensaje de amor quedó grabado para siempre y visible para todo el universo.'
+      }
+    }
+  }
 }
 
 function useTypewriter(text: string, speed: number, active: boolean) {
@@ -144,24 +205,189 @@ function Particle({ glow, index }: { glow: string; index: number }) {
 }
 
 export default function CuentoPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#060608', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: "'Nunito', sans-serif", gap: 16 }}>
+        <div style={{
+          width: 48, height: 48,
+          border: '2px solid rgba(255,255,255,0.1)',
+          borderTopColor: '#7c6af7',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }} />
+        <p>Cargando historia...</p>
+      </div>
+    }>
+      <CuentoPageInner />
+    </Suspense>
+  )
+}
+
+function CuentoPageInner() {
   const { id } = useParams()
+  const searchParams = useSearchParams()
+  
+  const session = searchParams.get('session')
+  const role = searchParams.get('role')
+  const isRemote = role === 'remote' && !!session
+
   const cuento = CUENTOS[id as string]
   const [currentPara, setCurrentPara] = useState(-1)
   const [started, setStarted] = useState(false)
   const [allDone, setAllDone] = useState(false)
+  const [bifurcationShown, setBifurcationShown] = useState(false)
+  const [bifurcationChoice, setBifurcationChoice] = useState<'A' | 'B' | null>(null)
+  
   const doneRef = useRef(0)
+
+  // Sincronizar estado inicial al conectar el remoto
+  useEffect(() => {
+    if (!isRemote || !session) return
+    const channel = supabase.channel(`session:${session}`)
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        // Enviar estado inicial
+        channel.send({
+          type: 'broadcast',
+          event: 'remote_ready',
+          payload: { cuentoId: id }
+        })
+      }
+    })
+    return () => { supabase.removeChannel(channel) }
+  }, [isRemote, session, id])
+
+  const syncState = async (paraIndex: number, showBifurcation: boolean, choice: 'A' | 'B' | null) => {
+    if (!isRemote || !session || !cuento) return
+    
+    let text = ''
+    let ending = false
+    
+    if (choice === 'A') {
+      text = cuento.bifurcation.optionA.text
+      ending = true
+    } else if (choice === 'B') {
+      text = cuento.bifurcation.optionB.text
+      ending = true
+    } else if (paraIndex >= 0 && paraIndex < cuento.paragraphs.length) {
+      text = cuento.paragraphs[paraIndex]
+    }
+
+    await supabase.channel(`session:${session}`).send({
+      type: 'broadcast',
+      event: 'sync_state',
+      payload: {
+        started: paraIndex >= 0 || choice !== null,
+        currentPara: paraIndex,
+        text,
+        showBifurcation,
+        bifurcationQuestion: cuento.bifurcation.question,
+        optionALabel: cuento.bifurcation.optionA.label,
+        optionBLabel: cuento.bifurcation.optionB.label,
+        bifurcationSelected: choice,
+        ending
+      }
+    })
+  }
+
+  const sendInteraction = async (action: string) => {
+    if (!isRemote || !session) return
+    await supabase.channel(`session:${session}`).send({
+      type: 'broadcast',
+      event: 'interaction',
+      payload: { action }
+    })
+  }
 
   const start = () => {
     setStarted(true)
     setCurrentPara(0)
+    if (isRemote) {
+      syncState(0, false, null)
+    }
+  }
+
+  const handleNext = () => {
+    if (!cuento) return
+    const nextIdx = currentPara + 1
+    if (nextIdx < cuento.paragraphs.length) {
+      setCurrentPara(nextIdx)
+      if (isRemote) {
+        syncState(nextIdx, false, null)
+      }
+    } else {
+      setBifurcationShown(true)
+      if (isRemote) {
+        syncState(currentPara, true, null)
+      }
+    }
+  }
+
+  const handlePrev = () => {
+    if (bifurcationChoice !== null) {
+      // Si ya eligió bifurcación, volver al último párrafo
+      setBifurcationChoice(null)
+      setBifurcationShown(true)
+      if (isRemote) {
+        syncState(cuento.paragraphs.length - 1, true, null)
+      }
+      return
+    }
+    
+    if (bifurcationShown) {
+      setBifurcationShown(false)
+      if (isRemote) {
+        syncState(cuento.paragraphs.length - 1, false, null)
+      }
+      return
+    }
+
+    const prevIdx = currentPara - 1
+    if (prevIdx >= 0) {
+      setCurrentPara(prevIdx)
+      if (isRemote) {
+        syncState(prevIdx, false, null)
+      }
+    } else {
+      setStarted(false)
+      setCurrentPara(-1)
+      if (isRemote) {
+        syncState(-1, false, null)
+      }
+    }
+  }
+
+  const handleChoose = (choice: 'A' | 'B') => {
+    setBifurcationChoice(choice)
+    setBifurcationShown(false)
+    setAllDone(true)
+    if (isRemote) {
+      syncState(currentPara, false, choice)
+    }
+  }
+
+  const handleReset = () => {
+    setCurrentPara(-1)
+    setStarted(false)
+    setAllDone(false)
+    setBifurcationShown(false)
+    setBifurcationChoice(null)
+    doneRef.current = 0
+    if (isRemote) {
+      syncState(-1, false, null)
+    }
   }
 
   const handleDone = (index: number) => {
     doneRef.current = index
     if (cuento && index < cuento.paragraphs.length - 1) {
-      setTimeout(() => setCurrentPara(index + 1), 600)
+      setTimeout(() => {
+        setCurrentPara(index + 1)
+      }, 600)
     } else {
-      setTimeout(() => setAllDone(true), 400)
+      setTimeout(() => {
+        setBifurcationShown(true)
+      }, 400)
     }
   }
 
@@ -172,6 +398,182 @@ export default function CuentoPage() {
       </div>
     )
   }
+
+  // INTERFAZ DE CONTROL REMOTO
+  if (isRemote) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#07080c', display: 'flex', flexDirection: 'column', color: 'white', fontFamily: "'Nunito', sans-serif" }}>
+        <style>{`
+          .remote-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700;
+            padding: 18px; border-radius: 14px; border: none; cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none; width: 100%;
+          }
+          .remote-btn-primary {
+            background: ${cuento.glow}; color: white;
+            box-shadow: 0 4px 20px ${cuento.glow}44;
+          }
+          .remote-btn-primary:active { transform: scale(0.97); }
+          .remote-btn-secondary {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.8);
+          }
+          .remote-btn-secondary:active { transform: scale(0.97); background: rgba(255,255,255,0.1); }
+          .remote-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+          
+          .trigger-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.2s;
+            font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.6);
+          }
+          .trigger-btn:active {
+            background: ${cuento.glow}22; border-color: ${cuento.glow}60; color: white;
+            box-shadow: 0 0 12px ${cuento.glow}30;
+          }
+          
+          .pulse-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #4ade80; box-shadow: 0 0 10px #4ade80;
+            animation: remotePulse 1.5s ease infinite;
+          }
+          @keyframes remotePulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.6); opacity: 0; }
+          }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
+
+        {/* Header del control */}
+        <header style={{ padding: '1.25rem 1.5rem', background: '#0e1017', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: '1.5rem' }}>{cuento.emoji}</span>
+            <div>
+              <h1 style={{ fontSize: '0.95rem', fontWeight: 800, letterSpacing: '0.02em' }}>{cuento.title.replace('\n', ' ')}</h1>
+              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span className="pulse-dot" /> CONTROL REMOTO ACTIVO
+              </p>
+            </div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: 20, fontSize: '0.72rem', fontWeight: 700, color: cuento.accent }}>
+            TV: {session}
+          </div>
+        </header>
+
+        {/* Panel Central de Lectura */}
+        <main style={{ flex: 1, padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.5rem', zIndex: 5, overflowY: 'auto' }}>
+          
+          {!started ? (
+            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                El cuento está listo en la Smart TV.<br />Presiona el botón para comenzar la proyección.
+              </p>
+              <button className="remote-btn remote-btn-primary" onClick={start}>
+                ✨ COMENZAR HISTORIA
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }}>
+              
+              {/* Caja de texto del párrafo actual */}
+              <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 16,
+                padding: '1.5rem',
+                minHeight: 180,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                position: 'relative',
+                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
+              }}>
+                <span style={{ position: 'absolute', top: 12, left: 16, fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', color: cuento.accent, textTransform: 'uppercase' }}>
+                  {bifurcationChoice ? 'FINAL ALTERNATIVO' : bifurcationShown ? 'BIFURCACIÓN DE HISTORIA' : `Párrafo ${currentPara + 1} de ${cuento.paragraphs.length}`}
+                </span>
+                
+                <p style={{ fontSize: '1.15rem', lineHeight: 1.6, color: 'white', fontWeight: 500, textAlign: 'center', margin: '1rem 0 0.5rem' }}>
+                  {bifurcationChoice === 'A' && cuento.bifurcation.optionA.text}
+                  {bifurcationChoice === 'B' && cuento.bifurcation.optionB.text}
+                  {!bifurcationChoice && bifurcationShown && cuento.bifurcation.question}
+                  {!bifurcationChoice && !bifurcationShown && cuento.paragraphs[currentPara]}
+                </p>
+              </div>
+
+              {/* Botones de bifurcación (cuando está activa) */}
+              {!bifurcationChoice && bifurcationShown && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, animation: 'fadeIn 0.4s ease' }}>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800, textAlign: 'center', marginBottom: 4 }}>
+                    Pídele a los niños que elijan un camino:
+                  </p>
+                  <button className="remote-btn remote-btn-primary" style={{ background: `linear-gradient(135deg, ${cuento.glow}, ${cuento.accent})` }} onClick={() => handleChoose('A')}>
+                    {cuento.bifurcation.optionA.label}
+                  </button>
+                  <button className="remote-btn remote-btn-primary" style={{ background: `linear-gradient(135deg, ${cuento.glow}dd, #1a1a24)` }} onClick={() => handleChoose('B')}>
+                    {cuento.bifurcation.optionB.label}
+                  </button>
+                </div>
+              )}
+
+              {/* Panel de interactividad del personaje Rive */}
+              {!bifurcationShown && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
+                    Reacciones del Personaje Rive:
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                    <button className="trigger-btn" onClick={() => sendInteraction('wave')}>
+                      <span style={{ fontSize: '1.25rem', marginBottom: 4 }}>👋</span>
+                      Saludar
+                    </button>
+                    <button className="trigger-btn" onClick={() => sendInteraction('celebrate')}>
+                      <span style={{ fontSize: '1.25rem', marginBottom: 4 }}>🎉</span>
+                      Celebrar
+                    </button>
+                    <button className="trigger-btn" onClick={() => sendInteraction('think')}>
+                      <span style={{ fontSize: '1.25rem', marginBottom: 4 }}>🤔</span>
+                      Pensar
+                    </button>
+                    <button className="trigger-btn" onClick={() => sendInteraction('sad')}>
+                      <span style={{ fontSize: '1.25rem', marginBottom: 4 }}>😢</span>
+                      Triste
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Navegación estándar del control */}
+              <div style={{ display: 'flex', gap: 12, marginTop: 'auto' }}>
+                <button className="remote-btn remote-btn-secondary" onClick={handlePrev} disabled={currentPara === 0 && !bifurcationShown && bifurcationChoice === null}>
+                  ◀ Atrás
+                </button>
+                
+                {bifurcationChoice !== null ? (
+                  <button className="remote-btn remote-btn-primary" onClick={handleReset}>
+                    🔄 Reiniciar
+                  </button>
+                ) : !bifurcationShown ? (
+                  <button className="remote-btn remote-btn-primary" onClick={handleNext}>
+                    {currentPara === cuento.paragraphs.length - 1 ? 'Bifurcación ✦' : 'Siguiente ▶'}
+                  </button>
+                ) : null}
+              </div>
+
+            </div>
+          )}
+
+        </main>
+        
+        {/* Footer del control */}
+        <footer style={{ padding: '1rem', textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          CuentaJoy © 2026 · Panel de Control de Proyección
+        </footer>
+      </div>
+    )
+  }
+
+  // INTERFAZ DE LECTOR LOCAL (SIN CONEXIÓN TV)
 
   return (
     <div style={{ minHeight: '100vh', background: '#060608', position: 'relative', overflow: 'hidden' }}>
@@ -320,6 +722,38 @@ export default function CuentoPage() {
           </div>
         )}
 
+        {/* Bifurcación Local */}
+        {bifurcationShown && !bifurcationChoice && (
+          <div style={{ marginTop: '3rem', textAlign: 'center', animation: 'fadeUp 0.8s ease' }}>
+            <p style={{ fontFamily: "'Nunito', sans-serif", color: cuento.accent, fontSize: '1.1rem', marginBottom: '1.5rem', fontWeight: 600 }}>
+              {cuento.bifurcation.question}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 400, margin: '0 auto' }}>
+              <button className="start-btn" style={{ borderColor: cuento.glow, background: `${cuento.glow}15` }} onClick={() => handleChoose('A')}>
+                {cuento.bifurcation.optionA.label}
+              </button>
+              <button className="start-btn" style={{ borderColor: cuento.glow, background: 'rgba(255,255,255,0.03)' }} onClick={() => handleChoose('B')}>
+                {cuento.bifurcation.optionB.label}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Bifurcación elegida local */}
+        {bifurcationChoice && (
+          <div style={{ marginTop: '2rem', animation: 'fadeIn 1s ease' }}>
+            <p style={{
+              fontFamily: "'Nunito', sans-serif",
+              fontSize: 'clamp(1.1rem, 2.2vw, 1.35rem)',
+              lineHeight: 1.9,
+              color: 'white',
+              textAlign: 'center'
+            }}>
+              {bifurcationChoice === 'A' ? cuento.bifurcation.optionA.text : cuento.bifurcation.optionB.text}
+            </p>
+          </div>
+        )}
+
         {/* End */}
         {allDone && (
           <div style={{ marginTop: '4rem', animation: 'fadeUp 1s ease 0.3s both', opacity: 0 }}>
@@ -333,8 +767,8 @@ export default function CuentoPage() {
                 ¿Quieres vivirlo en la pantalla grande?
               </p>
               <button className="tv-btn" style={{ background: cuento.glow, color: 'white' }}
-                onClick={() => window.history.back()}>
-                📺 Ver en TV
+                onClick={handleReset}>
+                🔄 Volver a empezar
               </button>
               <a href="/" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: "'Nunito', sans-serif", fontSize: '0.8rem', textDecoration: 'none', letterSpacing: '0.08em' }}>
                 Explorar otros cuentos →

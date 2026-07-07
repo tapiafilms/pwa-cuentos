@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { QRCodeSVG } from 'qrcode.react'
 
 const CUENTOS = [
   {
@@ -1056,12 +1057,23 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
       .on('broadcast', { event: 'tv_ready' }, () => onStepChange('connected'))
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [code])
+  }, [code, onStepChange])
 
   const handleSend = async () => {
     await supabase.channel(`session:${code}`).send({
-      type: 'broadcast', event: 'show_content', payload: { show: true },
+      type: 'broadcast',
+      event: 'show_content',
+      payload: {
+        show: true,
+        cuentoId: cuento.id,
+        title: cuento.title,
+        emoji: cuento.emoji,
+        glow: cuento.glow,
+        accent: cuento.accent,
+        bgImage: cuento.bgImage,
+      },
     })
+    window.location.href = `/cuento/${cuento.id}?session=${code}&role=remote`
     onClose()
   }
 
@@ -1077,7 +1089,7 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
         <div style={{ marginBottom: '1.75rem' }}>
           <span style={{ fontSize: '2rem' }}>{cuento.emoji}</span>
           <h3 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.4rem', fontWeight: 700, color: 'white', marginTop: 8, whiteSpace: 'pre-line', lineHeight: 1.2 }}>
-            {cuento.title}
+            {cuento.title.replace('\n', ' ')}
           </h3>
           <p style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
             {step === 'code' ? 'Conecta tu TV para ver este cuento' : '¡TV conectada! Envía el cuento'}
@@ -1087,22 +1099,35 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
         {step === 'code' && (
           <>
             <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>
-              1. En tu TV abre el navegador y ve a
+              1. Escanea este código o ve a la URL en tu TV
             </p>
-            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '10px 16px', marginBottom: '1.5rem' }}>
-              <span style={{ fontFamily: 'Nunito', fontSize: '0.95rem', color: 'white', fontWeight: 500 }}>{tvUrl}</span>
+            
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <div style={{
+                background: 'white',
+                padding: '12px',
+                borderRadius: '12px',
+                boxShadow: `0 0 25px ${cuento.glow}44`,
+                border: `1px solid ${cuento.glow}88`
+              }}>
+                <QRCodeSVG value={`${tvUrl}?session=${code}`} size={140} />
+              </div>
             </div>
 
-            <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>
-              2. Ingresa este código
+            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '8px 12px', marginBottom: '1.25rem', textAlign: 'center' }}>
+              <span style={{ fontFamily: 'Nunito', fontSize: '0.85rem', color: 'white', fontWeight: 500 }}>{tvUrl}</span>
+            </div>
+
+            <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8, textAlign: 'center' }}>
+              Código de sesión
             </p>
-            <div style={{ display: 'flex', gap: 10, marginBottom: '1.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: '1.5rem' }}>
               {code.split('').map((char, i) => (
-                <div key={i} className="code-char" style={{ borderColor: `${cuento.glow}60`, boxShadow: `0 0 16px ${cuento.glow}30` }}>{char}</div>
+                <div key={i} className="code-char" style={{ width: 44, height: 56, fontSize: '1.6rem', borderColor: `${cuento.glow}60`, boxShadow: `0 0 16px ${cuento.glow}30` }}>{char}</div>
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', fontSize: '0.82rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', fontSize: '0.82rem' }}>
               <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: cuento.glow, borderRadius: '50%', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
               Esperando conexión de la TV...
             </div>
