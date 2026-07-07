@@ -4,7 +4,6 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Rive, { useRive } from '@rive-app/react-canvas'
-import { QRCodeSVG } from 'qrcode.react'
 
 export default function TVPage() {
   return (
@@ -37,16 +36,9 @@ type RemoteState = {
   ending: boolean
 }
 
-function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
-
 function TVPageInner() {
   const searchParams = useSearchParams()
   const sessionParam = searchParams.get('session')
-
-  const [tvCode] = useState(() => generateCode())
 
   const [state, setState] = useState<TVState>('input')
   const [code, setCode] = useState('')
@@ -59,40 +51,7 @@ function TVPageInner() {
   // Estado para la respuesta de la Inteligencia Artificial
   const [aiResponse, setAiResponse] = useState<{ question: string; answer: string } | null>(null)
 
-  // Escuchar la sesión autogenerada de la TV para conectarse rápido vía QR
-  useEffect(() => {
-    if (state === 'input') {
-      const channel = supabase.channel(`session:${tvCode}`)
-      channel
-        .on('broadcast', { event: 'tv_ready' }, () => {
-          setState('waiting')
-        })
-        .on('broadcast', { event: 'show_content' }, ({ payload }) => {
-          setActiveCuento(payload)
-          setState('playing')
-          setAiResponse(null)
-        })
-        .on('broadcast', { event: 'sync_state' }, ({ payload }) => {
-          setRemoteState(payload)
-          setAiResponse(null)
-        })
-        .on('broadcast', { event: 'interaction' }, ({ payload }) => {
-          setLastAction(payload.action)
-          setTimeout(() => setLastAction(null), 1500)
-        })
-        .on('broadcast', { event: 'character_response' }, ({ payload }) => {
-          if (payload.clear) {
-            setAiResponse(null)
-          } else {
-            setAiResponse(payload)
-          }
-        })
-        .subscribe()
-      return () => { supabase.removeChannel(channel) }
-    }
-  }, [tvCode, state])
-
-  // Autoconexión si el parámetro de sesión existe en la URL
+  // Autoconexión si el parámetro de sesión existe en la URL (ej: /tv?session=K7MX)
   useEffect(() => {
     if (sessionParam && sessionParam.trim().length === 4 && state === 'input') {
       const codeVal = sessionParam.trim().toUpperCase()
@@ -137,7 +96,7 @@ function TVPageInner() {
       .subscribe((status, err) => {
         console.log('Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {
-          // Avisarle al celular que la TV está lista
+          // Avisarle al celular que la TV está lista para sincronizar
           channel.send({ type: 'broadcast', event: 'tv_ready', payload: {} })
           setState('waiting')
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -149,7 +108,7 @@ function TVPageInner() {
         }
       })
 
-    // Intentar pasar a pantalla completa automáticamente si es posible
+    // Intentar pasar a pantalla completa automáticamente
     if (typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen().catch(() => {})
     }
@@ -216,7 +175,7 @@ function TVPageInner() {
       `}</style>
 
       {state === 'input' && (
-        <TVInput code={code} setCode={setCode} onConnect={handleConnect} error={error} tvCode={tvCode} />
+        <TVInput code={code} setCode={setCode} onConnect={handleConnect} error={error} />
       )}
       {state === 'connecting' && (
         <TVSpinner label="Conectando sesión Supabase..." />
@@ -231,14 +190,11 @@ function TVPageInner() {
   )
 }
 
-function TVInput({ code, setCode, onConnect, error, tvCode }: {
-  code: string; setCode: (v: string) => void; onConnect: () => void; error: string; tvCode: string
+function TVInput({ code, setCode, onConnect, error }: {
+  code: string; setCode: (v: string) => void; onConnect: () => void; error: string
 }) {
-  const phoneUrl = typeof window !== 'undefined' ? `${window.location.origin}/?session=${tvCode}` : ''
-
   return (
-    <div className="tv-card-glow" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '3.5rem', maxWidth: 880, width: '95%' }}>
-      {/* Cabecera */}
+    <div className="tv-card-glow" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '3.5rem', maxWidth: 600, width: '90%' }}>
       <div style={{ textAlign: 'center' }}>
         <p style={{
           fontFamily: 'Nunito', fontSize: '0.9rem',
@@ -247,82 +203,49 @@ function TVInput({ code, setCode, onConnect, error, tvCode }: {
         }}>CuentaJoy Portal TV</p>
         <h1 style={{
           fontFamily: 'Cinzel, serif',
-          fontSize: '2.2rem',
+          fontSize: 'clamp(2.2rem, 5vw, 3.8rem)',
           fontWeight: 800, color: 'white', lineHeight: 1.1,
           letterSpacing: '0.02em'
-        }}>PANTALLA DE PROYECCIÓN (TV)</h1>
-        <p style={{ color: '#7a7a9a', marginTop: 10, fontSize: '1rem' }}>
-          Conecta tu celular como Control Remoto para elegir e interactuar con los cuentos
+        }}>Ingresa el código</h1>
+        <p style={{ color: '#7a7a9a', marginTop: 12, fontSize: '1.1rem' }}>
+          El código aparece en la pantalla de tu celular
         </p>
       </div>
 
-      {/* Contenido dividido en 2 columnas */}
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '3rem', width: '100%', alignItems: 'stretch', justifyContent: 'center', flexWrap: 'wrap' }}>
-        
-        {/* COLUMNA IZQUIERDA: Código QR (Flujo sugerido) */}
-        <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', borderRight: '1px solid rgba(255,255,255,0.06)', paddingRight: '2rem' }}>
-          <h3 style={{ fontFamily: 'Nunito', fontSize: '0.95rem', fontWeight: 800, color: '#4ade80', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Opción A: Conectar Celular (Fácil) 📱
-          </h3>
-          <p style={{ fontSize: '0.82rem', color: '#7a7a9a', textAlign: 'center', lineHeight: 1.5 }}>
-            Abre la cámara de tu celular y <strong>escanea este código QR</strong>. Tu teléfono se conectará y servirá como el Control Remoto.
-          </p>
-          <div style={{
-            background: 'white',
-            padding: '12px',
-            borderRadius: '16px',
-            boxShadow: '0 0 35px rgba(124, 106, 247, 0.25)',
-            border: '2px solid #7c6af7'
-          }}>
-            <QRCodeSVG value={phoneUrl} size={150} />
-          </div>
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 12px', fontSize: '0.72rem', color: '#7a7a9a', fontFamily: 'monospace' }}>
-            {phoneUrl}
-          </div>
-        </div>
+      <input
+        type="text"
+        value={code}
+        onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 4))}
+        onKeyDown={(e) => e.key === 'Enter' && onConnect()}
+        placeholder="CÓDIGO"
+        maxLength={4}
+        autoFocus
+        style={{
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: `2px solid ${error ? '#f87171' : '#7c6af7'}`,
+          borderRadius: 20, color: 'white',
+          fontFamily: 'Cinzel, serif',
+          fontSize: '3.8rem',
+          fontWeight: 800, letterSpacing: '0.25em',
+          textAlign: 'center',
+          width: '320px',
+          padding: '16px 20px', outline: 'none',
+          boxShadow: '0 0 40px rgba(124, 106, 247, 0.2)',
+          textTransform: 'uppercase',
+        }}
+      />
 
-        {/* COLUMNA DERECHA: Conexión Manual */}
-        <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', justifyContent: 'center' }}>
-          <h3 style={{ fontFamily: 'Nunito', fontSize: '0.95rem', fontWeight: 800, color: '#7c6af7', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Opción B: Código Manual ⌨️
-          </h3>
-          <p style={{ fontSize: '0.82rem', color: '#7a7a9a', textAlign: 'center', lineHeight: 1.5 }}>
-            Si abriste la PWA en tu celular primero y generaste un código de TV, <strong>ingrésalo aquí abajo</strong> para conectar esta pantalla.
-          </p>
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 4))}
-            onKeyDown={(e) => e.key === 'Enter' && onConnect()}
-            placeholder="CÓDIGO"
-            maxLength={4}
-            style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: `2px solid ${error ? '#f87171' : '#7c6af7'}`,
-              borderRadius: 16, color: 'white',
-              fontFamily: 'Cinzel, serif',
-              fontSize: '2.4rem',
-              fontWeight: 800, letterSpacing: '0.25em',
-              textAlign: 'center',
-              width: '220px',
-              padding: '10px 14px', outline: 'none',
-              boxShadow: '0 0 30px rgba(124, 106, 247, 0.1)',
-              textTransform: 'uppercase',
-            }}
-          />
-          {error && (
-            <p style={{ color: '#f87171', fontSize: '0.85rem', fontFamily: 'Nunito', fontWeight: 600 }}>{error}</p>
-          )}
-          <button
-            className="tv-button"
-            onClick={onConnect}
-            style={{ fontSize: '0.95rem', padding: '12px 36px', fontFamily: 'Nunito', letterSpacing: '0.05em', borderRadius: 10 }}
-          >
-            CONECTAR
-          </button>
-        </div>
+      {error && (
+        <p style={{ color: '#f87171', fontSize: '1rem', fontFamily: 'Nunito', fontWeight: 600 }}>{error}</p>
+      )}
 
-      </div>
+      <button
+        className="tv-button"
+        onClick={onConnect}
+        style={{ fontSize: '1.2rem', padding: '18px 48px', fontFamily: 'Nunito', letterSpacing: '0.1em' }}
+      >
+        CONECTAR PORTAL
+      </button>
     </div>
   )
 }
@@ -351,7 +274,7 @@ function TVWaiting({ code }: { code: string }) {
         }}>Portal de Proyección Listo</h2>
         <p style={{ fontSize: '1.15rem', color: '#7a7a9a', lineHeight: 1.6 }}>
           Conectado con éxito al canal de sesión <strong style={{ color: '#7c6af7', fontSize: '1.25rem' }}>{code}</strong>.<br />
-          Elige un cuento en el celular y presiona "Enviar cuento".
+          Sincronizando el cuento seleccionado...
         </p>
       </div>
     </div>

@@ -1,9 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState, Suspense } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { QRCodeSVG } from 'qrcode.react'
-import { useSearchParams } from 'next/navigation'
 
 const CUENTOS = [
   {
@@ -73,28 +71,11 @@ function generateCode(): string {
   return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
 
-type ModalState = { open: false } | { open: true; cuento: typeof CUENTOS[0]; step: 'code' | 'connected'; code: string }
+type ModalState = { open: false } | { open: true; cuento: typeof CUENTOS[0]; code: string }
 
 export default function Home() {
-  return (
-    <Suspense fallback={
-      <div style={{ minHeight: '100vh', background: '#0c0d10', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: "'Nunito', sans-serif", gap: 16 }}>
-        <div style={{ width: 48, height: 48, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#7c6af7', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <p>Cargando aplicación...</p>
-      </div>
-    }>
-      <HomeInner />
-    </Suspense>
-  )
-}
-
-function HomeInner() {
   const [scrollY, setScrollY] = useState(0)
   const [modal, setModal] = useState<ModalState>({ open: false })
-
-  const searchParams = useSearchParams()
-  const urlSession = searchParams.get('session')
-  const [tvSessionCode, setTvSessionCode] = useState<string | null>(urlSession)
 
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY)
@@ -102,42 +83,12 @@ function HomeInner() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
-    if (!tvSessionCode) return
-    const channel = supabase.channel(`session:${tvSessionCode}`)
-    channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        channel.send({ type: 'broadcast', event: 'tv_ready', payload: {} })
-      }
-    })
-    return () => { supabase.removeChannel(channel) }
-  }, [tvSessionCode])
-
-  const projectToTV = async (cuento: typeof CUENTOS[0]) => {
-    if (!tvSessionCode) return
-    await supabase.channel(`session:${tvSessionCode}`).send({
-      type: 'broadcast',
-      event: 'show_content',
-      payload: {
-        show: true,
-        cuentoId: cuento.id,
-        title: cuento.title,
-        emoji: cuento.emoji,
-        glow: cuento.glow,
-        accent: cuento.accent,
-        bgImage: cuento.bgImage,
-      },
-    })
-    window.location.href = `/cuento/${cuento.id}?session=${tvSessionCode}&role=remote`
-  }
-
   const openTV = (cuento: typeof CUENTOS[0]) => {
     const code = generateCode()
-    setModal({ open: true, cuento, step: 'code', code })
+    setModal({ open: true, cuento, code })
   }
 
   const closeModal = () => setModal({ open: false })
-
 
   const fireflies = useMemo(() => Array.from({ length: 28 }, (_, i) => ({
     id: i,
@@ -153,22 +104,6 @@ function HomeInner() {
 
   return (
     <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
-      {/* BANNER FLOTANTE DE CONTROL REMOTO */}
-      {tvSessionCode && (
-        <div style={{
-          position: 'fixed', top: '1.25rem', left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(74, 222, 128, 0.15)', border: '1px solid rgba(74, 222, 128, 0.35)',
-          borderRadius: 30, padding: '10px 24px', zIndex: 1000, display: 'flex', alignItems: 'center', gap: 12,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 15px rgba(74,222,128,0.2)', backdropFilter: 'blur(12px)',
-          animation: 'fadeIn 0.3s ease'
-        }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
-          <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: '#4ade80', fontWeight: 800, letterSpacing: '0.05em' }}>
-            MODO CONTROL REMOTO ACTIVO (TV: {tvSessionCode})
-          </span>
-          <button onClick={() => setTvSessionCode(null)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', cursor: 'pointer', marginLeft: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-        </div>
-      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel:wght@400..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -243,8 +178,6 @@ function HomeInner() {
           }
         }
 
-
-
         @keyframes fireflyFloat {
           0%   { transform: translate(0px, 0px) scale(1);   opacity: 0; }
           15%  { opacity: 1; }
@@ -300,7 +233,7 @@ function HomeInner() {
           position: fixed; inset: 0; z-index: 200;
           background: rgba(0,0,0,0.85);
           backdrop-filter: blur(12px);
-          display: flex; align-items: center; justifyContent: center;
+          display: flex; align-items: center; justify-content: center;
           animation: fadeIn 0.2s ease;
         }
         .modal-box {
@@ -472,7 +405,7 @@ function HomeInner() {
       {/* CUENTOS */}
       <div id="cuentos">
         {CUENTOS.map((cuento, index) => (
-          <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={tvSessionCode ? () => projectToTV(cuento) : () => openTV(cuento)} hasSession={!!tvSessionCode} />
+          <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={() => openTV(cuento)} />
         ))}
       </div>
 
@@ -498,17 +431,14 @@ function HomeInner() {
 
       {/* MODAL VER EN TV */}
       {modal.open && (
-        <TVModal cuento={modal.cuento} code={modal.code} step={modal.step}
-          onStepChange={(step) => setModal(m => m.open ? { ...m, step } : m)}
-          onClose={closeModal}
-        />
+        <TVModal cuento={modal.cuento} code={modal.code} onClose={closeModal} />
       )}
     </div>
   )
 }
 
-function StorySection({ cuento, index, onOpenTV, hasSession }: {
-  cuento: typeof CUENTOS[0]; index: number; onOpenTV: () => void; hasSession: boolean
+function StorySection({ cuento, index, onOpenTV }: {
+  cuento: typeof CUENTOS[0]; index: number; onOpenTV: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const firefliesRef = useRef<HTMLDivElement>(null)
@@ -736,11 +666,9 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
       const y = 10 + Math.random() * 80;
       const size = 6 + Math.random() * 8;
       
-      // Colores violetas/morados para combinar con el tema de niebla
       const color1 = `hsla(${270 + Math.random() * 30}, 70%, 75%, 0.9)`;
       const color2 = `hsla(${270 + Math.random() * 30}, 50%, 55%, 0.4)`;
       
-      // Crear alas
       const alaIzq = document.createElement('div');
       alaIzq.style.cssText = `
         position: absolute;
@@ -766,7 +694,6 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
         animation-delay: 0.15s;
       `;
       
-      // Crear cuerpo
       const cuerpo = document.createElement('div');
       cuerpo.style.cssText = `
         position: absolute;
@@ -805,7 +732,6 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
       });
     }
 
-    // Agregar keyframes de aleteo si no existen
     if (!document.getElementById('wingFlapStyle')) {
       const style = document.createElement('style');
       style.id = 'wingFlapStyle';
@@ -822,16 +748,13 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
     
     function animarMariposas() {
       mariposas.forEach(mariposa => {
-        // Movimiento visible
         mariposa.x += mariposa.vx * 0.05;
         mariposa.y += mariposa.vy * 0.05;
         
-        // Cambio de dirección aleatorio
         if (Math.random() < 0.02) {
           mariposa.vx += (Math.random() - 0.5) * 1;
           mariposa.vy += (Math.random() - 0.5) * 1;
           
-          // Limitar velocidad
           const maxSpeed = 3;
           const speed = Math.sqrt(mariposa.vx ** 2 + mariposa.vy ** 2);
           if (speed > maxSpeed) {
@@ -840,7 +763,6 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
           }
         }
         
-        // Rebote en bordes
         if (mariposa.x < 5 || mariposa.x > 95) {
           mariposa.vx *= -1;
           mariposa.x = Math.max(5, Math.min(95, mariposa.x));
@@ -850,7 +772,6 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
           mariposa.y = Math.max(5, Math.min(95, mariposa.y));
         }
         
-        // Rotación según dirección
         const angle = Math.atan2(mariposa.vy, mariposa.vx) * (180 / Math.PI);
         
         mariposa.element.style.left = mariposa.x + '%';
@@ -868,8 +789,7 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
     };
   }, [cuento.id]);
   
-  
-    // 🏮 Efecto de faroles mágicos - Cuento 3: El Reloj Sin Agujas
+  // 🏮 Efecto de faroles mágicos - Cuento 3: El Reloj Sin Agujas
   useEffect(() => {
     if (cuento.id !== 3) return;
     
@@ -959,8 +879,6 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
       document.head.appendChild(style);
     }
   }, [cuento.id]);
-  
-  
 
   const parallaxY = (progress - 0.5) * -80
 
@@ -1026,7 +944,7 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
         />
       )}
       
-            {/* 🏮 FAROLES MÁGICOS - Cuento 3: El Reloj Sin Agujas */}
+      {/* 🏮 FAROLES MÁGICOS - Cuento 3: El Reloj Sin Agujas */}
       {cuento.id === 3 && (
         <div 
           ref={lanternsRef}
@@ -1071,7 +989,7 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
           {/* Botones */}
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
             <button onClick={onOpenTV} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer' }}>
-              {hasSession ? '📺 Proyectar en TV' : '📺 Ver en TV'}
+              📺 Ver en TV
             </button>
             <button onClick={() => window.location.href = `/cuento/${cuento.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer' }}>
               Abrir cuento →
@@ -1105,22 +1023,12 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
   )
 }
 
-function TVModal({ cuento, code, step, onStepChange, onClose }: {
+function TVModal({ cuento, code, onClose }: {
   cuento: typeof CUENTOS[0]
   code: string
-  step: 'code' | 'connected'
-  onStepChange: (s: 'code' | 'connected') => void
   onClose: () => void
 }) {
   const tvUrl = typeof window !== 'undefined' ? `${window.location.origin}/tv` : ''
-
-  useEffect(() => {
-    const channel = supabase.channel(`session:${code}`)
-    channel
-      .on('broadcast', { event: 'tv_ready' }, () => onStepChange('connected'))
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [code, onStepChange])
 
   const handleSend = async () => {
     await supabase.channel(`session:${code}`).send({
@@ -1140,6 +1048,17 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
     onClose()
   }
 
+  useEffect(() => {
+    const channel = supabase.channel(`session:${code}`)
+    channel
+      .on('broadcast', { event: 'tv_ready' }, () => {
+        // Al detectar que la TV se conectó, enviamos automáticamente el cuento y redirigimos
+        handleSend()
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [code])
+
   return (
     <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-box">
@@ -1155,59 +1074,33 @@ function TVModal({ cuento, code, step, onStepChange, onClose }: {
             {cuento.title.replace('\n', ' ')}
           </h3>
           <p style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
-            {step === 'code' ? 'Conecta tu TV para ver este cuento' : '¡TV conectada! Envía el cuento'}
+            Conecta tu TV para ver este cuento en pantalla grande
           </p>
         </div>
 
-        {step === 'code' && (
-          <>
-            <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>
-              1. Escanea este código o ve a la URL en tu TV
-            </p>
-            
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
-              <div style={{
-                background: 'white',
-                padding: '12px',
-                borderRadius: '12px',
-                boxShadow: `0 0 25px ${cuento.glow}44`,
-                border: `1px solid ${cuento.glow}88`
-              }}>
-                <QRCodeSVG value={`${tvUrl}?session=${code}`} size={140} />
-              </div>
-            </div>
+        <>
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>
+            1. En tu TV abre el navegador y ve a
+          </p>
+          
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '10px 16px', marginBottom: '1.5rem', textAlign: 'center' }}>
+            <span style={{ fontFamily: 'Nunito', fontSize: '0.95rem', color: 'white', fontWeight: 500 }}>{tvUrl}</span>
+          </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '8px 12px', marginBottom: '1.25rem', textAlign: 'center' }}>
-              <span style={{ fontFamily: 'Nunito', fontSize: '0.85rem', color: 'white', fontWeight: 500 }}>{tvUrl}</span>
-            </div>
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>
+            2. Ingresa este código en la TV
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: '1.75rem' }}>
+            {code.split('').map((char, i) => (
+              <div key={i} className="code-char" style={{ borderColor: `${cuento.glow}60`, boxShadow: `0 0 16px ${cuento.glow}30` }}>{char}</div>
+            ))}
+          </div>
 
-            <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8, textAlign: 'center' }}>
-              Código de sesión
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: '1.5rem' }}>
-              {code.split('').map((char, i) => (
-                <div key={i} className="code-char" style={{ width: 44, height: 56, fontSize: '1.6rem', borderColor: `${cuento.glow}60`, boxShadow: `0 0 16px ${cuento.glow}30` }}>{char}</div>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', fontSize: '0.82rem' }}>
-              <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: cuento.glow, borderRadius: '50%', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
-              Esperando conexión de la TV...
-            </div>
-          </>
-        )}
-
-        {step === 'connected' && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: '1.5rem' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', flexShrink: 0 }} />
-              <span style={{ fontFamily: 'Nunito', fontWeight: 500, color: '#4ade80', fontSize: '0.88rem' }}>TV conectada y lista</span>
-            </div>
-            <button className="btn" onClick={handleSend} style={{ width: '100%', justifyContent: 'center', background: cuento.glow, border: `1px solid ${cuento.glow}`, color: 'white', fontWeight: 500, fontSize: '0.9rem', padding: '15px' }}>
-              ▶ &nbsp; Enviar cuento a la TV
-            </button>
-          </>
-        )}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', fontSize: '0.82rem' }}>
+            <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: cuento.glow, borderRadius: '50%', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+            Esperando conexión de la TV...
+          </div>
+        </>
       </div>
     </div>
   )
