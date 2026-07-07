@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import { QRCodeSVG } from 'qrcode.react'
+import { useSearchParams } from 'next/navigation'
 
 const CUENTOS = [
   {
@@ -75,14 +76,60 @@ function generateCode(): string {
 type ModalState = { open: false } | { open: true; cuento: typeof CUENTOS[0]; step: 'code' | 'connected'; code: string }
 
 export default function Home() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#0c0d10', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: "'Nunito', sans-serif", gap: 16 }}>
+        <div style={{ width: 48, height: 48, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#7c6af7', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <p>Cargando aplicación...</p>
+      </div>
+    }>
+      <HomeInner />
+    </Suspense>
+  )
+}
+
+function HomeInner() {
   const [scrollY, setScrollY] = useState(0)
   const [modal, setModal] = useState<ModalState>({ open: false })
+
+  const searchParams = useSearchParams()
+  const urlSession = searchParams.get('session')
+  const [tvSessionCode, setTvSessionCode] = useState<string | null>(urlSession)
 
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    if (!tvSessionCode) return
+    const channel = supabase.channel(`session:${tvSessionCode}`)
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        channel.send({ type: 'broadcast', event: 'tv_ready', payload: {} })
+      }
+    })
+    return () => { supabase.removeChannel(channel) }
+  }, [tvSessionCode])
+
+  const projectToTV = async (cuento: typeof CUENTOS[0]) => {
+    if (!tvSessionCode) return
+    await supabase.channel(`session:${tvSessionCode}`).send({
+      type: 'broadcast',
+      event: 'show_content',
+      payload: {
+        show: true,
+        cuentoId: cuento.id,
+        title: cuento.title,
+        emoji: cuento.emoji,
+        glow: cuento.glow,
+        accent: cuento.accent,
+        bgImage: cuento.bgImage,
+      },
+    })
+    window.location.href = `/cuento/${cuento.id}?session=${tvSessionCode}&role=remote`
+  }
 
   const openTV = (cuento: typeof CUENTOS[0]) => {
     const code = generateCode()
@@ -106,6 +153,22 @@ export default function Home() {
 
   return (
     <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
+      {/* BANNER FLOTANTE DE CONTROL REMOTO */}
+      {tvSessionCode && (
+        <div style={{
+          position: 'fixed', top: '1.25rem', left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(74, 222, 128, 0.15)', border: '1px solid rgba(74, 222, 128, 0.35)',
+          borderRadius: 30, padding: '10px 24px', zIndex: 1000, display: 'flex', alignItems: 'center', gap: 12,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 15px rgba(74,222,128,0.2)', backdropFilter: 'blur(12px)',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
+          <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: '#4ade80', fontWeight: 800, letterSpacing: '0.05em' }}>
+            MODO CONTROL REMOTO ACTIVO (TV: {tvSessionCode})
+          </span>
+          <button onClick={() => setTvSessionCode(null)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', cursor: 'pointer', marginLeft: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+        </div>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel:wght@400..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -409,7 +472,7 @@ export default function Home() {
       {/* CUENTOS */}
       <div id="cuentos">
         {CUENTOS.map((cuento, index) => (
-          <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={() => openTV(cuento)} />
+          <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={tvSessionCode ? () => projectToTV(cuento) : () => openTV(cuento)} hasSession={!!tvSessionCode} />
         ))}
       </div>
 
@@ -444,8 +507,8 @@ export default function Home() {
   )
 }
 
-function StorySection({ cuento, index, onOpenTV }: {
-  cuento: typeof CUENTOS[0]; index: number; onOpenTV: () => void
+function StorySection({ cuento, index, onOpenTV, hasSession }: {
+  cuento: typeof CUENTOS[0]; index: number; onOpenTV: () => void; hasSession: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const firefliesRef = useRef<HTMLDivElement>(null)
@@ -1008,7 +1071,7 @@ function StorySection({ cuento, index, onOpenTV }: {
           {/* Botones */}
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
             <button onClick={onOpenTV} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer' }}>
-              📺 Ver en TV
+              {hasSession ? '📺 Proyectar en TV' : '📺 Ver en TV'}
             </button>
             <button onClick={() => window.location.href = `/cuento/${cuento.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer' }}>
               Abrir cuento →
