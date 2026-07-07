@@ -246,6 +246,7 @@ function CuentoPageInner() {
   const [aiLoading, setAiLoading] = useState(false)
   const [micSupported, setMicSupported] = useState(false)
   const [speechError, setSpeechError] = useState('')
+  const [lastSpokenText, setLastSpokenText] = useState('')
 
   const recognitionRef = useRef<any>(null)
 
@@ -271,6 +272,7 @@ function CuentoPageInner() {
           const text = event.results[0][0].transcript
           setIsListening(false)
           if (text && text.trim() !== '') {
+            setLastSpokenText(text)
             await handleAskAI(text)
           }
         }
@@ -316,6 +318,7 @@ function CuentoPageInner() {
 
   const handleAskAI = async (messageText: string) => {
     if (!messageText.trim()) return
+    setLastSpokenText(messageText)
     setAiLoading(true)
     setSpeechError('')
     sendInteraction('think')
@@ -784,6 +787,11 @@ function CuentoPageInner() {
                   {speechError && (
                     <p style={{ color: '#ef4444', fontSize: '0.72rem', fontWeight: 600, textAlign: 'center' }}>
                       {speechError}
+                    </p>
+                  )}
+                  {lastSpokenText && (
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 4 }}>
+                      Preguntado: <strong style={{ color: cuento.accent }}>"{lastSpokenText}"</strong>
                     </p>
                   )}
                 </div>
