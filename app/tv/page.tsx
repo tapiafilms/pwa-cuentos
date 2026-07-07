@@ -93,6 +93,12 @@ function TVPageInner() {
           setAiResponse(payload)
         }
       })
+      .on('broadcast', { event: 'show_waiting' }, () => {
+        setState('waiting')
+        setActiveCuento(null)
+        setRemoteState(null)
+        setAiResponse(null)
+      })
       .subscribe((status, err) => {
         console.log('Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {
@@ -263,20 +269,18 @@ function TVSpinner({ label }: { label: string }) {
 
 function TVWaiting({ code }: { code: string }) {
   return (
-    <div className="tv-card-glow" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '4rem', maxWidth: 640, width: '90%', textAlign: 'center' }}>
-      <div className="tv-spinner" style={{ width: 80, height: 80, borderWidth: 4 }} />
-      <div>
-        <h2 style={{
-          fontFamily: 'Cinzel, serif',
-          fontSize: '2.4rem',
-          fontWeight: 700, color: 'white', letterSpacing: '0.05em',
-          marginBottom: 8
-        }}>Portal de Proyección Listo</h2>
-        <p style={{ fontSize: '1.15rem', color: '#7a7a9a', lineHeight: 1.6 }}>
-          Conectado con éxito al canal de sesión <strong style={{ color: '#7c6af7', fontSize: '1.25rem' }}>{code}</strong>.<br />
-          Sincronizando el cuento seleccionado...
-        </p>
+    <div className="tv-card-glow" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '4rem', maxWidth: 720, width: '90%', textAlign: 'center' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo-cuentajoy.png" alt="CuentaJoy" style={{ width: 'clamp(280px, 40vw, 440px)', height: 'auto', marginBottom: '1.5rem', objectFit: 'contain', opacity: 0.95 }} />
+      
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#7c6af7', fontSize: '1.25rem', fontFamily: 'Nunito', fontWeight: 700, letterSpacing: '0.08em' }}>
+        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
+        CONECTADO A LA TV (SESIÓN: {code})
       </div>
+      
+      <p style={{ fontSize: '1.2rem', color: '#7a7a9a', lineHeight: 1.6, maxWidth: 500, margin: '0 auto', fontFamily: 'Nunito' }}>
+        Elige tu cuento en el celular y presiona <strong>"Proyectar en TV"</strong> para comenzar.
+      </p>
     </div>
   )
 }

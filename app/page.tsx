@@ -76,6 +76,9 @@ type ModalState = { open: false } | { open: true; cuento: typeof CUENTOS[0]; cod
 export default function Home() {
   const [scrollY, setScrollY] = useState(0)
   const [modal, setModal] = useState<ModalState>({ open: false })
+  
+  // Persistencia de la sesión de TV
+  const [tvSessionCode, setTvSessionCode] = useState<string | null>(null)
 
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY)
@@ -83,9 +86,57 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Comprobar si hay una sesión activa en URL o LocalStorage al cargar la página
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const codeParam = params.get('session')
+      if (codeParam && codeParam.trim().length === 4) {
+        const formattedCode = codeParam.trim().toUpperCase()
+        localStorage.setItem('cuentajoy_session', formattedCode)
+        setTvSessionCode(formattedCode)
+      } else {
+        const storedCode = localStorage.getItem('cuentajoy_session')
+        if (storedCode) {
+          setTvSessionCode(storedCode)
+        }
+      }
+    }
+  }, [])
+
   const openTV = (cuento: typeof CUENTOS[0]) => {
     const code = generateCode()
     setModal({ open: true, cuento, code })
+  }
+
+  const projectToTV = async (cuento: typeof CUENTOS[0]) => {
+    if (!tvSessionCode) return
+    
+    // Conectar temporalmente y enviar evento
+    const channel = supabase.channel(`session:${tvSessionCode}`)
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.send({
+          type: 'broadcast',
+          event: 'show_content',
+          payload: {
+            show: true,
+            cuentoId: cuento.id,
+            title: cuento.title,
+            emoji: cuento.emoji,
+            glow: cuento.glow,
+            accent: cuento.accent,
+            bgImage: cuento.bgImage,
+          },
+        })
+        window.location.href = `/cuento/${cuento.id}?session=${tvSessionCode}&role=remote`
+      }
+    })
+  }
+
+  const disconnectSession = () => {
+    localStorage.removeItem('cuentajoy_session')
+    setTvSessionCode(null)
   }
 
   const closeModal = () => setModal({ open: false })
@@ -189,17 +240,6 @@ export default function Home() {
           0%, 100% { box-shadow: 0 0 3px 1px var(--gc), 0 0 6px 2px var(--gc); }
           50%       { box-shadow: 0 0 6px 3px var(--gc), 0 0 14px 5px var(--gc); }
         }
-        @keyframes fireflyFloatWhite {
-          0%   { transform: translate(0px, 0px) scale(1);   opacity: 0; }
-          15%  { opacity: 0.8; }
-          50%  { transform: translate(var(--dx), var(--dy)) scale(1.2); opacity: 0.9; }
-          85%  { opacity: 0.5; }
-          100% { transform: translate(0px, 0px) scale(1);   opacity: 0; }
-        }
-        @keyframes fireflyGlowWhite {
-          0%, 100% { box-shadow: 0 0 4px 1px #ffffff, 0 0 8px 2px #f0f0ff, 0 0 16px 4px #e0e0ff; }
-          50%      { box-shadow: 0 0 8px 3px #ffffff, 0 0 16px 5px #f0f0ff, 0 0 24px 8px #e0e0ff; }
-        }
         @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes floatSlow {
@@ -255,6 +295,14 @@ export default function Home() {
           font-family: 'Nunito', 'Montserrat', 'Arial', sans-serif;
           font-size: 1.8rem; font-weight: 800; color: white;
         }
+        
+        .floating-banner {
+          position: fixed; top: 1.25rem; left: 50%; transform: translateX(-50%);
+          background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.3);
+          border-radius: 30px; padding: 10px 24px; zIndex: 1000; display: flex; align-items: center; gap: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.5); backdrop-filter: blur(12px);
+          animation: fadeIn 0.3s ease;
+        }
 
         @media (max-width: 768px) {
           .story-inner { flex-direction: column !important; padding: 5rem 1.5rem !important; gap: 2rem !important; }
@@ -289,6 +337,17 @@ export default function Home() {
       `}</style>
 
       <div className="grain" />
+
+      {/* BANNER FLOTANTE DE CONTROL REMOTO */}
+      {tvSessionCode && (
+        <div className="floating-banner" style={{ zIndex: 1000 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
+          <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: '#4ade80', fontWeight: 800, letterSpacing: '0.05em' }}>
+            CONECTADO A LA TV (SESIÓN: {tvSessionCode})
+          </span>
+          <button onClick={disconnectSession} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', cursor: 'pointer', marginLeft: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+        </div>
+      )}
 
       {/* NAV */}
       <nav style={{
@@ -405,7 +464,7 @@ export default function Home() {
       {/* CUENTOS */}
       <div id="cuentos">
         {CUENTOS.map((cuento, index) => (
-          <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={() => openTV(cuento)} />
+          <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={tvSessionCode ? () => projectToTV(cuento) : () => openTV(cuento)} hasSession={!!tvSessionCode} />
         ))}
       </div>
 
@@ -437,8 +496,8 @@ export default function Home() {
   )
 }
 
-function StorySection({ cuento, index, onOpenTV }: {
-  cuento: typeof CUENTOS[0]; index: number; onOpenTV: () => void
+function StorySection({ cuento, index, onOpenTV, hasSession }: {
+  cuento: typeof CUENTOS[0]; index: number; onOpenTV: () => void; hasSession: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const firefliesRef = useRef<HTMLDivElement>(null)
@@ -989,7 +1048,7 @@ function StorySection({ cuento, index, onOpenTV }: {
           {/* Botones */}
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
             <button onClick={onOpenTV} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer' }}>
-              📺 Ver en TV
+              {hasSession ? '📺 Proyectar en TV' : '📺 Ver en TV'}
             </button>
             <button onClick={() => window.location.href = `/cuento/${cuento.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer' }}>
               Abrir cuento →
@@ -1031,6 +1090,9 @@ function TVModal({ cuento, code, onClose }: {
   const tvUrl = typeof window !== 'undefined' ? `${window.location.origin}/tv` : ''
 
   const handleSend = async () => {
+    // Registrar sesión en localStorage para persistencia
+    localStorage.setItem('cuentajoy_session', code)
+    
     await supabase.channel(`session:${code}`).send({
       type: 'broadcast',
       event: 'show_content',

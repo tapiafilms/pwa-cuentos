@@ -110,7 +110,7 @@ const CUENTOS: Record<string, {
     tag: 'Ciencia · 8–12 años',
     paragraphs: [
       'Las estrellas fugaces no son rocas. Son cartas.',
-      'Luna lo descubrió por accidente, la noche que una carta cayó directamente en sus manos.',
+      'Luna lo descubrió por accident, la noche que una carta cayó directamente en sus manos.',
       'Estaba escrita en un idioma que no existía en ningún libro. Pero al tocarla, Luna lo entendió todo.',
       'Era un mensaje de una estrella a otra. Un mensaje de despedida. La estrella iba a apagarse.',
       'En la cima de la montaña más fría del mundo había un buzón. Luna tenía que llegar antes del amanecer.',
@@ -360,6 +360,24 @@ function CuentoPageInner() {
         }
       })
       sendInteraction('wave')
+    }
+  }
+
+  // Volver al Home persistiendo la conexión y mandando a la TV a la pantalla de espera
+  const handleBackToHome = async () => {
+    if (isRemote && session) {
+      localStorage.setItem('cuentajoy_session', session)
+      
+      // Enviar evento para volver al estado de espera en la TV
+      await supabase.channel(`session:${session}`).send({
+        type: 'broadcast',
+        event: 'show_waiting',
+        payload: {}
+      })
+      
+      window.location.href = `/?session=${session}`
+    } else {
+      window.location.href = '/'
     }
   }
 
@@ -613,9 +631,9 @@ function CuentoPageInner() {
               </p>
             </div>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: 20, fontSize: '0.72rem', fontWeight: 700, color: cuento.accent }}>
-            TV: {session}
-          </div>
+          <button onClick={handleBackToHome} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', padding: '6px 14px', borderRadius: 20, fontSize: '0.72rem', fontWeight: 700, color: cuento.accent, cursor: 'pointer', fontFamily: 'Nunito' }}>
+            Salir ✕
+          </button>
         </header>
 
         {/* Panel Central de Lectura */}
@@ -799,20 +817,28 @@ function CuentoPageInner() {
               )}
 
               {/* Navegación estándar del control */}
-              <div style={{ display: 'flex', gap: 12, marginTop: 'auto' }}>
-                <button className="remote-btn remote-btn-secondary" onClick={handlePrev} disabled={currentPara === 0 && !bifurcationShown && bifurcationChoice === null}>
-                  ◀ Atrás
-                </button>
-                
-                {bifurcationChoice !== null ? (
-                  <button className="remote-btn remote-btn-primary" onClick={handleReset}>
-                    🔄 Reiniciar
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
+                <div style={{ display: 'flex', gap: 12, width: '100%' }}>
+                  <button className="remote-btn remote-btn-secondary" onClick={handlePrev} disabled={currentPara === 0 && !bifurcationShown && bifurcationChoice === null}>
+                    ◀ Atrás
                   </button>
-                ) : !bifurcationShown ? (
-                  <button className="remote-btn remote-btn-primary" onClick={handleNext}>
-                    {currentPara === cuento.paragraphs.length - 1 ? 'Bifurcación ✦' : 'Siguiente ▶'}
+                  
+                  {bifurcationChoice !== null ? (
+                    <button className="remote-btn remote-btn-primary" onClick={handleReset}>
+                      🔄 Volver a empezar
+                    </button>
+                  ) : !bifurcationShown ? (
+                    <button className="remote-btn remote-btn-primary" onClick={handleNext}>
+                      {currentPara === cuento.paragraphs.length - 1 ? 'Bifurcación ✦' : 'Siguiente ▶'}
+                    </button>
+                  ) : null}
+                </div>
+
+                {bifurcationChoice !== null && (
+                  <button className="remote-btn remote-btn-secondary" onClick={handleBackToHome} style={{ width: '100%', borderColor: 'rgba(255,255,255,0.2)' }}>
+                    🏠 Volver al Inicio (Elegir otro cuento)
                   </button>
-                ) : null}
+                )}
               </div>
 
             </div>
