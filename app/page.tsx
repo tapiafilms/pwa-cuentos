@@ -66,12 +66,7 @@ const CUENTOS = [
   },
 ]
 
-function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
-
-type ModalState = { open: false } | { open: true; cuento: typeof CUENTOS[0]; code: string }
+type ModalState = { open: false } | { open: true; cuento: typeof CUENTOS[0] }
 
 export default function Home() {
   const [scrollY, setScrollY] = useState(0)
@@ -105,8 +100,7 @@ export default function Home() {
   }, [])
 
   const openTV = (cuento: typeof CUENTOS[0]) => {
-    const code = generateCode()
-    setModal({ open: true, cuento, code })
+    setModal({ open: true, cuento })
   }
 
   const projectToTV = async (cuento: typeof CUENTOS[0]) => {
@@ -285,16 +279,6 @@ export default function Home() {
           animation: modal-in 0.3s cubic-bezier(0.16,1,0.3,1);
           position: relative;
         }
-
-        .code-char {
-          width: 60px; height: 72px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-          font-family: 'Nunito', 'Montserrat', 'Arial', sans-serif;
-          font-size: 1.8rem; font-weight: 800; color: white;
-        }
         
         .floating-banner {
           position: fixed; top: 1.25rem; left: 50%; transform: translateX(-50%);
@@ -324,7 +308,6 @@ export default function Home() {
           .story-pill { min-width: auto !important; padding: 8px 14px !important; }
           .footer-inner { flex-direction: column !important; gap: 0.5rem !important; align-items: center !important; text-align: center !important; padding: 1.5rem !important; }
           .cta-section { padding: 5rem 1.5rem !important; }
-          .code-char { width: 48px !important; height: 60px !important; font-size: 1.6rem !important; }
           .modal-box { padding: 1.75rem !important; }
         }
 
@@ -332,7 +315,6 @@ export default function Home() {
           .hero-title { font-size: 1.9rem !important; }
           .story-pills { gap: 0.4rem !important; }
           .story-pill { font-size: 0.7rem !important; padding: 7px 10px !important; }
-          .code-char { width: 42px !important; height: 54px !important; font-size: 1.4rem !important; }
         }
       `}</style>
 
@@ -490,7 +472,7 @@ export default function Home() {
 
       {/* MODAL VER EN TV */}
       {modal.open && (
-        <TVModal cuento={modal.cuento} code={modal.code} onClose={closeModal} />
+        <TVModal cuento={modal.cuento} onClose={closeModal} />
       )}
     </div>
   )
@@ -1082,87 +1064,144 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
   )
 }
 
-function TVModal({ cuento, code, onClose }: {
+function TVModal({ cuento, onClose }: {
   cuento: typeof CUENTOS[0]
-  code: string
   onClose: () => void
 }) {
-  const tvUrl = typeof window !== 'undefined' ? `${window.location.origin}/tv` : ''
+  const [inputCode, setInputCode] = useState('')
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSend = async () => {
-    // Registrar sesión en localStorage para persistencia
-    localStorage.setItem('cuentajoy_session', code)
-    
-    await supabase.channel(`session:${code}`).send({
-      type: 'broadcast',
-      event: 'show_content',
-      payload: {
-        show: true,
-        cuentoId: cuento.id,
-        title: cuento.title,
-        emoji: cuento.emoji,
-        glow: cuento.glow,
-        accent: cuento.accent,
-        bgImage: cuento.bgImage,
-      },
+  const handleConnect = async () => {
+    const codeVal = inputCode.trim().toUpperCase()
+    if (codeVal.length !== 4) {
+      setError('El código debe tener 4 caracteres')
+      return
+    }
+    setError('')
+    setIsConnecting(true)
+
+    const channel = supabase.channel(`session:${codeVal}`)
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        // Enviar tv_ready para confirmar conexión
+        await channel.send({
+          type: 'broadcast',
+          event: 'tv_ready',
+          payload: {}
+        })
+
+        // Retardo para asegurar que la TV recibe el evento y transiciona
+        setTimeout(async () => {
+          // Enviar show_content del cuento
+          await channel.send({
+            type: 'broadcast',
+            event: 'show_content',
+            payload: {
+              show: true,
+              cuentoId: cuento.id,
+              title: cuento.title,
+              emoji: cuento.emoji,
+              glow: cuento.glow,
+              accent: cuento.accent,
+              bgImage: cuento.bgImage,
+            },
+          })
+
+          // Guardar en localStorage y redirigir
+          localStorage.setItem('cuentajoy_session', codeVal)
+          window.location.href = `/cuento/${cuento.id}?session=${codeVal}&role=remote`
+          onClose()
+        }, 300)
+      } else {
+        setIsConnecting(false)
+        setError('Error al conectar. Inténtalo de nuevo.')
+      }
     })
-    window.location.href = `/cuento/${cuento.id}?session=${code}&role=remote`
-    onClose()
   }
-
-  useEffect(() => {
-    const channel = supabase.channel(`session:${code}`)
-    channel
-      .on('broadcast', { event: 'tv_ready' }, () => {
-        // Al detectar que la TV se conectó, enviamos automáticamente el cuento y redirigimos
-        handleSend()
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [code])
 
   return (
     <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-box">
+      <div className="modal-box" style={{ textAlign: 'center' }}>
         {/* Close */}
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '1.2rem', cursor: 'pointer', transition: 'color 0.2s' }}
           onMouseEnter={e => (e.currentTarget.style.color = 'white')}
           onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}>✕</button>
 
         {/* Header */}
-        <div style={{ marginBottom: '1.75rem' }}>
+        <div style={{ marginBottom: '1.75rem', textAlign: 'left' }}>
           <span style={{ fontSize: '2rem' }}>{cuento.emoji}</span>
           <h3 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.4rem', fontWeight: 700, color: 'white', marginTop: 8, whiteSpace: 'pre-line', lineHeight: 1.2 }}>
-            {cuento.title.replace('\n', ' ')}
+            Conectar {cuento.title.replace('\n', ' ')}
           </h3>
           <p style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
-            Conecta tu TV para ver este cuento en pantalla grande
+            Escribe el código que aparece en la pantalla de la TV
           </p>
         </div>
 
-        <>
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>
-            1. En tu TV abre el navegador y ve a
-          </p>
-          
-          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '10px 16px', marginBottom: '1.5rem', textAlign: 'center' }}>
-            <span style={{ fontFamily: 'Nunito', fontSize: '0.95rem', color: 'white', fontWeight: 500 }}>{tvUrl}</span>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+          <input
+            type="text"
+            placeholder="CÓDIGO"
+            value={inputCode}
+            onChange={(e) => setInputCode(e.target.value.toUpperCase().slice(0, 4))}
+            onKeyDown={(e) => e.key === 'Enter' && !isConnecting && handleConnect()}
+            maxLength={4}
+            disabled={isConnecting}
+            style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: `2px solid ${error ? '#f87171' : cuento.glow}`,
+              borderRadius: 14,
+              color: 'white',
+              fontFamily: 'Cinzel, serif',
+              fontSize: '2.2rem',
+              fontWeight: 800,
+              letterSpacing: '0.25em',
+              textAlign: 'center',
+              width: '240px',
+              padding: '12px 16px',
+              outline: 'none',
+              boxShadow: `0 0 25px ${cuento.glow}20`,
+              textTransform: 'uppercase'
+            }}
+          />
 
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>
-            2. Ingresa este código en la TV
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: '1.75rem' }}>
-            {code.split('').map((char, i) => (
-              <div key={i} className="code-char" style={{ borderColor: `${cuento.glow}60`, boxShadow: `0 0 16px ${cuento.glow}30` }}>{char}</div>
-            ))}
-          </div>
+          {error && (
+            <p style={{ color: '#f87171', fontSize: '0.85rem', fontFamily: 'Nunito', fontWeight: 600 }}>{error}</p>
+          )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', fontSize: '0.82rem' }}>
-            <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: cuento.glow, borderRadius: '50%', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
-            Esperando conexión de la TV...
-          </div>
-        </>
+          <button
+            onClick={handleConnect}
+            disabled={isConnecting || inputCode.length !== 4}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'Nunito',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              padding: '14px 36px',
+              borderRadius: 10,
+              background: inputCode.length === 4 ? cuento.glow : 'rgba(255,255,255,0.05)',
+              color: inputCode.length === 4 ? 'white' : 'rgba(255,255,255,0.2)',
+              border: 'none',
+              cursor: inputCode.length === 4 ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s',
+              width: '100%'
+            }}
+          >
+            {isConnecting ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                CONECTANDO...
+              </div>
+            ) : (
+              'CONECTAR CONTROL'
+            )}
+          </button>
+        </div>
       </div>
     </div>
   )

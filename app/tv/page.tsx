@@ -13,7 +13,7 @@ export default function TVPage() {
   )
 }
 
-type TVState = 'input' | 'connecting' | 'waiting' | 'playing'
+type TVState = 'connecting' | 'waiting_remote' | 'waiting_cuento' | 'playing'
 
 type CuentoInfo = {
   cuentoId: number
@@ -36,13 +36,24 @@ type RemoteState = {
   ending: boolean
 }
 
+// Generador de códigos aleatorios de 4 caracteres
+const generateRandomCode = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Evitar caracteres ambiguos como O, I, 1, 0
+  let code = ''
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return code
+}
+
 function TVPageInner() {
   const searchParams = useSearchParams()
   const sessionParam = searchParams.get('session')
 
-  const [state, setState] = useState<TVState>('input')
-  const [code, setCode] = useState('')
-  const [error, setError] = useState('')
+  const [state, setState] = useState<TVState>('connecting')
+  
+  // Generar o recuperar el código de sesión
+  const [tvCode, setTvCode] = useState<string>('')
   
   const [activeCuento, setActiveCuento] = useState<CuentoInfo | null>(null)
   const [remoteState, setRemoteState] = useState<RemoteState | null>(null)
@@ -60,33 +71,30 @@ function TVPageInner() {
     setTimeout(() => {
       setState(newState)
       if (callback) callback()
-      // Dar un pequeño respiro antes de desvanecer el fondo negro
       setTimeout(() => {
         setIsFading(false)
       }, 50)
-    }, 600) // Coincide con la duración de la transición CSS
+    }, 600)
   }
 
-  // Autoconexión si el parámetro de sesión existe en la URL (ej: /tv?session=K7MX)
+  // Configuración del canal de comunicación Realtime en la TV
   useEffect(() => {
-    if (sessionParam && sessionParam.trim().length === 4 && state === 'input') {
-      const codeVal = sessionParam.trim().toUpperCase()
-      setCode(codeVal)
-      connectSession(codeVal)
+    // 1. Determinar el código a usar
+    let codeVal = ''
+    if (sessionParam && sessionParam.trim().length === 4) {
+      codeVal = sessionParam.trim().toUpperCase()
+    } else {
+      codeVal = generateRandomCode()
     }
-  }, [sessionParam, state])
+    setTvCode(codeVal)
 
-  const connectSession = (sessionCode: string) => {
-    const trimmed = sessionCode.trim().toUpperCase()
-    if (trimmed.length !== 4) {
-      setError('El código debe tener 4 caracteres')
-      return
-    }
-    setError('')
-    setState('connecting')
-
-    const channel = supabase.channel(`session:${trimmed}`)
+    // 2. Conectar al canal
+    const channel = supabase.channel(`session:${codeVal}`)
     channel
+      .on('broadcast', { event: 'tv_ready' }, () => {
+        // El celular se enlazó
+        transitionTo('waiting_cuento')
+      })
       .on('broadcast', { event: 'show_content' }, ({ payload }) => {
         setActiveCuento(payload)
         transitionTo('playing')
@@ -110,23 +118,24 @@ function TVPageInner() {
         }
       })
       .on('broadcast', { event: 'show_waiting' }, () => {
-        transitionTo('waiting', () => {
+        transitionTo('waiting_cuento', () => {
           setActiveCuento(null)
           setRemoteState(null)
           setAiResponse(null)
         })
       })
       .subscribe((status, err) => {
-        console.log('Realtime subscription status:', status, err)
+        console.log('TV Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {
-          // Avisarle al celular que la TV está lista para sincronizar
-          channel.send({ type: 'broadcast', event: 'tv_ready', payload: {} })
-          setState('waiting')
+          // Si iniciamos con un session param, significa que ya estaba enlazado
+          if (sessionParam) {
+            setState('waiting_cuento')
+          } else {
+            setState('waiting_remote')
+          }
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          setState('input')
-          setError(`Error al conectar con los servidores Realtime (${status})`)
           if (err) {
-            console.error('Realtime connection error:', err)
+            console.error('TV Realtime connection error:', err)
           }
         }
       })
@@ -135,11 +144,11 @@ function TVPageInner() {
     if (typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen().catch(() => {})
     }
-  }
 
-  const handleConnect = () => {
-    connectSession(code)
-  }
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [sessionParam])
 
   return (
     <div className="tv-page">
@@ -210,14 +219,14 @@ function TVPageInner() {
         }
       `}</style>
 
-      {state === 'input' && (
-        <TVInput code={code} setCode={setCode} onConnect={handleConnect} error={error} />
-      )}
       {state === 'connecting' && (
-        <TVSpinner label="Conectando sesión Supabase..." />
+        <TVSpinner label="Inicializando canal de TV..." />
       )}
-      {state === 'waiting' && (
-        <TVWaiting code={code} />
+      {state === 'waiting_remote' && (
+        <TVWaitingRemote code={tvCode} />
+      )}
+      {state === 'waiting_cuento' && (
+        <TVWaitingCuento code={tvCode} />
       )}
       {state === 'playing' && (
         <TVPlaying cuento={activeCuento} remoteState={remoteState} lastAction={lastAction} aiResponse={aiResponse} />
@@ -225,66 +234,6 @@ function TVPageInner() {
 
       {/* Capa de transición cinematográfica (Dissolve) */}
       <div className={`cinematic-fade-overlay ${isFading ? 'active' : ''}`} />
-    </div>
-  )
-}
-
-function TVInput({ code, setCode, onConnect, error }: {
-  code: string; setCode: (v: string) => void; onConnect: () => void; error: string
-}) {
-  return (
-    <div className="tv-card-glow" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '3.5rem', maxWidth: 600, width: '90%' }}>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{
-          fontFamily: 'Nunito', fontSize: '0.9rem',
-          letterSpacing: '0.3em', textTransform: 'uppercase',
-          color: '#7c6af7', marginBottom: 12, fontWeight: 800
-        }}>CuentaJoy Portal TV</p>
-        <h1 style={{
-          fontFamily: 'Cinzel, serif',
-          fontSize: 'clamp(2.2rem, 5vw, 3.8rem)',
-          fontWeight: 800, color: 'white', lineHeight: 1.1,
-          letterSpacing: '0.02em'
-        }}>Ingresa el código</h1>
-        <p style={{ color: '#7a7a9a', marginTop: 12, fontSize: '1.1rem' }}>
-          El código aparece en la pantalla de tu celular
-        </p>
-      </div>
-
-      <input
-        type="text"
-        value={code}
-        onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 4))}
-        onKeyDown={(e) => e.key === 'Enter' && onConnect()}
-        placeholder="CÓDIGO"
-        maxLength={4}
-        autoFocus
-        style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: `2px solid ${error ? '#f87171' : '#7c6af7'}`,
-          borderRadius: 20, color: 'white',
-          fontFamily: 'Cinzel, serif',
-          fontSize: '3.8rem',
-          fontWeight: 800, letterSpacing: '0.25em',
-          textAlign: 'center',
-          width: '320px',
-          padding: '16px 20px', outline: 'none',
-          boxShadow: '0 0 40px rgba(124, 106, 247, 0.2)',
-          textTransform: 'uppercase',
-        }}
-      />
-
-      {error && (
-        <p style={{ color: '#f87171', fontSize: '1rem', fontFamily: 'Nunito', fontWeight: 600 }}>{error}</p>
-      )}
-
-      <button
-        className="tv-button"
-        onClick={onConnect}
-        style={{ fontSize: '1.2rem', padding: '18px 48px', fontFamily: 'Nunito', letterSpacing: '0.1em' }}
-      >
-        CONECTAR PORTAL
-      </button>
     </div>
   )
 }
@@ -300,10 +249,10 @@ function TVSpinner({ label }: { label: string }) {
   )
 }
 
-function TVWaiting({ code }: { code: string }) {
+function TVWaitingRemote({ code }: { code: string }) {
   return (
     <div className="tv-card-glow" style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '4rem', maxWidth: 720, width: '90%', textAlign: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '4rem', maxWidth: 680, width: '90%', textAlign: 'center',
       animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     }}>
       <style>{`
@@ -312,12 +261,61 @@ function TVWaiting({ code }: { code: string }) {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{
+          fontFamily: 'Nunito', fontSize: '0.9rem',
+          letterSpacing: '0.3em', textTransform: 'uppercase',
+          color: '#7c6af7', marginBottom: 12, fontWeight: 800
+        }}>CuentaJoy Portal TV</p>
+        <h1 style={{
+          fontFamily: 'Cinzel, serif',
+          fontSize: '2.4rem',
+          fontWeight: 800, color: 'white', lineHeight: 1.1,
+          letterSpacing: '0.02em'
+        }}>PANTALLA DE PROYECCIÓN</h1>
+        <p style={{ color: '#7a7a9a', marginTop: 12, fontSize: '1.15rem', fontFamily: 'Nunito' }}>
+          Para conectar tu control remoto, ingresa este código en tu celular:
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+        {code.split('').map((char, i) => (
+          <div key={i} style={{
+            width: '80px', height: '96px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '2px solid #7c6af7',
+            borderRadius: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'Cinzel, serif',
+            fontSize: '3.2rem',
+            fontWeight: 800, color: 'white',
+            boxShadow: '0 0 35px rgba(124, 106, 247, 0.25)',
+            textTransform: 'uppercase'
+          }}>
+            {char}
+          </div>
+        ))}
+      </div>
+      
+      <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', letterSpacing: '0.05em' }}>
+        Esperando que escanees o entres al catálogo...
+      </p>
+    </div>
+  )
+}
+
+function TVWaitingCuento({ code }: { code: string }) {
+  return (
+    <div className="tv-card-glow" style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '4rem', maxWidth: 720, width: '90%', textAlign: 'center',
+      animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+    }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo-cuentajoy.png" alt="CuentaJoy" style={{ width: 'clamp(280px, 40vw, 440px)', height: 'auto', marginBottom: '1.5rem', objectFit: 'contain', opacity: 0.95 }} />
       
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#7c6af7', fontSize: '1.25rem', fontFamily: 'Nunito', fontWeight: 700, letterSpacing: '0.08em' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#4ade80', fontSize: '1.25rem', fontFamily: 'Nunito', fontWeight: 700, letterSpacing: '0.08em' }}>
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
-        CONECTADO A LA TV (SESIÓN: {code})
+        CONTROL REMOTO CONECTADO (SESIÓN: {code})
       </div>
       
       <p style={{ fontSize: '1.2rem', color: '#7a7a9a', lineHeight: 1.6, maxWidth: 500, margin: '0 auto', fontFamily: 'Nunito' }}>
