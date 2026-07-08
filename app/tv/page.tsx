@@ -310,8 +310,20 @@ function TVWaitingCuento({ code }: { code: string }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '4rem', maxWidth: 720, width: '90%', textAlign: 'center',
       animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo-cuentajoy.png" alt="CuentaJoy" style={{ width: 'clamp(280px, 40vw, 440px)', height: 'auto', marginBottom: '1.5rem', objectFit: 'contain', opacity: 0.95 }} />
+      <video
+        src="/logo-animado.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          width: 'clamp(280px, 40vw, 440px)',
+          height: 'auto',
+          marginBottom: '1.5rem',
+          objectFit: 'contain',
+          opacity: 0.95
+        }}
+      />
       
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#4ade80', fontSize: '1.25rem', fontFamily: 'Nunito', fontWeight: 700, letterSpacing: '0.08em' }}>
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
