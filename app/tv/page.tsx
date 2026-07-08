@@ -306,10 +306,19 @@ function TVWaitingRemote({ code }: { code: string }) {
 
 function TVWaitingCuento({ code }: { code: string }) {
   return (
-    <div className="tv-card-glow" style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '4rem', maxWidth: 720, width: '90%', textAlign: 'center',
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      position: 'relative',
+      background: '#050508',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      padding: '4rem 2rem',
       animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     }}>
+      {/* Video Fullscreen */}
       <video
         src="/logo-animado.mp4"
         autoPlay
@@ -317,22 +326,48 @@ function TVWaitingCuento({ code }: { code: string }) {
         muted
         playsInline
         style={{
-          width: 'clamp(280px, 40vw, 440px)',
-          height: 'auto',
-          marginBottom: '1.5rem',
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
           objectFit: 'contain',
-          opacity: 0.95
+          opacity: 0.95,
+          zIndex: 1
         }}
       />
       
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#4ade80', fontSize: '1.25rem', fontFamily: 'Nunito', fontWeight: 700, letterSpacing: '0.08em' }}>
-        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
-        CONTROL REMOTO CONECTADO (SESIÓN: {code})
+      {/* Degradado inferior para legibilidad de textos */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '35vh',
+        background: 'linear-gradient(to top, rgba(5,5,8,0.9) 0%, rgba(5,5,8,0.3) 60%, transparent 100%)',
+        zIndex: 2,
+        pointerEvents: 'none'
+      }} />
+
+      {/* Contenedor de Textos al Fondo */}
+      <div style={{
+        position: 'relative',
+        zIndex: 5,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.65rem',
+        textAlign: 'center',
+        maxWidth: 600
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#4ade80', fontSize: '0.9rem', fontFamily: 'Nunito', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
+          CONECTADO (SESIÓN: {code})
+        </div>
+        
+        <p style={{ fontSize: '0.95rem', color: '#7a7a9a', lineHeight: 1.4, fontFamily: 'Nunito', fontWeight: 600 }}>
+          Elige tu cuento en el celular y presiona <strong>"Proyectar en TV"</strong> para comenzar.
+        </p>
       </div>
-      
-      <p style={{ fontSize: '1.2rem', color: '#7a7a9a', lineHeight: 1.6, maxWidth: 500, margin: '0 auto', fontFamily: 'Nunito' }}>
-        Elige tu cuento en el celular y presiona <strong>"Proyectar en TV"</strong> para comenzar.
-      </p>
     </div>
   )
 }
