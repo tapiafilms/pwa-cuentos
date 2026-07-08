@@ -322,7 +322,6 @@ function TVWaitingCuento({ code }: { code: string }) {
       <video
         src="/logo-animado.mp4"
         autoPlay
-        loop
         muted
         playsInline
         style={{
