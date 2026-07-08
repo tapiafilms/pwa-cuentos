@@ -545,8 +545,72 @@ function CuentoPageInner() {
   // INTERFAZ DE CONTROL REMOTO
   if (isRemote) {
     return (
-      <div style={{ minHeight: '100vh', background: '#07080c', display: 'flex', flexDirection: 'column', color: 'white', fontFamily: "'Nunito', sans-serif" }}>
+      <div className="remote-container">
         <style>{`
+          .remote-container {
+            min-height: 100vh;
+            background: #07080c;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(124, 106, 247, 0.05);
+            border-left: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+          }
+
+          .remote-header {
+            padding: 1.25rem 1.5rem;
+            background: #0e1017;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+          }
+
+          .remote-main {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1.25rem;
+            z-index: 5;
+            overflow-y: auto;
+          }
+
+          .paragraph-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1.25rem;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+          }
+
+          .paragraph-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: white;
+            fontWeight: 500;
+            text-align: center;
+            margin: 0.75rem 0 0.25rem;
+          }
+
+          .trigger-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+          }
+
           .remote-btn {
             display: flex; align-items: center; justify-content: center; gap: 8px;
             font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700;
@@ -621,10 +685,59 @@ function CuentoPageInner() {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.85; }
           }
+
+          /* --- RESPONSIVE OPTIMIZATIONS FOR TIGHT HEIGHT SCREEN (eg. iPhone 12 Mini / SE / PWA standalone) --- */
+          @media (max-height: 740px) {
+            .remote-header {
+              padding: 0.85rem 1.15rem;
+            }
+            .remote-main {
+              padding: 1rem;
+              gap: 0.75rem;
+            }
+            .remote-btn {
+              padding: 14px;
+              font-size: 0.85rem;
+              border-radius: 10px;
+            }
+            .mic-btn {
+              padding: 12px;
+              border-radius: 12px;
+              font-size: 0.85rem;
+            }
+            .trigger-btn {
+              padding: 8px;
+              font-size: 0.68rem;
+              border-radius: 10px;
+            }
+            .paragraph-box {
+              min-height: 100px;
+              padding: 1rem;
+            }
+            .paragraph-text {
+              font-size: 0.95rem;
+              line-height: 1.45;
+              margin: 0.5rem 0 0.15rem;
+            }
+          }
+
+          @media (max-width: 360px) {
+            .remote-main {
+              padding: 0.75rem;
+              gap: 0.5rem;
+            }
+            .trigger-grid {
+              gap: 6px;
+            }
+            .trigger-btn {
+              padding: 6px;
+              font-size: 0.62rem;
+            }
+          }
         `}</style>
 
         {/* Header del control */}
-        <header style={{ padding: '1.25rem 1.5rem', background: '#0e1017', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
+        <header className="remote-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: '1.5rem' }}>{cuento.emoji}</span>
             <div>
@@ -640,7 +753,7 @@ function CuentoPageInner() {
         </header>
 
         {/* Panel Central de Lectura */}
-        <main style={{ flex: 1, padding: '1.5rem 1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', zIndex: 5, overflowY: 'auto' }}>
+        <main className="remote-main">
           
           {!started ? (
             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
@@ -652,26 +765,15 @@ function CuentoPageInner() {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%', justifyContent: 'space-between' }}>
               
               {/* Caja de texto del párrafo actual */}
-              <div style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 16,
-                padding: '1.25rem',
-                minHeight: 140,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                position: 'relative',
-                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
-              }}>
+              <div className="paragraph-box">
                 <span style={{ position: 'absolute', top: 12, left: 16, fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', color: cuento.accent, textTransform: 'uppercase' }}>
                   {bifurcationChoice ? 'FINAL ALTERNATIVO' : bifurcationShown ? 'BIFURCACIÓN DE HISTORIA' : `Párrafo ${currentPara + 1} de ${cuento.paragraphs.length}`}
                 </span>
                 
-                <p style={{ fontSize: '1.1rem', lineHeight: 1.6, color: 'white', fontWeight: 500, textAlign: 'center', margin: '0.75rem 0 0.25rem' }}>
+                <p className="paragraph-text">
                   {bifurcationChoice === 'A' && cuento.bifurcation.optionA.text}
                   {bifurcationChoice === 'B' && cuento.bifurcation.optionB.text}
                   {!bifurcationChoice && bifurcationShown && cuento.bifurcation.question}
@@ -803,7 +905,7 @@ function CuentoPageInner() {
                   <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
                     Reacciones del Personaje Rive:
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                  <div className="trigger-grid">
                     <button className="trigger-btn" onClick={() => sendInteraction('wave')}>
                       <span style={{ fontSize: '1.25rem', marginBottom: 4 }}>👋</span>
                       Saludar
