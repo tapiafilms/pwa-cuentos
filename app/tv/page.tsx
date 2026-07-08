@@ -305,6 +305,8 @@ function TVWaitingRemote({ code }: { code: string }) {
 }
 
 function TVWaitingCuento({ code }: { code: string }) {
+  const [videoLoaded, setVideoLoaded] = useState(false)
+
   return (
     <div style={{
       width: '100vw',
@@ -318,19 +320,41 @@ function TVWaitingCuento({ code }: { code: string }) {
       padding: '4rem 2rem',
       animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     }}>
+      {/* Indicador de carga elegante detrás/encima del video */}
+      {!videoLoaded && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          zIndex: 3
+        }}>
+          <div className="tv-spinner" style={{ width: 48, height: 48, borderWidth: 3 }} />
+          <p style={{ fontFamily: 'Nunito', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+            Cargando presentación...
+          </p>
+        </div>
+      )}
+
       {/* Video Fullscreen */}
       <video
         src="/logo-animado.mp4"
         autoPlay
         muted
         playsInline
+        poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        onLoadedData={() => setVideoLoaded(true)}
         style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
           height: '100%',
           objectFit: 'contain',
-          opacity: 0.95,
+          opacity: videoLoaded ? 0.95 : 0,
+          transition: 'opacity 0.6s ease-in-out',
           zIndex: 1
         }}
       />
