@@ -250,56 +250,126 @@ function TVSpinner({ label }: { label: string }) {
 }
 
 function TVWaitingRemote({ code }: { code: string }) {
-  return (
-    <div className="tv-card-glow" style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '4rem', maxWidth: 680, width: '90%', textAlign: 'center',
-      animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
-    }}>
-      <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{
-          fontFamily: 'Nunito', fontSize: '0.9rem',
-          letterSpacing: '0.3em', textTransform: 'uppercase',
-          color: '#7c6af7', marginBottom: 12, fontWeight: 800
-        }}>CuentaJoy Portal TV</p>
-        <h1 style={{
-          fontFamily: 'Cinzel, serif',
-          fontSize: '2.4rem',
-          fontWeight: 800, color: 'white', lineHeight: 1.1,
-          letterSpacing: '0.02em'
-        }}>PANTALLA DE PROYECCIÓN</h1>
-        <p style={{ color: '#7a7a9a', marginTop: 12, fontSize: '1.15rem', fontFamily: 'Nunito' }}>
-          Para conectar tu control remoto, ingresa este código en tu celular:
+  const [waitingIntroState, setWaitingIntroState] = useState<'video' | 'fading' | 'code'>('video')
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoOpacity, setVideoOpacity] = useState(1)
+
+  const handleVideoEnded = () => {
+    setVideoOpacity(0)
+    setWaitingIntroState('fading')
+    setTimeout(() => {
+      setWaitingIntroState('code')
+    }, 800) // 800ms fade-out
+  }
+
+  // Si ya terminó el video, mostramos el código de conexión con su animación de entrada
+  if (waitingIntroState === 'code') {
+    return (
+      <div className="tv-card-glow" style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '4rem', maxWidth: 680, width: '90%', textAlign: 'center',
+        animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+      }}>
+        <style>{`
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{
+            fontFamily: 'Nunito', fontSize: '0.9rem',
+            letterSpacing: '0.3em', textTransform: 'uppercase',
+            color: '#7c6af7', marginBottom: 12, fontWeight: 800
+          }}>CuentaJoy Portal TV</p>
+          <h1 style={{
+            fontFamily: 'Cinzel, serif',
+            fontSize: '2.4rem',
+            fontWeight: 800, color: 'white', lineHeight: 1.1,
+            letterSpacing: '0.02em'
+          }}>PANTALLA DE PROYECCIÓN</h1>
+          <p style={{ color: '#7a7a9a', marginTop: 12, fontSize: '1.15rem', fontFamily: 'Nunito' }}>
+            Para conectar tu control remoto, ingresa este código en tu celular:
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+          {code.split('').map((char, i) => (
+            <div key={i} style={{
+              width: '80px', height: '96px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '2px solid #7c6af7',
+              borderRadius: 20,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'Cinzel, serif',
+              fontSize: '3.2rem',
+              fontWeight: 800, color: 'white',
+              boxShadow: '0 0 35px rgba(124, 106, 247, 0.25)',
+              textTransform: 'uppercase'
+            }}>
+              {char}
+            </div>
+          ))}
+        </div>
+        
+        <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', letterSpacing: '0.05em' }}>
+          Esperando que escanees o entres al catálogo...
         </p>
       </div>
+    )
+  }
 
-      <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-        {code.split('').map((char, i) => (
-          <div key={i} style={{
-            width: '80px', height: '96px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '2px solid #7c6af7',
-            borderRadius: 20,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Cinzel, serif',
-            fontSize: '3.2rem',
-            fontWeight: 800, color: 'white',
-            boxShadow: '0 0 35px rgba(124, 106, 247, 0.25)',
-            textTransform: 'uppercase'
-          }}>
-            {char}
-          </div>
-        ))}
-      </div>
-      
-      <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.35)', fontFamily: 'Nunito', letterSpacing: '0.05em' }}>
-        Esperando que escanees o entres al catálogo...
-      </p>
+  // Reproduciendo video intro antes de mostrar el código
+  return (
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      position: 'fixed',
+      inset: 0,
+      background: '#050508',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999
+    }}>
+      {/* Indicador de carga elegante */}
+      {!videoLoaded && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          zIndex: 3
+        }}>
+          <div className="tv-spinner" style={{ width: 48, height: 48, borderWidth: 3 }} />
+          <p style={{ fontFamily: 'Nunito', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+            Cargando presentación...
+          </p>
+        </div>
+      )}
+
+      {/* Video Fullscreen */}
+      <video
+        src="/logo-animado.mp4"
+        autoPlay
+        muted
+        playsInline
+        poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        onLoadedData={() => setVideoLoaded(true)}
+        onEnded={handleVideoEnded}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          opacity: videoLoaded ? videoOpacity : 0,
+          transition: 'opacity 0.8s ease-in-out',
+          zIndex: 1
+        }}
+      />
     </div>
   )
 }
