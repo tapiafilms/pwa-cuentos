@@ -75,6 +75,27 @@ export default function Home() {
   // Persistencia de la sesión de TV
   const [tvSessionCode, setTvSessionCode] = useState<string | null>(null)
 
+  // Video de introducción para celular (PWA)
+  const [showIntro, setShowIntro] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Detección de dispositivo móvil para mostrar video de introducción
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+      const introSeen = sessionStorage.getItem('cuentajoy_intro_seen')
+      if (isMobile && !introSeen) {
+        setShowIntro(true)
+      }
+    }
+  }, [])
+
+  const handleIntroEnded = () => {
+    sessionStorage.setItem('cuentajoy_intro_seen', 'true')
+    setShowIntro(false)
+  }
+
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -149,6 +170,80 @@ export default function Home() {
 
   return (
     <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
+      {showIntro && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#000000',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden'
+        }}>
+          <video
+            ref={videoRef}
+            src="/intro-cuenta-joy.mp4"
+            autoPlay
+            playsInline
+            muted={isMuted}
+            onEnded={handleIntroEnded}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          
+          {/* Botón Saltar Intro */}
+          <button
+            onClick={handleIntroEnded}
+            style={{
+              position: 'absolute',
+              top: '1.5rem',
+              right: '1.5rem',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '20px',
+              padding: '8px 16px',
+              color: '#ffffff',
+              fontSize: '0.8rem',
+              fontFamily: "'Nunito', sans-serif",
+              fontWeight: 700,
+              cursor: 'pointer',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.2s',
+              zIndex: 100000
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)' }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)' }}
+          >
+            Saltar ✕
+          </button>
+
+          {/* Botón de Sonido */}
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            style={{
+              position: 'absolute',
+              bottom: '2rem',
+              right: '1.5rem',
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              fontSize: '1.2rem',
+              cursor: 'pointer',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.2s',
+              zIndex: 100000
+            }}
+          >
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+        </div>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel:wght@400..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
