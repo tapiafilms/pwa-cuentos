@@ -419,11 +419,12 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
-          .story-inner { flex-direction: column !important; padding: 5rem 1.5rem !important; gap: 2rem !important; }
-          .story-text { align-items: center !important; text-align: center !important; }
+          .story-inner { flex-direction: column !important; padding: 5rem 1.5rem !important; gap: 2.5rem !important; }
+          .story-text { align-items: center !important; text-align: center !important; flex: 1 1 100% !important; max-width: 100% !important; }
           .section-num { display: none; }
           .story-desc { max-width: 100% !important; }
-          .story-btns { justify-content: center !important; }
+          .story-btns { justify-content: center !important; width: 100% !important; }
+          .story-btns button { width: 100% !important; justify-content: center !important; }
           .nav-link { display: none; }
           .nav-inner { padding: 1rem 1.25rem !important; }
           .hero-logo-area { padding: 2rem 1.5rem !important; }
@@ -1132,10 +1133,10 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
         />
       )}
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
+      <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
         {/* COLUMNA IZQUIERDA: texto */}
-        <div style={{ flex: '0 0 42%', display: 'flex', flexDirection: 'column', gap: '1.1rem', transform: visible ? 'translateX(0)' : 'translateX(-40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.1s' }}>
+        <div className="story-text" style={{ flex: '0 0 42%', display: 'flex', flexDirection: 'column', gap: '1.1rem', transform: visible ? 'translateX(0)' : 'translateX(-40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.1s' }}>
 
           {/* Tag pill */}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 100, background: `${cuento.glow}22`, border: `1px solid ${cuento.glow}55`, color: cuento.accent, width: 'fit-content' }}>
@@ -1153,12 +1154,12 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
           </p>
 
           {/* Descripción */}
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.9rem', lineHeight: 1.2, color: '#ffffff', maxWidth: 400, fontWeight: 300, marginTop: '0.25rem' }}>
+          <p className="story-desc" style={{ fontFamily: 'Nunito', fontSize: '0.9rem', lineHeight: 1.2, color: '#ffffff', maxWidth: 400, fontWeight: 300, marginTop: '0.25rem' }}>
             {cuento.desc}
           </p>
 
           {/* Botones */}
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+          <div className="story-btns" style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
             <button onClick={onOpenTV} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer' }}>
               {hasSession ? '📺 Proyectar en TV' : '📺 Ver en TV'}
             </button>
