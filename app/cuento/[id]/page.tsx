@@ -257,6 +257,8 @@ function CuentoPageInner() {
   }
 
   const recognitionRef = useRef<any>(null)
+  const accumulatedTextRef = useRef<string>('')
+  const hasSubmittedRef = useRef<boolean>(false)
 
   // Configuración del reconocimiento de voz nativo en el cliente
   useEffect(() => {
@@ -287,9 +289,18 @@ function CuentoPageInner() {
       sendInteraction('think')
       addDebugLog('Iniciando SpeechRecognition...')
 
+      accumulatedTextRef.current = ''
+      hasSubmittedRef.current = false
+
       const rec = new SpeechRecognition()
-      rec.lang = 'es-ES'
-      rec.interimResults = false
+      
+      // Intentar usar el idioma nativo del navegador del usuario (es-CL, es-ES, etc.)
+      const userLang = navigator.language || 'es-ES'
+      rec.lang = userLang
+      addDebugLog(`Idioma configurado: ${userLang}`)
+
+      // Habilitar resultados intermedios en tiempo real para iOS
+      rec.interimResults = true
       rec.maxAlternatives = 1
       rec.continuous = false
 
@@ -315,14 +326,29 @@ function CuentoPageInner() {
       }
 
       rec.onresult = async (event: any) => {
-        const text = event.results[0][0].transcript
-        addDebugLog(`Evento: onresult. Texto detectado: "${text}"`)
-        setIsListening(false)
+        let interimTranscript = ''
+        let finalTranscript = ''
+        
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript
+          } else {
+            interimTranscript += transcript
+          }
+        }
+
+        const text = finalTranscript || interimTranscript
         if (text && text.trim() !== '') {
-          setLastSpokenText(text)
-          await handleAskAI(text)
-        } else {
-          addDebugLog('onresult: Texto vacío o inválido')
+          accumulatedTextRef.current = text.trim()
+          addDebugLog(`onresult: "${text.trim()}" (final: ${finalTranscript ? 'sí' : 'no'})`)
+          
+          if (finalTranscript && !hasSubmittedRef.current) {
+            hasSubmittedRef.current = true
+            setIsListening(false)
+            setLastSpokenText(accumulatedTextRef.current)
+            await handleAskAI(accumulatedTextRef.current)
+          }
         }
       }
 
@@ -337,9 +363,17 @@ function CuentoPageInner() {
         }
       }
 
-      rec.onend = () => {
+      rec.onend = async () => {
         setIsListening(false)
         addDebugLog('Evento: onend (servicio cerrado)')
+        
+        // Si el servicio termina y tenemos texto acumulado sin enviar, lo enviamos (caso común en iOS al presionar detener)
+        if (accumulatedTextRef.current !== '' && !hasSubmittedRef.current) {
+          addDebugLog(`onend fallback: Enviando texto acumulado "${accumulatedTextRef.current}"`)
+          hasSubmittedRef.current = true
+          setLastSpokenText(accumulatedTextRef.current)
+          await handleAskAI(accumulatedTextRef.current)
+        }
       }
 
       recognitionRef.current = rec
