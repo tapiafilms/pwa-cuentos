@@ -78,6 +78,7 @@ export default function Home() {
   // Video de introducción para celular (PWA)
   const [showIntro, setShowIntro] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
+  const [introOpacity, setIntroOpacity] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   // Detección de dispositivo móvil para mostrar video de introducción
@@ -87,13 +88,21 @@ export default function Home() {
       const introSeen = sessionStorage.getItem('cuentajoy_intro_seen')
       if (isMobile && !introSeen) {
         setShowIntro(true)
+        // Animación de entrada: fade-in del contenedor de video
+        setTimeout(() => {
+          setIntroOpacity(1)
+        }, 50)
       }
     }
   }, [])
 
   const handleIntroEnded = () => {
+    // Animación de salida: fade-out del contenedor
+    setIntroOpacity(0)
     sessionStorage.setItem('cuentajoy_intro_seen', 'true')
-    setShowIntro(false)
+    setTimeout(() => {
+      setShowIntro(false)
+    }, 800) // Esperar a que termine la transición de 800ms
   }
 
   useEffect(() => {
@@ -179,7 +188,10 @@ export default function Home() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          opacity: introOpacity,
+          transition: 'opacity 0.8s ease-in-out',
+          pointerEvents: introOpacity === 0 ? 'none' : 'auto'
         }}>
           <video
             ref={videoRef}
