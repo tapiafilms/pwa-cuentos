@@ -79,6 +79,7 @@ export default function Home() {
   const [showIntro, setShowIntro] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
   const [introOpacity, setIntroOpacity] = useState(0)
+  const [introFinished, setIntroFinished] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   // Detección de dispositivo móvil para mostrar video de introducción
@@ -92,13 +93,16 @@ export default function Home() {
         setTimeout(() => {
           setIntroOpacity(1)
         }, 50)
+      } else {
+        setIntroFinished(true)
       }
     }
   }, [])
 
   const handleIntroEnded = () => {
-    // Animación de salida: fade-out del contenedor
+    // Animación de salida: fade-out de ambos contenedores al mismo tiempo
     setIntroOpacity(0)
+    setIntroFinished(true)
     sessionStorage.setItem('cuentajoy_intro_seen', 'true')
     setTimeout(() => {
       setShowIntro(false)
@@ -179,6 +183,19 @@ export default function Home() {
 
   return (
     <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
+      {/* Capa negra protectora inicial en móviles para evitar el flash del home */}
+      <div
+        className="mobile-only-cover"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#000000',
+          zIndex: 99998,
+          pointerEvents: introFinished ? 'none' : 'auto',
+          opacity: introFinished ? 0 : 1,
+          transition: 'opacity 0.8s ease-in-out',
+        }}
+      />
       {showIntro && (
         <div style={{
           position: 'fixed',
@@ -393,6 +410,12 @@ export default function Home() {
           border-radius: 30px; padding: 10px 24px; zIndex: 1000; display: flex; align-items: center; gap: 12px;
           box-shadow: 0 8px 32px rgba(0,0,0,0.5); backdrop-filter: blur(12px);
           animation: fadeIn 0.3s ease;
+        }
+
+        @media (min-width: 769px) {
+          .mobile-only-cover {
+            display: none !important;
+          }
         }
 
         @media (max-width: 768px) {
