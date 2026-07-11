@@ -248,6 +248,14 @@ function CuentoPageInner() {
   const [speechError, setSpeechError] = useState('')
   const [lastSpokenText, setLastSpokenText] = useState('')
 
+  // Logs de depuración en pantalla para el micrófono
+  const [debugLogs, setDebugLogs] = useState<string[]>([])
+  
+  const addDebugLog = (msg: string) => {
+    const time = new Date().toLocaleTimeString('es-CL', { hour12: false })
+    setDebugLogs(prev => [`[${time}] ${msg}`, ...prev].slice(0, 15))
+  }
+
   const recognitionRef = useRef<any>(null)
 
   // Configuración del reconocimiento de voz nativo en el cliente
@@ -256,63 +264,107 @@ function CuentoPageInner() {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       if (SpeechRecognition) {
         setMicSupported(true)
-        const rec = new SpeechRecognition()
-        rec.lang = 'es-ES'
-        rec.interimResults = false
-        rec.continuous = false
-
-        rec.onstart = () => {
-          setIsListening(true)
-          setSpeechError('')
-          // Cambiar animación del personaje en la TV a "pensar"
-          sendInteraction('think')
-        }
-
-        rec.onresult = async (event: any) => {
-          const text = event.results[0][0].transcript
-          setIsListening(false)
-          if (text && text.trim() !== '') {
-            setLastSpokenText(text)
-            await handleAskAI(text)
-          }
-        }
-
-        rec.onerror = (event: any) => {
-          setIsListening(false)
-          console.error('Speech recognition error:', event.error)
-          if (event.error === 'not-allowed') {
-            setSpeechError('Permiso de micrófono denegado')
-          } else {
-            setSpeechError(`Error: ${event.error}`)
-          }
-        }
-
-        rec.onend = () => {
-          setIsListening(false)
-        }
-
-        recognitionRef.current = rec
+        addDebugLog('SpeechRecognition detectado en el navegador')
+      } else {
+        addDebugLog('SpeechRecognition NO detectado en el navegador')
       }
     }
   }, [])
 
   const startListening = () => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start()
-      } catch (err) {
-        console.error('Failed to start recognition:', err)
+    if (typeof window === 'undefined') return
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      setSpeechError('Este dispositivo no soporta reconocimiento de voz')
+      addDebugLog('Error: SpeechRecognition no disponible al iniciar')
+      return
+    }
+
+    try {
+      setSpeechError('')
+      setIsListening(true)
+      sendInteraction('think')
+      addDebugLog('Iniciando SpeechRecognition...')
+
+      const rec = new SpeechRecognition()
+      rec.lang = 'es-ES'
+      rec.interimResults = false
+      rec.maxAlternatives = 1
+      rec.continuous = false
+
+      rec.onstart = () => {
+        setIsListening(true)
+        addDebugLog('Evento: onstart (grabador activo)')
       }
+
+      rec.onspeechstart = () => {
+        addDebugLog('Evento: onspeechstart (detectó habla)')
+      }
+
+      rec.onspeechend = () => {
+        addDebugLog('Evento: onspeechend (dejó de hablar)')
+      }
+
+      rec.onaudiostart = () => {
+        addDebugLog('Evento: onaudiostart (capturando audio)')
+      }
+
+      rec.onaudioend = () => {
+        addDebugLog('Evento: onaudioend (fin captura audio)')
+      }
+
+      rec.onresult = async (event: any) => {
+        const text = event.results[0][0].transcript
+        addDebugLog(`Evento: onresult. Texto detectado: "${text}"`)
+        setIsListening(false)
+        if (text && text.trim() !== '') {
+          setLastSpokenText(text)
+          await handleAskAI(text)
+        } else {
+          addDebugLog('onresult: Texto vacío o inválido')
+        }
+      }
+
+      rec.onerror = (event: any) => {
+        setIsListening(false)
+        console.error('Speech recognition error:', event.error)
+        addDebugLog(`Evento: onerror. Error: ${event.error}`)
+        if (event.error === 'not-allowed') {
+          setSpeechError('Permiso de micrófono denegado')
+        } else {
+          setSpeechError(`Error de micrófono: ${event.error}`)
+        }
+      }
+
+      rec.onend = () => {
+        setIsListening(false)
+        addDebugLog('Evento: onend (servicio cerrado)')
+      }
+
+      recognitionRef.current = rec
+      rec.start()
+      addDebugLog('Llamado a rec.start() ejecutado')
+    } catch (err: any) {
+      setIsListening(false)
+      console.error('Failed to start recognition:', err)
+      setSpeechError(`Error al iniciar grabador: ${err.message || err}`)
+      addDebugLog(`Excepción en startListening: ${err.message || err}`)
     }
   }
 
   const stopListening = () => {
+    addDebugLog('Llamando a stopListening manualmente...')
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop()
-      } catch (err) {
+        addDebugLog('Llamado a rec.stop() completado')
+      } catch (err: any) {
         console.error('Failed to stop recognition:', err)
+        addDebugLog(`Error en rec.stop(): ${err.message || err}`)
       }
+    } else {
+      addDebugLog('Advertencia: recognitionRef es nulo en stopListening')
     }
   }
 
@@ -322,6 +374,7 @@ function CuentoPageInner() {
     setAiLoading(true)
     setSpeechError('')
     sendInteraction('think')
+    addDebugLog(`Consultando IA con texto: "${messageText}"`)
 
     try {
       const res = await fetch('/api/chat', {
@@ -331,6 +384,7 @@ function CuentoPageInner() {
       })
       const data = await res.json()
       const replyText = data.response || "¡Hola! He sentido tu voz."
+      addDebugLog(`Respuesta recibida de la IA: "${replyText}"`)
 
       if (isRemote && session) {
         // Enviar evento de respuesta a la TV
@@ -345,9 +399,10 @@ function CuentoPageInner() {
         // Activar gesto alegre en la TV
         sendInteraction('celebrate')
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error asking AI:', err)
       setSpeechError('Error de red al consultar a la IA')
+      addDebugLog(`Error al consultar IA: ${err.message || err}`)
     } finally {
       setAiLoading(false)
     }
@@ -948,6 +1003,33 @@ function CuentoPageInner() {
                   <button className="remote-btn remote-btn-secondary" onClick={handleBackToHome} style={{ width: '100%', borderColor: 'rgba(255,255,255,0.2)' }}>
                     🏠 Volver al Inicio (Elegir otro cuento)
                   </button>
+                )}
+              </div>
+
+              {/* CONSOLA DE DEPURACIÓN (LOGS DE MICRÓFONO) */}
+              <div style={{
+                marginTop: 16,
+                background: '#0d0e14',
+                border: '1px dashed rgba(255,255,255,0.1)',
+                borderRadius: 12,
+                padding: 10,
+                fontSize: '0.7rem',
+                fontFamily: 'monospace',
+                color: '#a0a5c0',
+                maxHeight: 180,
+                overflowY: 'auto',
+                textAlign: 'left'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 4, marginBottom: 6, fontWeight: 'bold', color: '#ffb74d' }}>
+                  <span>DEBUG CONSOLE (MIC LOGS)</span>
+                  <button onClick={() => setDebugLogs([])} style={{ background: 'transparent', border: 'none', color: '#ff5c5c', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'monospace' }}>Limpiar</button>
+                </div>
+                {debugLogs.length === 0 ? (
+                  <div style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>Esperando eventos...</div>
+                ) : (
+                  debugLogs.map((log, i) => (
+                    <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', padding: '2px 0', wordBreak: 'break-all' }}>{log}</div>
+                  ))
                 )}
               </div>
 
