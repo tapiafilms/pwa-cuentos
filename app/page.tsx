@@ -362,12 +362,12 @@ function DesktopLanding() {
             </div>
             
             <h1 className="title-display gradient-text" style={{ fontSize: '3.6rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.01em' }}>
-              El Portal de Cuentos y Juegos de Mesa <br />
+              El Portal de Experiencias Interactivas <br />
               <em className="title-cursive" style={{ fontSize: '4.5rem', fontWeight: 400, color: '#f0effe', fontStyle: 'normal', opacity: 0.9 }}>para la familia</em>
             </h1>
             
             <p style={{ fontSize: '1.25rem', color: '#7a7a9a', lineHeight: 1.6, maxWidth: '600px' }}>
-              Convierte tu Smart TV en el tablero principal y usa tu celular como el control táctil privado. Vive historias mágicas e intensas partidas de tablero guiadas por Inteligencia Artificial interactiva.
+              Convierte tu Smart TV en tu pantalla principal y usa tu celular como el control táctil. Explora mundos interactivos y dinámicas en grupo guiadas por Inteligencia Artificial.
             </p>
             
             <div style={{ display: 'flex', gap: '1.25rem', marginTop: '1rem' }}>
