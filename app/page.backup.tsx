@@ -698,7 +698,7 @@ export default function Home() {
 
       {/* CUENTOS (Vista de catálogo vertical) */}
       {currentView === 'cuentos' && (
-        <div id="cuentos" style={{ paddingTop: '64px', background: '#07070a' }}>
+        <div id="cuentos" style={{ paddingTop: '64px', background: 'rgb(12 12 15)' }}>
           {CUENTOS.map((cuento, index) => (
             <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={tvSessionCode ? () => projectToTV(cuento) : () => openTV(cuento)} hasSession={!!tvSessionCode} />
           ))}
