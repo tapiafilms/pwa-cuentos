@@ -146,7 +146,7 @@ function TVPageInner() {
         transitionTo('playing_chess')
       })
       .on('broadcast', { event: 'chess_move' }, ({ payload }) => {
-        handlePlayerChessMove(payload.from, payload.to)
+        handlePlayerChessMove(payload.from, payload.to, channel)
       })
       .on('broadcast', { event: 'chess_reset' }, () => {
         handleChessReset()
@@ -215,7 +215,7 @@ function TVPageInner() {
     return null
   }
 
-  const handlePlayerChessMove = (from: string, to: string) => {
+  const handlePlayerChessMove = (from: string, to: string, activeChan: any) => {
     if (!chessRef.current) return
 
     try {
@@ -230,7 +230,7 @@ function TVPageInner() {
       setChessInCheck(inCheckSquare)
 
       if (chessRef.current.isGameOver()) {
-        handleGameOver()
+        handleGameOver(activeChan)
         return
       }
 
@@ -241,7 +241,7 @@ function TVPageInner() {
 
       // Simular tiempo de "pensamiento" de la IA
       setTimeout(() => {
-        makeAIMove()
+        makeAIMove(activeChan)
       }, 2500)
 
     } catch (e) {
@@ -249,7 +249,7 @@ function TVPageInner() {
     }
   }
 
-  const makeAIMove = () => {
+  const makeAIMove = (activeChan: any) => {
     if (!chessRef.current) return
 
     try {
@@ -289,8 +289,9 @@ function TVPageInner() {
       const inCheckSquare = chessRef.current.inCheck() ? findKingSquare(chessRef.current.turn()) : null
       setChessInCheck(inCheckSquare)
 
-      if (channelRef) {
-        channelRef.send({
+      const targetChan = activeChan || channelRef
+      if (targetChan) {
+        targetChan.send({
           type: 'broadcast',
           event: 'chess_ai_move',
           payload: {
@@ -301,7 +302,7 @@ function TVPageInner() {
       }
 
       if (chessRef.current.isGameOver()) {
-        handleGameOver()
+        handleGameOver(activeChan)
         return
       }
 
@@ -314,7 +315,7 @@ function TVPageInner() {
     }
   }
 
-  const handleGameOver = () => {
+  const handleGameOver = (activeChan: any) => {
     if (!chessRef.current) return
     
     let comment = ''
@@ -334,8 +335,9 @@ function TVPageInner() {
     setAiSpeakingText(comment)
     speakText(comment)
     
-    if (channelRef) {
-      channelRef.send({
+    const targetChan = activeChan || channelRef
+    if (targetChan) {
+      targetChan.send({
         type: 'broadcast',
         event: 'chess_game_over',
         payload: {
