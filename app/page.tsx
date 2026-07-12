@@ -10,7 +10,7 @@ export default function Home() {
   useEffect(() => {
     const checkMobile = () => {
       const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      const isSmallScreen = window.innerWidth < 1024 // Tablets y móviles
+      const isSmallScreen = window.innerWidth <= 1366 // Tablets, iPads y móviles
       setIsMobile(isMobileUA || isSmallScreen)
     }
     checkMobile()

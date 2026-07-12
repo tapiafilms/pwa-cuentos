@@ -90,7 +90,7 @@ export default function Home() {
   // Detección de dispositivo móvil para mostrar video de introducción
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1366
       const introSeen = sessionStorage.getItem('cuentajoy_intro_seen')
       if (isMobile && !introSeen) {
         setShowWelcome(true)
