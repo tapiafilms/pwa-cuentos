@@ -97,6 +97,7 @@ export default function Home() {
   const [aiTextLog, setAiTextLog] = useState<string[]>([])
   const [isAiThinking, setIsAiThinking] = useState(false)
   const [activeChannel, setActiveChannel] = useState<any>(null)
+  const [showChessModal, setShowChessModal] = useState(false)
 
   // Detección de dispositivo móvil para mostrar video de introducción
   useEffect(() => {
@@ -198,18 +199,23 @@ export default function Home() {
     }
   }, [currentView])
 
-  const startChess = () => {
-    if (!tvSessionCode) return
+  const startChess = (codeToUse?: string) => {
+    const sessionCode = codeToUse || tvSessionCode
+    if (!sessionCode) return
     
-    const channel = supabase.channel(`session:${tvSessionCode}`)
+    const channel = supabase.channel(`session:${sessionCode}`)
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         await channel.send({
           type: 'broadcast',
           event: 'start_chess'
         })
+        localStorage.setItem('cuentajoy_session', sessionCode)
+        setTvSessionCode(sessionCode)
         changeViewWithTransition('chess')
-        supabase.removeChannel(channel)
+        setTimeout(() => {
+          supabase.removeChannel(channel)
+        }, 1000)
       }
     })
   }
@@ -748,7 +754,7 @@ export default function Home() {
               <button 
                 onClick={() => {
                   if (!tvSessionCode) {
-                    alert('Para iniciar el Tablero Joy (Ajedrez), conéctate a una pantalla de TV ingresando el código de 4 dígitos primero.')
+                    setShowChessModal(true)
                     return
                   }
                   startChess()
@@ -1088,6 +1094,17 @@ export default function Home() {
       {/* MODAL VER EN TV */}
       {modal.open && (
         <TVModal cuento={modal.cuento} onClose={closeModal} />
+      )}
+
+      {/* MODAL CONECTAR AJEDREZ */}
+      {showChessModal && (
+        <ChessTVModal 
+          onClose={() => setShowChessModal(false)} 
+          onConnect={(code) => {
+            setShowChessModal(false)
+            startChess(code)
+          }} 
+        />
       )}
 
       {/* Capa negra de transición de vistas */}
@@ -1840,6 +1857,169 @@ function TVModal({ cuento, onClose }: {
             )}
           </button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ChessTVModal({ onClose, onConnect }: {
+  onClose: () => void
+  onConnect: (code: string) => void
+}) {
+  const [inputCode, setInputCode] = useState('')
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleConnect = async () => {
+    const codeVal = inputCode.trim().toUpperCase()
+    if (codeVal.length !== 4) {
+      setError('El código debe tener 4 caracteres')
+      return
+    }
+    setError('')
+    setIsConnecting(true)
+
+    const channel = supabase.channel(`session:${codeVal}`)
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.send({
+          type: 'broadcast',
+          event: 'tv_ready',
+          payload: {}
+        })
+
+        setTimeout(async () => {
+          await channel.send({
+            type: 'broadcast',
+            event: 'start_chess'
+          })
+
+          onConnect(codeVal)
+          
+          setTimeout(() => {
+            supabase.removeChannel(channel)
+          }, 1000)
+        }, 800)
+      } else {
+        setError('Error al conectar. Inténtalo de nuevo.')
+        setIsConnecting(false)
+      }
+    })
+  }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(5, 5, 8, 0.85)',
+      backdropFilter: 'blur(20px)',
+      zIndex: 99999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '360px',
+        background: '#0c0d10',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '24px',
+        padding: '2rem',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '1.5rem',
+        position: 'relative'
+      }}>
+        <button 
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'none',
+            border: 'none',
+            color: 'rgba(255,255,255,0.4)',
+            fontSize: '1.25rem',
+            cursor: 'pointer',
+            padding: 0
+          }}
+        >
+          ✕
+        </button>
+
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontSize: '2.5rem' }}>⚔️</span>
+          <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>
+            Conectar Ajedrez
+          </h2>
+          <p style={{ fontFamily: 'Nunito', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>
+            Ingresa el código de 4 letras que aparece en tu pantalla de TV para iniciar la partida.
+          </p>
+        </div>
+
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <input 
+            type="text"
+            maxLength={4}
+            value={inputCode}
+            onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+            placeholder="ABCD"
+            disabled={isConnecting}
+            style={{
+              width: '100%',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              padding: '12px',
+              fontSize: '1.5rem',
+              fontWeight: 800,
+              letterSpacing: '0.2em',
+              textAlign: 'center',
+              color: 'white',
+              outline: 'none',
+              fontFamily: 'monospace'
+            }}
+          />
+          {error && (
+            <p style={{ fontFamily: 'Nunito', fontSize: '0.75rem', color: '#f44336', textAlign: 'center' }}>
+              {error}
+            </p>
+          )}
+        </div>
+
+        <button 
+          onClick={handleConnect}
+          disabled={isConnecting}
+          style={{
+            width: '100%',
+            background: '#7c6af7',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '12px',
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            fontFamily: 'Nunito',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(124, 106, 247, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8
+          }}
+        >
+          {isConnecting ? (
+            <>
+              <div className="button-spinner" style={{ width: 16, height: 16, border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              <span>Conectando...</span>
+            </>
+          ) : (
+            'CONECTAR Y JUGAR'
+          )}
+        </button>
       </div>
     </div>
   )
