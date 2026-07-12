@@ -380,74 +380,24 @@ function DesktopLanding() {
             </div>
           </div>
 
-          {/* Imagen / Mockup Derecha */}
+          {/* Logo Grande Cuenta Joy */}
           <div style={{ position: 'relative', width: '100%', height: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* TV MOCKUP */}
-            <div className="tv-mockup" style={{
-              width: '85%', height: '340px', background: '#0e0e14', border: '12px solid #272733', borderRadius: '24px', position: 'relative', overflow: 'hidden',
-              display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderBottomWidth: '18px'
-            }}>
-              {/* Brillo dinámico de pantalla */}
-              <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 30% 30%, rgba(124, 106, 247, 0.08) 0%, transparent 60%)' }} />
-              
-              {/* Contenido Simulado TV (Ajedrez con Avatar) */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2, height: '100%' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ffd54f', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                    <span>✦ Jugada de la IA</span>
-                  </div>
-                  <h3 className="title-display" style={{ fontSize: '1.75rem', fontWeight: 800 }}>Caballo a F6</h3>
-                  <div style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: '16px', maxWidth: '240px', marginTop: '10px' }}>
-                    <p style={{ fontSize: '0.85rem', color: '#e0effe', fontStyle: 'italic' }}>"Vaya movimiento astuto... pero mi caballo reclama este cuadrante."</p>
-                  </div>
-                </div>
-                
-                {/* Silueta del Avatar IA */}
-                <div style={{ position: 'relative', width: '160px', height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                  <div style={{ width: '120px', height: '160px', borderRadius: '50% 50% 0 0', background: 'linear-gradient(to top, #7c6af7 0%, #1e1b4b 100%)', opacity: 0.7, filter: 'blur(1px)' }} />
-                  <div style={{ position: 'absolute', bottom: '150px', width: '60px', height: '60px', borderRadius: '50%', background: '#7c6af7', opacity: 0.8 }} />
-                  <div style={{ position: 'absolute', bottom: '175px', display: 'flex', gap: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Pie de TV */}
-              <div style={{ position: 'absolute', bottom: '-40px', left: '50%', transform: 'translateX(-50%)', width: '120px', height: '24px', background: '#1c1c24', borderRadius: '0 0 8px 8px', zIndex: -1 }} />
-            </div>
-
-            {/* PHONE MOCKUP */}
-            <div className="phone-mockup" style={{
-              width: '180px', height: '360px', background: '#09090d', border: '8px solid #272733', borderRadius: '28px', position: 'absolute', right: '4%', bottom: '2%', overflow: 'hidden',
-              display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.25rem 1rem', zIndex: 10
-            }}>
-              {/* Altavoz simulado */}
-              <div style={{ width: '40px', height: '4px', background: '#272733', borderRadius: '10px', margin: '0 auto 8px' }} />
-              
-              {/* Contenido Simulado Celular (Tablero Táctil) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%', justifyContent: 'center' }}>
-                <div style={{ textTransform: 'uppercase', fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', letterSpacing: '0.1em' }}>Tu Panel Táctil</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '6px', borderRadius: '12px' }}>
-                  {Array.from({ length: 16 }).map((_, i) => (
-                    <div key={i} style={{
-                      aspectRatio: '1', background: (Math.floor(i / 4) + i) % 2 === 0 ? 'rgba(255,255,255,0.08)' : 'transparent',
-                      borderRadius: '3px', border: '1px solid rgba(255,255,255,0.02)'
-                    }} />
-                  ))}
-                </div>
-                <div style={{ background: '#7c6af7', borderRadius: '20px', padding: '6px', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'white' }}>
-                  Mover Pieza
-                </div>
-              </div>
-              
-              {/* Botón Home celular */}
-              <div style={{ width: '35px', height: '3px', background: '#272733', borderRadius: '10px', margin: '8px auto 0' }} />
-            </div>
-
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src="/logo-cuentajoy.png" 
+              alt="Cuenta Joy" 
+              className="animate-float"
+              style={{ 
+                width: '85%', 
+                maxWidth: '460px', 
+                height: 'auto', 
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 15px 40px rgba(124, 106, 247, 0.35))'
+              }} 
+            />
             {/* Círculo decorativo de fondo */}
             <div style={{
-              position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,106,247,0.04) 0%, transparent 70%)',
+              position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,106,247,0.05) 0%, transparent 70%)',
               zIndex: -1, top: '50%', left: '50%', transform: 'translate(-50%, -50%)'
             }} />
           </div>
