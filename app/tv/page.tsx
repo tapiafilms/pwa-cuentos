@@ -215,6 +215,54 @@ function TVPageInner() {
     return null
   }
 
+  const fetchAiComment = async (promptMessage: string): Promise<string> => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: promptMessage,
+          cuentoId: 'chess'
+        })
+      })
+      if (response.ok) {
+        const data = await response.json()
+        return data.response
+      }
+    } catch (e) {
+      console.error('Error fetching AI comment:', e)
+    }
+    return "Muevo mi pieza. ¡Tu turno, humano!"
+  }
+
+  const getPlayerMovePrompt = (move: any): string => {
+    const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina', k: 'rey' }
+    const pieceName = pieceNames[move.piece] || 'pieza'
+    
+    if (move.captured) {
+      const capturedName = pieceNames[move.captured] || 'pieza'
+      return `El jugador humano movió su ${pieceName} de ${move.from} a ${move.to} y capturó mi ${capturedName}. Reacciona en personaje, gracioso y un poco dramático.`
+    }
+    if (move.san.includes('+')) {
+      return `El jugador humano movió su ${pieceName} de ${move.from} a ${move.to} dando jaque a mi rey. Reacciona en personaje, quejándote dramáticamente.`
+    }
+    return `El jugador humano movió su ${pieceName} de ${move.from} a ${move.to}. Di algo en personaje analizando de forma graciosa su jugada.`
+  }
+
+  const getAIMovePrompt = (move: any): string => {
+    const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina', k: 'rey' }
+    const pieceName = pieceNames[move.piece] || 'pieza'
+    
+    if (move.captured) {
+      const capturedName = pieceNames[move.captured] || 'pieza'
+      return `He movido mi ${pieceName} a ${move.to} y he capturado tu ${capturedName}. Reacciona en personaje celebrando de forma burlona e infantil.`
+    }
+    if (move.san.includes('+')) {
+      return `He movido mi ${pieceName} a ${move.to} y he dado jaque a tu rey. Reacciona en personaje anunciando jaque de forma competitiva.`
+    }
+    return `He movido mi ${pieceName} a ${move.to}. Reacciona en personaje indicando qué moví y pasándole el turno al humano.`
+  }
+
   const handlePlayerChessMove = (from: string, to: string, activeChan: any) => {
     if (!chessRef.current) return
 
@@ -235,9 +283,11 @@ function TVPageInner() {
       }
 
       setAvatarState('thinking')
-      const comment = getPlayerMoveComment(move)
-      setAiSpeakingText(comment)
-      speakText(comment)
+      const promptMsg = getPlayerMovePrompt(move)
+      fetchAiComment(promptMsg).then((comment) => {
+        setAiSpeakingText(comment)
+        speakText(comment)
+      })
 
       // Simular tiempo de "pensamiento" de la IA
       setTimeout(() => {
@@ -306,9 +356,11 @@ function TVPageInner() {
         return
       }
 
-      const comment = getAIMoveComment(aiMove)
-      setAiSpeakingText(comment)
-      speakText(comment)
+      const promptMsg = getAIMovePrompt(aiMove)
+      fetchAiComment(promptMsg).then((comment) => {
+        setAiSpeakingText(comment)
+        speakText(comment)
+      })
 
     } catch (e) {
       console.error('Error calculando jugada de la IA:', e)
@@ -346,41 +398,6 @@ function TVPageInner() {
         }
       })
     }
-  }
-
-  const getPlayerMoveComment = (move: any): string => {
-    if (move.captured) {
-      const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina' }
-      const name = pieceNames[move.captured] || 'pieza'
-      return `¡Oh! Has capturado mi ${name}. Pero no cantes victoria todavía...`
-    }
-    if (move.san.includes('+')) {
-      return "¡¿Jaque?! Qué osado. Veamos cómo manejas mi contraataque..."
-    }
-    
-    const randomComments = [
-      "Mmm, interesante movimiento. Déjame analizar mis opciones...",
-      "Un movimiento clásico. Veamos si estás preparado para mi respuesta.",
-      "Vaya, no esperaba esa jugada. Pero mi estrategia es superior.",
-      "Avanzas tus piezas con valentía. Eso me agrada..."
-    ]
-    return randomComments[Math.floor(Math.random() * randomComments.length)]
-  }
-
-  const getAIMoveComment = (move: any): string => {
-    const square = move.to
-    if (move.captured) {
-      const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina' }
-      const name = pieceNames[move.captured] || 'pieza'
-      return `He capturado tu ${name} en ${square}. ¡Deberías prestar más atención!`
-    }
-    if (move.san.includes('+')) {
-      return `¡Jaque en ${square}! Te tengo contra las cuerdas.`
-    }
-    
-    const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina', k: 'rey' }
-    const name = pieceNames[move.piece] || 'pieza'
-    return `Muevo mi ${name} a ${square}. Tu turno, humano.`
   }
 
   const handleChessReset = () => {
