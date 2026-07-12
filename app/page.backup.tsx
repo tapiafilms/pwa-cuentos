@@ -77,22 +77,20 @@ export default function Home() {
 
   // Video de introducción para celular (PWA)
   const [showIntro, setShowIntro] = useState(false)
-  const [isMuted, setIsMuted] = useState(true)
+  const [isMuted, setIsMuted] = useState(false) // Iniciamos con audio activado
   const [introOpacity, setIntroOpacity] = useState(0)
   const [introFinished, setIntroFinished] = useState(false)
+  const [currentView, setCurrentView] = useState<'hub' | 'cuentos'>('hub')
+  const [showWelcome, setShowWelcome] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   // Detección de dispositivo móvil para mostrar video de introducción
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024
       const introSeen = sessionStorage.getItem('cuentajoy_intro_seen')
       if (isMobile && !introSeen) {
-        setShowIntro(true)
-        // Animación de entrada: fade-in del contenedor de video
-        setTimeout(() => {
-          setIntroOpacity(1)
-        }, 50)
+        setShowWelcome(true)
       } else {
         setIntroFinished(true)
       }
@@ -196,6 +194,58 @@ export default function Home() {
           transition: 'opacity 0.8s ease-in-out',
         }}
       />
+      {showWelcome && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#07070a',
+          zIndex: 99999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '2.5rem',
+          padding: '2rem',
+          textAlign: 'center'
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontFamily: 'Nunito', fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img style={{ width: '80px', margin: '0 auto' }} src="/logo-genofy.png" alt="Genofy" />
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: '260px', height: 'auto', objectFit: 'contain' }} />
+          </div>
+
+          <button 
+            onClick={() => {
+              setShowWelcome(false)
+              setShowIntro(true)
+              setIsMuted(false)
+              setTimeout(() => {
+                setIntroOpacity(1)
+                videoRef.current?.play().catch(e => console.log('Play error:', e))
+              }, 50)
+            }}
+            style={{
+              background: '#7c6af7',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '30px',
+              padding: '16px 36px',
+              fontSize: '1rem',
+              fontWeight: 700,
+              fontFamily: "'Nunito', sans-serif",
+              cursor: 'pointer',
+              boxShadow: '0 0 25px rgba(124, 106, 247, 0.4)',
+              transition: 'transform 0.2s'
+            }}
+          >
+            Comenzar Experiencia ✨
+          </button>
+        </div>
+      )}
       {showIntro && (
         <div style={{
           position: 'fixed',
@@ -244,32 +294,6 @@ export default function Home() {
             onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)' }}
           >
             Saltar ✕
-          </button>
-
-          {/* Botón de Sonido */}
-          <button
-            onClick={() => setIsMuted(!isMuted)}
-            style={{
-              position: 'absolute',
-              bottom: '2rem',
-              right: '1.5rem',
-              background: 'rgba(0, 0, 0, 0.5)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '50%',
-              width: '44px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff',
-              fontSize: '1.2rem',
-              cursor: 'pointer',
-              backdropFilter: 'blur(8px)',
-              transition: 'all 0.2s',
-              zIndex: 100000
-            }}
-          >
-            {isMuted ? '🔇' : '🔊'}
           </button>
         </div>
       )}
@@ -463,143 +487,191 @@ export default function Home() {
       )}
 
       {/* NAV */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-        padding: '1.4rem 3rem',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: `rgba(6,6,8,${Math.min(Math.max((scrollY - 80) / 150, 0), 0.95)})`,
-        backdropFilter: scrollY > 20 ? 'blur(12px)' : 'none',
-        borderBottom: scrollY > 20 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-        transition: 'all 0.4s ease',
-        opacity: scrollY > 60 ? 1 : 0,
-        pointerEvents: scrollY > 60 ? 'auto' : 'none',
-      }} className="nav-inner">
-        <a href="/">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ height: 38, width: 'auto', objectFit: 'contain', display: 'block' }} />
-        </a>
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-          <a href="#cuentos" className="nav-link">Cuentos</a>
-          <a href="#" className="nav-link">Nosotros</a>
-          <button className="btn btn-solid" style={{ padding: '9px 20px', fontSize: '0.78rem' }}
-            onClick={() => document.getElementById('cuentos')?.scrollIntoView({ behavior: 'smooth' })}>
-            Ver cuentos
+      {currentView === 'cuentos' && (
+        <nav style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+          padding: '1rem 1.25rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(6,6,8,0.95)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          transition: 'all 0.4s ease',
+        }}>
+          <button 
+            onClick={() => {
+              setCurrentView('hub')
+              window.scrollTo(0, 0)
+            }} 
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#ffffff',
+              fontFamily: "'Nunito', sans-serif",
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+          >
+            ← Volver al menú
           </button>
-        </div>
-      </nav>
-
-      {/* HERO */}
-      <section style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '0',
-        position: 'relative',
-        overflow: 'hidden',
-        backgroundImage: "url('/bg1.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: `center ${scrollY * 0.4}px`,
-        backgroundRepeat: 'no-repeat',
-      }}>
-        {/* Overlay sutil */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)' }} />
-        {/* Gradiente izquierda para legibilidad del logo y texto */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 60%)' }} />
-        {/* Gradiente inferior para legibilidad del texto */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 45%)' }} />
-
-        {/* Logo grande arriba izquierda */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '2.5rem 9rem', animation: 'fadeIn 1s ease 0s both' }} className="hero-logo-area">
-          <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}><img style={{ width: '90px'}} src="/logo-genofy.png"/></span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: 'clamp(220px, 28vw, 420px)', height: 'auto', objectFit: 'contain', display: 'block' }} />
-        </div>
+          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ height: 28, width: 'auto' }} />
+        </nav>
+      )}
 
-        <div style={{ position: 'relative', zIndex: 2, padding: '0 9rem 3.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem' }} className="hero-bottom">
-          {/* Título + descripción */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <h1 className="hero-title" style={{
-              fontFamily: 'Cinzel, serif',
-              fontSize: '50px',
-              fontWeight: 500, lineHeight: 1, color: 'white',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              animation: 'fadeUp 0.8s ease 0.1s both',
-            }}>
-              Historias Vivas
-            </h1>
-            <p className="hero-subtitle" style={{
-              fontFamily: 'Cinzel', fontSize: 'clamp(0.8rem, 1.2vw, 1.95rem)',
-              color: 'rgb(109 98 163)', fontWeight: 300, lineHeight: 1.2,
-              animation: 'fadeUp 0.8s ease 0.25s both',
-            }}>
-              Cinco historias únicas para la pantalla grande.<br />
-              Tu celular es la llave. La TV, el portal.
-            </p>
+      {/* HERO (Hub principal) */}
+      {currentView === 'hub' && (
+        <section style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '0',
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundImage: "url('/bg1.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: `center ${scrollY * 0.4}px`,
+          backgroundRepeat: 'no-repeat',
+        }}>
+          {/* Overlay sutil */}
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)' }} />
+          {/* Gradiente izquierda para legibilidad del logo y texto */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 60%)' }} />
+          {/* Gradiente inferior para legibilidad del texto */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 45%)' }} />
+
+          {/* Logos centrados arriba */}
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            padding: '4rem 1.5rem 1rem',
+            marginTop: 'auto'
+          }}>
+            <span style={{ fontFamily: 'Nunito', fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: '0.5rem' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img style={{ width: '80px', margin: '0 auto' }} src="/logo-genofy.png" alt="Genofy" />
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: '280px', height: 'auto', objectFit: 'contain', margin: '0 auto' }} />
           </div>
 
-          {/* Botones abajo derecha */}
-          <div className="hero-btns" style={{ display: 'flex', gap: '1rem', flexShrink: 0, animation: 'fadeUp 0.8s ease 0.4s both' }}>
-            <button className="btn btn-solid"
-              onClick={() => document.getElementById('cuentos')?.scrollIntoView({ behavior: 'smooth' })}>
-              Explorar cuentos
+          {/* Dos secciones destacadas cuadradas */}
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '1.25rem',
+            width: '100%',
+            maxWidth: '340px',
+            margin: '2.5rem auto',
+            padding: '0 1rem',
+            marginBottom: 'auto'
+          }}>
+            {/* Botón Cuentos */}
+            <button 
+              onClick={() => {
+                setCurrentView('cuentos')
+                window.scrollTo(0, 0)
+              }}
+              style={{
+                aspectRatio: '1',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '20px',
+                padding: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                color: '#ffffff',
+                cursor: 'pointer',
+                boxShadow: '0 12px 35px rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(12px)',
+                textAlign: 'center',
+                outline: 'none'
+              }}
+            >
+              <span style={{ fontSize: '2.2rem' }}>🌿</span>
+              <span style={{ fontFamily: 'Cinzel, serif', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.05em' }}>Cuentos</span>
+              <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.25 }}>Historias mágicas interactivas</span>
             </button>
-            <button className="btn btn-ghost">▶ Ver demo</button>
+
+            {/* Botón Juegos */}
+            <button 
+              onClick={() => {
+                alert('Tablero Joy estará disponible muy pronto con Ajedrez, Blackjack y más. ¡Sigue atento!')
+              }}
+              style={{
+                aspectRatio: '1',
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '20px',
+                padding: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                color: 'rgba(255, 255, 255, 0.6)',
+                cursor: 'pointer',
+                boxShadow: '0 12px 35px rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(10px)',
+                textAlign: 'center',
+                outline: 'none',
+                position: 'relative'
+              }}
+            >
+              <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(124, 106, 247, 0.2)', border: '1px solid rgba(124, 106, 247, 0.4)', color: '#b8aeff', fontSize: '0.55rem', fontWeight: 800, padding: '2px 6px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Próximamente</span>
+              <span style={{ fontSize: '2.2rem', opacity: 0.65 }}>🎲</span>
+              <span style={{ fontFamily: 'Cinzel, serif', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.05em' }}>Juegos</span>
+              <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', lineHeight: 1.25 }}>Tablero Joy en tu pantalla TV</span>
+            </button>
           </div>
+
+          {/* Luciérnagas */}
+          {fireflies.map(f => (
+            <div key={f.id} style={{
+              position: 'absolute',
+              left: `${f.x}%`,
+              top: `${f.y}%`,
+              width: f.size,
+              height: f.size,
+              borderRadius: '50%',
+              background: f.glowColor,
+              zIndex: 3,
+              '--dx': `${f.driftX}px`,
+              '--dy': `${f.driftY}px`,
+              '--gc': f.glowColor,
+              animation: `fireflyFloat ${f.duration}s ease-in-out ${f.delay}s infinite, fireflyGlow ${f.duration * 0.7}s ease-in-out ${f.delay}s infinite`,
+            } as React.CSSProperties} />
+          ))}
+        </section>
+      )}
+
+      {/* CUENTOS (Vista de catálogo vertical) */}
+      {currentView === 'cuentos' && (
+        <div id="cuentos" style={{ paddingTop: '64px', background: '#07070a' }}>
+          {CUENTOS.map((cuento, index) => (
+            <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={tvSessionCode ? () => projectToTV(cuento) : () => openTV(cuento)} hasSession={!!tvSessionCode} />
+          ))}
+          
+          <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.18)', fontFamily: 'Nunito', fontSize: '0.78rem', background: '#050508' }} className="footer-inner">
+            <span>Cuentajoy © 2026</span>
+            <span>Hecho con ✨ para pequeños exploradores</span>
+          </footer>
         </div>
-
-        {/* Luciérnagas */}
-        {fireflies.map(f => (
-          <div key={f.id} style={{
-            position: 'absolute',
-            left: `${f.x}%`,
-            top: `${f.y}%`,
-            width: f.size,
-            height: f.size,
-            borderRadius: '50%',
-            background: f.glowColor,
-            zIndex: 3,
-            '--dx': `${f.driftX}px`,
-            '--dy': `${f.driftY}px`,
-            '--gc': f.glowColor,
-            animation: `fireflyFloat ${f.duration}s ease-in-out ${f.delay}s infinite, fireflyGlow ${f.duration * 0.7}s ease-in-out ${f.delay}s infinite`,
-          } as React.CSSProperties} />
-        ))}
-
-        {/* Scroll hint */}
-        <div className="scroll-hint" style={{ position: 'absolute', bottom: '2rem', right: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.25)', fontFamily: 'Nunito', fontSize: '0.6rem', letterSpacing: '0.18em', textTransform: 'uppercase', zIndex: 2 }}>
-          <div style={{ width: 1, height: 36, background: 'rgba(255,255,255,0.15)' }} />
-          scroll
-        </div>
-      </section>
-
-      {/* CUENTOS */}
-      <div id="cuentos">
-        {CUENTOS.map((cuento, index) => (
-          <StorySection key={cuento.id} cuento={cuento} index={index} onOpenTV={tvSessionCode ? () => projectToTV(cuento) : () => openTV(cuento)} hasSession={!!tvSessionCode} />
-        ))}
-      </div>
-
-      {/* FOOTER CTA */}
-      <section className="cta-section" style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8rem 3rem', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(124,106,247,0.08), transparent)' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '1.5rem' }}>¿Listo para empezar?</p>
-          <h2 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 900, color: 'white', lineHeight: 1.05, marginBottom: '2rem', letterSpacing: '-0.02em' }}>
-            La historia<br /><em style={{ color: 'rgba(255,255,255,0.4)' }}>te espera</em>
-          </h2>
-          <button className="btn btn-solid" style={{ fontSize: '0.9rem', padding: '15px 34px' }}
-            onClick={() => document.getElementById('cuentos')?.scrollIntoView({ behavior: 'smooth' })}>
-            📺 &nbsp; Elegir un cuento
-          </button>
-        </div>
-      </section>
-
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.18)', fontFamily: 'Nunito', fontSize: '0.78rem' }} className="footer-inner">
-        <span>Cuentajoy © 2025</span>
-        <span>Hecho con ✨ para pequeños exploradores</span>
-      </footer>
+      )}
 
       {/* MODAL VER EN TV */}
       {modal.open && (
@@ -1131,6 +1203,25 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
             zIndex: 5,
           }}
         />
+      )}
+
+      {cuento.id === 1 && (
+        <div className="scroll-hint animate-bounce" style={{
+          position: 'absolute',
+          bottom: '2rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+          color: cuento.accent,
+          zIndex: 10,
+          pointerEvents: 'none'
+        }}>
+          <span style={{ fontFamily: 'Nunito', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.8 }}>Ver más cuentos</span>
+          <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>↓</span>
+        </div>
       )}
 
       <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
