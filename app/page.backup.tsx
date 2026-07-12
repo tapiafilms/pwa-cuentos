@@ -82,6 +82,9 @@ export default function Home() {
   const [introFinished, setIntroFinished] = useState(false)
   const [currentView, setCurrentView] = useState<'hub' | 'cuentos'>('hub')
   const [showWelcome, setShowWelcome] = useState(false)
+  const [welcomeOpacity, setWelcomeOpacity] = useState(1)
+  const [viewTransitionActive, setViewTransitionActive] = useState(false)
+  const [viewTransitionOpacity, setViewTransitionOpacity] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   // Detección de dispositivo móvil para mostrar video de introducción
@@ -105,6 +108,38 @@ export default function Home() {
     setTimeout(() => {
       setShowIntro(false)
     }, 800) // Esperar a que termine la transición de 800ms
+  }
+
+  const handleWelcomeStart = () => {
+    setWelcomeOpacity(0)
+    setTimeout(() => {
+      setShowWelcome(false)
+      setShowIntro(true)
+      setIsMuted(false)
+      setTimeout(() => {
+        setIntroOpacity(1)
+        videoRef.current?.play().catch(e => console.log('Play error:', e))
+      }, 100)
+    }, 500)
+  }
+
+  const changeViewWithTransition = (newView: 'hub' | 'cuentos') => {
+    setViewTransitionActive(true)
+    setTimeout(() => {
+      setViewTransitionOpacity(1)
+    }, 50)
+    
+    setTimeout(() => {
+      setCurrentView(newView)
+      window.scrollTo(0, 0)
+      
+      setTimeout(() => {
+        setViewTransitionOpacity(0)
+        setTimeout(() => {
+          setViewTransitionActive(false)
+        }, 500)
+      }, 100)
+    }, 550)
   }
 
   useEffect(() => {
@@ -206,7 +241,10 @@ export default function Home() {
           justifyContent: 'center',
           gap: '2.5rem',
           padding: '2rem',
-          textAlign: 'center'
+          textAlign: 'center',
+          opacity: welcomeOpacity,
+          transition: 'opacity 0.5s ease-in-out',
+          pointerEvents: welcomeOpacity === 0 ? 'none' : 'auto'
         }}>
           {/* Logo */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
@@ -219,15 +257,7 @@ export default function Home() {
           </div>
 
           <button 
-            onClick={() => {
-              setShowWelcome(false)
-              setShowIntro(true)
-              setIsMuted(false)
-              setTimeout(() => {
-                setIntroOpacity(1)
-                videoRef.current?.play().catch(e => console.log('Play error:', e))
-              }, 50)
-            }}
+            onClick={handleWelcomeStart}
             style={{
               background: '#7c6af7',
               color: '#ffffff',
@@ -499,10 +529,7 @@ export default function Home() {
       {/* NAV / BOTÓN VOLVER FLOTANTE EN CATÁLOGO */}
       {currentView === 'cuentos' && (
         <button
-          onClick={() => {
-            setCurrentView('hub')
-            window.scrollTo(0, 0)
-          }}
+          onClick={() => changeViewWithTransition('hub')}
           style={{
             position: 'fixed',
             top: '12px',
@@ -591,10 +618,7 @@ export default function Home() {
             }}>
               {/* Botón Cuentos */}
               <button 
-                onClick={() => {
-                  setCurrentView('cuentos')
-                  window.scrollTo(0, 0)
-                }}
+                onClick={() => changeViewWithTransition('cuentos')}
                 style={{
                   aspectRatio: '1',
                   background: 'rgba(255, 255, 255, 0.04)',
@@ -689,6 +713,19 @@ export default function Home() {
       {/* MODAL VER EN TV */}
       {modal.open && (
         <TVModal cuento={modal.cuento} onClose={closeModal} />
+      )}
+
+      {/* Capa negra de transición de vistas */}
+      {viewTransitionActive && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#07070a',
+          zIndex: 99997, // justo debajo de welcome / intro
+          pointerEvents: 'all',
+          opacity: viewTransitionOpacity,
+          transition: 'opacity 0.5s ease-in-out'
+        }} />
       )}
     </div>
   )
