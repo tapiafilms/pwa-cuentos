@@ -175,10 +175,14 @@ function DesktopLanding() {
   return (
     <div style={{ background: '#07070a', color: '#f0effe', fontFamily: "'Nunito', sans-serif", overflowX: 'hidden', minHeight: '100vh', position: 'relative' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel:wght@400..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel+Decorative:wght@400;700;900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+        
+        html {
+          scroll-behavior: smooth;
+        }
         
         .title-display {
-          font-family: 'Cinzel', serif;
+          font-family: 'Cinzel Decorative', serif;
         }
         
         .title-cursive {
@@ -496,7 +500,6 @@ function DesktopLanding() {
                     <span style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, color: c.accent }}>
                       {c.tag}
                     </span>
-                    <span style={{ position: 'absolute', bottom: '1rem', left: '1.5rem', fontSize: '2.5rem' }}>{c.emoji}</span>
                   </div>
                   
                   {/* Texto */}
@@ -520,8 +523,7 @@ function DesktopLanding() {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '2.2rem' }}>{j.emoji}</span>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                       <span style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, color: j.accent }}>
                         {j.tag}
                       </span>
