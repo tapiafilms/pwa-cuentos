@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Chess } from 'chess.js'
 
 const CUENTOS = [
   {
@@ -80,12 +81,22 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(false) // Iniciamos con audio activado
   const [introOpacity, setIntroOpacity] = useState(0)
   const [introFinished, setIntroFinished] = useState(false)
-  const [currentView, setCurrentView] = useState<'hub' | 'cuentos'>('hub')
+  const [currentView, setCurrentView] = useState<'hub' | 'cuentos' | 'chess'>('hub')
   const [showWelcome, setShowWelcome] = useState(false)
   const [welcomeOpacity, setWelcomeOpacity] = useState(1)
   const [viewTransitionActive, setViewTransitionActive] = useState(false)
   const [viewTransitionOpacity, setViewTransitionOpacity] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Ajedrez Estado local en celular
+  const chessRef = useRef<any>(null)
+  const [board, setBoard] = useState<any[][]>([])
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
+  const [validMoves, setValidMoves] = useState<string[]>([])
+  const [gameResult, setGameResult] = useState<string | null>(null)
+  const [aiTextLog, setAiTextLog] = useState<string[]>([])
+  const [isAiThinking, setIsAiThinking] = useState(false)
+  const [activeChannel, setActiveChannel] = useState<any>(null)
 
   // Detección de dispositivo móvil para mostrar video de introducción
   useEffect(() => {
@@ -123,7 +134,7 @@ export default function Home() {
     }, 500)
   }
 
-  const changeViewWithTransition = (newView: 'hub' | 'cuentos') => {
+  const changeViewWithTransition = (newView: 'hub' | 'cuentos' | 'chess') => {
     setViewTransitionActive(true)
     setTimeout(() => {
       setViewTransitionOpacity(1)
@@ -140,6 +151,96 @@ export default function Home() {
         }, 500)
       }, 100)
     }, 550)
+  }
+
+  // Canal Realtime para Ajedrez
+  useEffect(() => {
+    if (currentView !== 'chess' || !tvSessionCode) return
+
+    const channel = supabase.channel(`session:${tvSessionCode}`)
+    setActiveChannel(channel)
+
+    channel
+      .on('broadcast', { event: 'chess_ai_move' }, ({ payload }) => {
+        if (chessRef.current) {
+          chessRef.current.load(payload.fen)
+          setBoard([...chessRef.current.board()])
+          setIsAiThinking(false)
+          setSelectedSquare(null)
+          setValidMoves([])
+        }
+      })
+      .on('broadcast', { event: 'chess_game_over' }, ({ payload }) => {
+        setGameResult(payload.result)
+        setAiTextLog(prev => [payload.comment, ...prev])
+        setIsAiThinking(false)
+      })
+      .subscribe((status) => {
+        console.log('Mobile Chess Channel status:', status)
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+      setActiveChannel(null)
+    }
+  }, [currentView, tvSessionCode])
+
+  // Inicializar Chess local
+  useEffect(() => {
+    if (currentView === 'chess') {
+      chessRef.current = new Chess()
+      setBoard(chessRef.current.board())
+      setSelectedSquare(null)
+      setValidMoves([])
+      setGameResult(null)
+      setAiTextLog(["La partida ha comenzado. ¡Buena suerte!"])
+      setIsAiThinking(false)
+    }
+  }, [currentView])
+
+  const startChess = () => {
+    if (!tvSessionCode) return
+    
+    const channel = supabase.channel(`session:${tvSessionCode}`)
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.send({
+          type: 'broadcast',
+          event: 'start_chess'
+        })
+        changeViewWithTransition('chess')
+        supabase.removeChannel(channel)
+      }
+    })
+  }
+
+  const resetChessGame = async () => {
+    if (chessRef.current) {
+      chessRef.current.reset()
+      setBoard([...chessRef.current.board()])
+      setSelectedSquare(null)
+      setValidMoves([])
+      setGameResult(null)
+      setAiTextLog(["Partida reiniciada. ¡Buena suerte!"])
+      setIsAiThinking(false)
+      
+      if (activeChannel) {
+        await activeChannel.send({
+          type: 'broadcast',
+          event: 'chess_reset'
+        })
+      }
+    }
+  }
+
+  const exitChessView = async () => {
+    if (activeChannel) {
+      await activeChannel.send({
+        type: 'broadcast',
+        event: 'show_waiting'
+      })
+    }
+    changeViewWithTransition('hub')
   }
 
   useEffect(() => {
@@ -646,7 +747,11 @@ export default function Home() {
               {/* Botón Juegos */}
               <button 
                 onClick={() => {
-                  alert('Tablero Joy estará disponible muy pronto con Ajedrez, Blackjack y más. ¡Sigue atento!')
+                  if (!tvSessionCode) {
+                    alert('Para iniciar el Tablero Joy (Ajedrez), conéctate a una pantalla de TV ingresando el código de 4 dígitos primero.')
+                    return
+                  }
+                  startChess()
                 }}
                 style={{
                   aspectRatio: '1',
@@ -707,6 +812,276 @@ export default function Home() {
             <span>Cuentajoy © 2026</span>
             <span>Hecho con ✨ para pequeños exploradores</span>
           </footer>
+        </div>
+      )}
+
+      {currentView === 'chess' && (
+        <div style={{ minHeight: '100vh', background: '#0c0d10', color: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 1.5rem 2rem 1.5rem', position: 'relative' }}>
+          {/* Botones de navegación flotantes */}
+          <button
+            onClick={exitChessView}
+            style={{
+              position: 'fixed',
+              top: '12px',
+              left: '12px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              padding: '6px 12px',
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.35)',
+              fontFamily: "'Nunito', sans-serif",
+              fontSize: '0.65rem',
+              fontWeight: 800,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: '#ffffff',
+              cursor: 'pointer'
+            }}
+          >
+            ← Volver
+          </button>
+
+          <div style={{
+            position: 'fixed',
+            top: '12px',
+            right: '12px',
+            background: 'rgba(15, 23, 15, 0.65)',
+            border: '1px solid rgba(46, 204, 113, 0.3)',
+            borderRadius: '16px',
+            padding: '6px 12px',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.35)'
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71' }} />
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.12em', color: '#2ecc71' }}>
+              TV: {tvSessionCode}
+            </span>
+          </div>
+
+          {/* Título de la sección */}
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem', marginTop: '1rem' }}>
+            <h1 className="cinzel-decorative-regular" style={{ fontSize: '1.8rem', color: '#ffffff', fontWeight: 400, letterSpacing: '0.05em' }}>
+              Tablero Joy
+            </h1>
+            <p style={{ fontFamily: 'Nunito', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '4px' }}>
+              Ajedrez vs Joy IA
+            </p>
+          </div>
+
+          {/* Turno e indicador de estado */}
+          <div style={{
+            width: '100%',
+            maxWidth: '340px',
+            background: isAiThinking ? 'rgba(33, 150, 243, 0.08)' : 'rgba(124, 106, 247, 0.08)',
+            border: isAiThinking ? '1px solid rgba(33, 150, 243, 0.2)' : '1px solid rgba(124, 106, 247, 0.2)',
+            borderRadius: '12px',
+            padding: '10px 16px',
+            marginBottom: '1.25rem',
+            textAlign: 'center',
+            fontFamily: 'Nunito',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            color: isAiThinking ? '#2196f3' : '#b8aeff',
+            transition: 'all 0.3s ease'
+          }}>
+            {isAiThinking ? '⏳ Joy IA está pensando...' : '⚔️ ¡Tu turno! Mueves Blancas'}
+          </div>
+
+          {/* Tablero de Ajedrez Táctil */}
+          <div style={{
+            padding: '6px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '16px',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+            width: '100%',
+            maxWidth: '340px',
+            aspectRatio: '1'
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateRows: 'repeat(8, 1fr)',
+              gridTemplateColumns: 'repeat(8, 1fr)',
+              width: '100%',
+              height: '100%',
+              background: '#07070a',
+              borderRadius: '10px',
+              overflow: 'hidden'
+            }}>
+              {board.map((row, rIdx) => 
+                row.map((col, cIdx) => {
+                  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+                  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1']
+                  const squareName = files[cIdx] + ranks[rIdx]
+                  
+                  const isLight = (rIdx + cIdx) % 2 === 0
+                  const isSelected = selectedSquare === squareName
+                  const isValidDestination = validMoves.includes(squareName)
+                  
+                  let bg = isLight ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.01)'
+                  let borderStyle = 'none'
+
+                  if (isSelected) {
+                    bg = 'rgba(124, 106, 247, 0.25)'
+                    borderStyle = '1.5px solid #7c6af7'
+                  }
+
+                  const piece = col
+                  let pieceChar = ''
+                  let pieceColor = '#ffffff'
+
+                  const pieceUnicodeMap: { [key: string]: string } = {
+                    'wp': '♙', 'wn': '♘', 'wb': '♗', 'wr': '♖', 'wq': '♕', 'wk': '♔',
+                    'bp': '♟', 'bn': '♞', 'bb': '♝', 'br': '♜', 'bq': '♛', 'bk': '♚'
+                  }
+
+                  if (piece) {
+                    const key = piece.color + piece.type
+                    pieceChar = pieceUnicodeMap[key] || ''
+                    pieceColor = piece.color === 'w' ? '#ffffff' : '#b8aeff'
+                  }
+
+                  const handleSquareTap = () => {
+                    if (isAiThinking || gameResult) return
+
+                    if (selectedSquare && isValidDestination) {
+                      if (chessRef.current) {
+                        const move = chessRef.current.move({ from: selectedSquare, to: squareName })
+                        if (move) {
+                          setBoard([...chessRef.current.board()])
+                          setSelectedSquare(null)
+                          setValidMoves([])
+                          
+                          if (activeChannel) {
+                            activeChannel.send({
+                              type: 'broadcast',
+                              event: 'chess_move',
+                              payload: { from: selectedSquare, to: squareName }
+                            })
+                            setIsAiThinking(true)
+                          }
+                        }
+                      }
+                      return
+                    }
+
+                    if (piece && piece.color === 'w') {
+                      if (chessRef.current) {
+                        const moves = chessRef.current.moves({ square: squareName, verbose: true })
+                        const targets = moves.map((m: any) => m.to)
+                        setSelectedSquare(squareName)
+                        setValidMoves(targets)
+                      }
+                    } else {
+                      setSelectedSquare(null)
+                      setValidMoves([])
+                    }
+                  }
+
+                  return (
+                    <div 
+                      key={squareName} 
+                      onClick={handleSquareTap}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: bg,
+                        border: borderStyle,
+                        position: 'relative',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isValidDestination && (
+                        <div style={{
+                          position: 'absolute',
+                          width: pieceChar ? '80%' : '10px',
+                          height: pieceChar ? '80%' : '10px',
+                          borderRadius: pieceChar ? '8px' : '50%',
+                          background: pieceChar ? 'rgba(255, 213, 79, 0.15)' : 'rgba(255, 213, 79, 0.7)',
+                          border: pieceChar ? '2px solid rgba(255, 213, 79, 0.6)' : 'none',
+                          zIndex: 1
+                        }} />
+                      )}
+
+                      {pieceChar && (
+                        <span style={{
+                          fontSize: '2.1rem',
+                          color: pieceColor,
+                          userSelect: 'none',
+                          zIndex: 2,
+                          textShadow: piece.color === 'w' ? '0 0 5px rgba(255,255,255,0.4)' : '0 0 5px rgba(184,174,255,0.4)'
+                        }}>
+                          {pieceChar}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Historial de Comentarios / Log de la IA */}
+          <div style={{
+            width: '100%',
+            maxWidth: '340px',
+            marginTop: '1.25rem',
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            borderRadius: '16px',
+            padding: '12px 16px',
+            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5)',
+            flex: 1,
+            minHeight: '110px',
+            maxHeight: '140px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            {aiTextLog.map((logText, idx) => (
+              <p key={idx} style={{
+                fontFamily: 'Nunito',
+                fontSize: '0.8rem',
+                color: idx === 0 ? '#ffffff' : 'rgba(255,255,255,0.35)',
+                lineHeight: 1.4,
+                fontWeight: idx === 0 ? 600 : 400
+              }}>
+                {idx === 0 ? '💬 ' : '• '} {logText}
+              </p>
+            ))}
+          </div>
+
+          {/* Botón Reiniciar Partida */}
+          <button
+            onClick={resetChessGame}
+            style={{
+              marginTop: '1.5rem',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '30px',
+              padding: '10px 24px',
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontFamily: 'Nunito',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              letterSpacing: '0.05em',
+              cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+            }}
+          >
+            Reiniciar Partida
+          </button>
         </div>
       )}
 

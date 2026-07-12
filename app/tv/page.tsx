@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Rive, { useRive } from '@rive-app/react-canvas'
+import { Chess } from 'chess.js'
 
 export default function TVPage() {
   return (
@@ -13,7 +14,7 @@ export default function TVPage() {
   )
 }
 
-type TVState = 'connecting' | 'waiting_remote' | 'waiting_cuento' | 'playing'
+type TVState = 'connecting' | 'waiting_remote' | 'waiting_cuento' | 'playing' | 'playing_chess'
 
 type CuentoInfo = {
   cuentoId: number
@@ -62,6 +63,16 @@ function TVPageInner() {
   // Estado para la respuesta de la Inteligencia Artificial
   const [aiResponse, setAiResponse] = useState<{ question: string; answer: string } | null>(null)
 
+  // Ajedrez Estado
+  const chessRef = useRef<any>(null)
+  const [chessBoard, setChessBoard] = useState<any[][]>([])
+  const [chessLastMove, setChessLastMove] = useState<{ from: string; to: string } | null>(null)
+  const [chessInCheck, setChessInCheck] = useState<string | null>(null)
+  const [chessTurn, setChessTurn] = useState<'w' | 'b'>('w')
+  const [aiSpeakingText, setAiSpeakingText] = useState<string | null>(null)
+  const [avatarState, setAvatarState] = useState<'idle' | 'thinking' | 'speaking' | 'smug' | 'angry' | 'won' | 'lost'>('idle')
+  const [channelRef, setChannelRef] = useState<any>(null)
+
   // Capa de transición cinematográfica (fundido a negro)
   const [isFading, setIsFading] = useState(false)
 
@@ -88,8 +99,14 @@ function TVPageInner() {
     }
     setTvCode(codeVal)
 
+    // Inicialización del motor de ajedrez
+    chessRef.current = new Chess()
+    setChessBoard(chessRef.current.board())
+
     // 2. Conectar al canal
     const channel = supabase.channel(`session:${codeVal}`)
+    setChannelRef(channel)
+
     channel
       .on('broadcast', { event: 'tv_ready' }, () => {
         // El celular se enlazó
@@ -124,6 +141,16 @@ function TVPageInner() {
           setAiResponse(null)
         })
       })
+      .on('broadcast', { event: 'start_chess' }, () => {
+        handleChessReset()
+        transitionTo('playing_chess')
+      })
+      .on('broadcast', { event: 'chess_move' }, ({ payload }) => {
+        handlePlayerChessMove(payload.from, payload.to)
+      })
+      .on('broadcast', { event: 'chess_reset' }, () => {
+        handleChessReset()
+      })
       .subscribe((status, err) => {
         console.log('TV Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {
@@ -149,6 +176,222 @@ function TVPageInner() {
       supabase.removeChannel(channel)
     }
   }, [sessionParam])
+
+  const speakText = (text: string) => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.lang = 'es-ES'
+      utterance.rate = 0.95
+      utterance.pitch = 1.0
+      
+      const voices = window.speechSynthesis.getVoices()
+      const spanishVoice = voices.find(v => v.lang.startsWith('es'))
+      if (spanishVoice) {
+        utterance.voice = spanishVoice
+      }
+      
+      utterance.onstart = () => setAvatarState('speaking')
+      utterance.onend = () => setAvatarState('idle')
+      
+      window.speechSynthesis.speak(utterance)
+    }
+  }
+
+  const findKingSquare = (color: 'w' | 'b'): string | null => {
+    if (!chessRef.current) return null
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    const ranks = ['8', '7', '6', '5', '4', '3', '2', '1']
+    const board = chessRef.current.board()
+    
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const piece = board[r][c]
+        if (piece && piece.type === 'k' && piece.color === color) {
+          return files[c] + ranks[r]
+        }
+      }
+    }
+    return null
+  }
+
+  const handlePlayerChessMove = (from: string, to: string) => {
+    if (!chessRef.current) return
+
+    try {
+      const move = chessRef.current.move({ from, to })
+      if (!move) return
+
+      setChessBoard([...chessRef.current.board()])
+      setChessLastMove({ from, to })
+      setChessTurn(chessRef.current.turn())
+      
+      const inCheckSquare = chessRef.current.inCheck() ? findKingSquare(chessRef.current.turn()) : null
+      setChessInCheck(inCheckSquare)
+
+      if (chessRef.current.isGameOver()) {
+        handleGameOver()
+        return
+      }
+
+      setAvatarState('thinking')
+      const comment = getPlayerMoveComment(move)
+      setAiSpeakingText(comment)
+      speakText(comment)
+
+      // Simular tiempo de "pensamiento" de la IA
+      setTimeout(() => {
+        makeAIMove()
+      }, 2500)
+
+    } catch (e) {
+      console.error('Error aplicando jugada del jugador:', e)
+    }
+  }
+
+  const makeAIMove = () => {
+    if (!chessRef.current) return
+
+    try {
+      const moves = chessRef.current.moves({ verbose: true })
+      if (moves.length === 0) return
+
+      const pieceValues: { [key: string]: number } = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 }
+      let bestMoves = []
+      let highestScore = -9999
+
+      for (const m of moves) {
+        let score = 0
+        if (m.san.includes('#')) {
+          score = 10000
+        } else if (m.captured) {
+          score = pieceValues[m.captured] || 10
+        } else if (m.san.includes('+')) {
+          score = 5
+        }
+        score += Math.random() * 2
+
+        if (score > highestScore) {
+          highestScore = score
+          bestMoves = [m]
+        } else if (score === highestScore) {
+          bestMoves.push(m)
+        }
+      }
+
+      const aiMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+      chessRef.current.move({ from: aiMove.from, to: aiMove.to })
+
+      setChessBoard([...chessRef.current.board()])
+      setChessLastMove({ from: aiMove.from, to: aiMove.to })
+      setChessTurn(chessRef.current.turn())
+      
+      const inCheckSquare = chessRef.current.inCheck() ? findKingSquare(chessRef.current.turn()) : null
+      setChessInCheck(inCheckSquare)
+
+      if (channelRef) {
+        channelRef.send({
+          type: 'broadcast',
+          event: 'chess_ai_move',
+          payload: {
+            fen: chessRef.current.fen(),
+            lastMove: { from: aiMove.from, to: aiMove.to }
+          }
+        })
+      }
+
+      if (chessRef.current.isGameOver()) {
+        handleGameOver()
+        return
+      }
+
+      const comment = getAIMoveComment(aiMove)
+      setAiSpeakingText(comment)
+      speakText(comment)
+
+    } catch (e) {
+      console.error('Error calculando jugada de la IA:', e)
+    }
+  }
+
+  const handleGameOver = () => {
+    if (!chessRef.current) return
+    
+    let comment = ''
+    if (chessRef.current.isCheckmate()) {
+      if (chessRef.current.turn() === 'w') {
+        setAvatarState('won')
+        comment = "¡Jaque mate! He ganado la partida. La Inteligencia Artificial es insuperable. ¡Inténtalo de nuevo!"
+      } else {
+        setAvatarState('lost')
+        comment = "¡¿Qué?! ¡¿Jaque mate?! Esto es imposible... Debo haber tenido una falla en mis algoritmos..."
+      }
+    } else if (chessRef.current.isDraw()) {
+      setAvatarState('idle')
+      comment = "La partida ha terminado en tablas. Un empate digno, pero la próxima vez te venceré."
+    }
+
+    setAiSpeakingText(comment)
+    speakText(comment)
+    
+    if (channelRef) {
+      channelRef.send({
+        type: 'broadcast',
+        event: 'chess_game_over',
+        payload: {
+          result: chessRef.current.isCheckmate() ? (chessRef.current.turn() === 'w' ? 'ai_won' : 'player_won') : 'draw',
+          comment
+        }
+      })
+    }
+  }
+
+  const getPlayerMoveComment = (move: any): string => {
+    if (move.captured) {
+      const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina' }
+      const name = pieceNames[move.captured] || 'pieza'
+      return `¡Oh! Has capturado mi ${name}. Pero no cantes victoria todavía...`
+    }
+    if (move.san.includes('+')) {
+      return "¡¿Jaque?! Qué osado. Veamos cómo manejas mi contraataque..."
+    }
+    
+    const randomComments = [
+      "Mmm, interesante movimiento. Déjame analizar mis opciones...",
+      "Un movimiento clásico. Veamos si estás preparado para mi respuesta.",
+      "Vaya, no esperaba esa jugada. Pero mi estrategia es superior.",
+      "Avanzas tus piezas con valentía. Eso me agrada..."
+    ]
+    return randomComments[Math.floor(Math.random() * randomComments.length)]
+  }
+
+  const getAIMoveComment = (move: any): string => {
+    const square = move.to
+    if (move.captured) {
+      const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina' }
+      const name = pieceNames[move.captured] || 'pieza'
+      return `He capturado tu ${name} en ${square}. ¡Deberías prestar más atención!`
+    }
+    if (move.san.includes('+')) {
+      return `¡Jaque en ${square}! Te tengo contra las cuerdas.`
+    }
+    
+    const pieceNames: { [key: string]: string } = { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'reina', k: 'rey' }
+    const name = pieceNames[move.piece] || 'pieza'
+    return `Muevo mi ${name} a ${square}. Tu turno, humano.`
+  }
+
+  const handleChessReset = () => {
+    if (chessRef.current) {
+      chessRef.current.reset()
+      setChessBoard([...chessRef.current.board()])
+      setChessLastMove(null)
+      setChessInCheck(null)
+      setChessTurn('w')
+      setAiSpeakingText("Partida reiniciada. Tú juegas con las blancas. Haz tu primer movimiento.")
+      speakText("Partida reiniciada. Tú juegas con las blancas. Haz tu primer movimiento.")
+    }
+  }
 
   return (
     <div className="tv-page">
@@ -205,6 +448,19 @@ function TVPageInner() {
           100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes spin-reverse {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(-360deg); }
+        }
+        @keyframes pulseAvatar {
+          0%, 100% { opacity: 0.85; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.05); }
+        }
+
         .cinematic-fade-overlay {
           position: fixed;
           inset: 0;
@@ -230,6 +486,16 @@ function TVPageInner() {
       )}
       {state === 'playing' && (
         <TVPlaying cuento={activeCuento} remoteState={remoteState} lastAction={lastAction} aiResponse={aiResponse} />
+      )}
+      {state === 'playing_chess' && (
+        <PlayingChessView 
+          board={chessBoard} 
+          lastMove={chessLastMove} 
+          inCheck={chessInCheck} 
+          turn={chessTurn} 
+          aiSpeakingText={aiSpeakingText} 
+          avatarState={avatarState} 
+        />
       )}
 
       {/* Capa de transición cinematográfica (Dissolve) */}
@@ -852,6 +1118,201 @@ function BackgroundAmbientEffects({ cuentoId, glow }: { cuentoId: number; glow: 
           }}
         />
       ))}
+    </div>
+  )
+}
+
+function PlayingChessView({ 
+  board, 
+  lastMove, 
+  inCheck, 
+  turn, 
+  aiSpeakingText, 
+  avatarState 
+}: {
+  board: any[][]
+  lastMove: { from: string; to: string } | null
+  inCheck: string | null
+  turn: 'w' | 'b'
+  aiSpeakingText: string | null
+  avatarState: 'idle' | 'thinking' | 'speaking' | 'smug' | 'angry' | 'won' | 'lost'
+}) {
+  const getSquareName = (r: number, c: number) => {
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    const ranks = ['8', '7', '6', '5', '4', '3', '2', '1']
+    return files[c] + ranks[r]
+  }
+
+  const pieceUnicode: { [key: string]: string } = {
+    'wp': '♙', 'wn': '♘', 'wb': '♗', 'wr': '♖', 'wq': '♕', 'wk': '♔',
+    'bp': '♟', 'bn': '♞', 'bb': '♝', 'br': '♜', 'bq': '♛', 'bk': '♚'
+  }
+
+  let avatarColor = '#7c6af7'
+  let avatarGlow = 'rgba(124, 106, 247, 0.5)'
+  let pulseSpeed = '3s'
+  let scaleFactor = '1'
+
+  if (avatarState === 'thinking') {
+    avatarColor = '#2196f3'
+    avatarGlow = 'rgba(33, 150, 243, 0.6)'
+    pulseSpeed = '1.2s'
+  } else if (avatarState === 'speaking') {
+    avatarColor = '#00bcd4'
+    avatarGlow = 'rgba(0, 188, 212, 0.7)'
+    pulseSpeed = '0.4s'
+    scaleFactor = '1.08'
+  } else if (avatarState === 'angry') {
+    avatarColor = '#f44336'
+    avatarGlow = 'rgba(244, 67, 54, 0.8)'
+    pulseSpeed = '0.2s'
+  } else if (avatarState === 'smug') {
+    avatarColor = '#4caf50'
+    avatarGlow = 'rgba(76, 175, 80, 0.7)'
+    pulseSpeed = '0.8s'
+  } else if (avatarState === 'won') {
+    avatarColor = '#ffd54f'
+    avatarGlow = 'rgba(255, 213, 79, 0.8)'
+    pulseSpeed = '1.5s'
+  } else if (avatarState === 'lost') {
+    avatarColor = '#9e9e9e'
+    avatarGlow = 'rgba(158, 158, 158, 0.4)'
+    pulseSpeed = '4s'
+  }
+
+  return (
+    <div style={{
+      display: 'flex', width: '100%', height: '100%', padding: '2rem 4rem',
+      alignItems: 'center', justifyContent: 'space-between', zIndex: 10, position: 'relative'
+    }}>
+      {/* Columna Izquierda: Oponente IA */}
+      <div style={{
+        flex: '0 0 45%', height: '100%', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: '2rem',
+        borderRight: '1px solid rgba(255,255,255,0.03)'
+      }}>
+        <div style={{
+          position: 'relative', width: 220, height: 220,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            position: 'absolute', inset: -20, border: `2px dashed ${avatarColor}44`,
+            borderRadius: '50%', animation: 'spin 12s linear infinite'
+          }} />
+          <div style={{
+            position: 'absolute', inset: -10, border: `1.5px solid ${avatarColor}22`,
+            borderRadius: '50%', animation: 'spin-reverse 8s linear infinite'
+          }} />
+
+          <div style={{
+            width: 140, height: 140, borderRadius: '50%',
+            background: `radial-gradient(circle, ${avatarColor}ee 0%, ${avatarColor}66 60%, transparent 80%)`,
+            boxShadow: `0 0 50px ${avatarColor}, 0 0 100px ${avatarColor}55`,
+            transition: 'all 0.3s ease',
+            transform: `scale(${scaleFactor})`,
+            animation: `pulseAvatar ${pulseSpeed} ease-in-out infinite`
+          }} />
+
+          <div style={{
+            position: 'absolute', display: 'flex', gap: 28, top: '40%'
+          }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fff', boxShadow: '0 0 8px #fff' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fff', boxShadow: '0 0 8px #fff' }} />
+          </div>
+          <div style={{
+            position: 'absolute', width: 44, height: avatarState === 'speaking' ? 12 : 3,
+            background: '#fff', borderRadius: 10, top: '62%', transition: 'all 0.15s ease'
+          }} />
+        </div>
+
+        <div style={{ textAlign: 'center', maxWidth: '85%' }}>
+          <h2 style={{ fontFamily: 'Cinzel', fontSize: '1.8rem', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>JOY IA</h2>
+          <span style={{
+            fontFamily: 'Nunito', fontSize: '0.75rem', letterSpacing: '0.15em',
+            color: avatarColor, textTransform: 'uppercase', fontWeight: 800
+          }}>
+            {avatarState === 'thinking' ? 'Pensando jugada...' : avatarState === 'speaking' ? 'Hablando...' : 'Oponente listo'}
+          </span>
+
+          {aiSpeakingText && (
+            <div style={{
+              marginTop: '1.5rem', background: 'rgba(15, 15, 23, 0.85)',
+              border: `1.5px solid ${avatarColor}aa`, borderRadius: '18px',
+              padding: '1rem 1.25rem', boxShadow: `0 10px 30px rgba(0,0,0,0.5), 0 0 15px ${avatarColor}22`,
+              animation: 'bubbleAppear 0.3s ease forwards'
+            }}>
+              <p style={{ fontFamily: 'Nunito', fontSize: '1.25rem', color: '#ffffff', lineHeight: 1.4, fontWeight: 600 }}>
+                "{aiSpeakingText}"
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Columna Derecha: Tablero Gigante */}
+      <div style={{
+        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'
+      }}>
+        <div style={{
+          padding: '10px', background: 'rgba(15, 15, 25, 0.4)',
+          border: '3px solid rgba(124, 106, 247, 0.25)', borderRadius: '16px',
+          boxShadow: '0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(124, 106, 247, 0.15)'
+        }}>
+          <div style={{
+            display: 'grid', gridTemplateRows: 'repeat(8, 70px)', gridTemplateColumns: 'repeat(8, 70px)',
+            background: '#0a0a0f'
+          }}>
+            {board.map((row, rIdx) => 
+              row.map((col, cIdx) => {
+                const squareName = getSquareName(rIdx, cIdx)
+                const isLight = (rIdx + cIdx) % 2 === 0
+                const isLastMove = lastMove && (lastMove.from === squareName || lastMove.to === squareName)
+                const isCheck = inCheck === squareName
+                
+                let bg = isLight ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.02)'
+                let borderStyle = 'none'
+
+                if (isLastMove) {
+                  bg = isLight ? 'rgba(255, 213, 79, 0.12)' : 'rgba(255, 213, 79, 0.08)'
+                }
+                if (isCheck) {
+                  bg = 'rgba(244, 67, 54, 0.2)'
+                  borderStyle = '2px solid #f44336'
+                }
+
+                const piece = col
+                let pieceChar = ''
+                let pieceColor = '#ffffff'
+                let pieceShadow = 'none'
+
+                if (piece) {
+                  const key = piece.color + piece.type
+                  pieceChar = pieceUnicode[key] || ''
+                  pieceColor = piece.color === 'w' ? '#ffffff' : '#b8aeff'
+                  pieceShadow = piece.color === 'w' ? '0 0 10px rgba(255,255,255,0.6)' : '0 0 10px rgba(184,174,255,0.6)'
+                }
+
+                return (
+                  <div key={squareName} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: bg, border: borderStyle, position: 'relative',
+                    transition: 'background 0.3s ease'
+                  }}>
+                    {pieceChar && (
+                      <span style={{
+                        fontSize: '3rem', color: pieceColor, textShadow: pieceShadow,
+                        userSelect: 'none', zIndex: 2
+                      }}>
+                        {pieceChar}
+                      </span>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
