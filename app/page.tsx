@@ -183,6 +183,7 @@ function DesktopLanding() {
         
         .title-display {
           font-family: 'Cinzel Decorative', serif;
+          font-weight: 400 !important;
         }
         
         .title-cursive {
