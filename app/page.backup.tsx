@@ -477,12 +477,45 @@ export default function Home() {
 
       {/* BANNER FLOTANTE DE CONTROL REMOTO */}
       {tvSessionCode && (
-        <div className="floating-banner" style={{ zIndex: 1000 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
-          <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: '#4ade80', fontWeight: 800, letterSpacing: '0.05em' }}>
-            CONECTADO A LA TV (SESIÓN: {tvSessionCode})
-          </span>
-          <button onClick={disconnectSession} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', cursor: 'pointer', marginLeft: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+        <div style={{
+          position: 'fixed',
+          top: '12px',
+          right: '12px',
+          background: 'rgba(74, 222, 128, 0.18)',
+          border: '1px solid rgba(74, 222, 128, 0.45)',
+          borderRadius: '16px',
+          padding: '6px 10px',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.35)',
+          fontFamily: "'Nunito', sans-serif",
+          fontSize: '0.65rem',
+          color: '#4ade80',
+          fontWeight: 800,
+          letterSpacing: '0.05em'
+        }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
+          <span>TV: {tvSessionCode}</span>
+          <button 
+            onClick={disconnectSession} 
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'rgba(255,255,255,0.4)', 
+              fontSize: '0.8rem', 
+              cursor: 'pointer', 
+              marginLeft: 4, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              padding: 0
+            }}
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -560,83 +593,89 @@ export default function Home() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img style={{ width: '80px', margin: '0 auto' }} src="/logo-genofy.png" alt="Genofy" />
             </span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: '280px', height: 'auto', objectFit: 'contain', margin: '0 auto' }} />
+             {/* eslint-disable-next-line @next/next/no-img-element */}
+             <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ width: '196px', height: 'auto', objectFit: 'contain', margin: '0 auto' }} />
           </div>
 
-          {/* Dos secciones destacadas cuadradas */}
-          <div style={{
+          {/* Contenedor centrado para los botones cuadrangulares */}
+          <div className="hub-buttons-container" style={{
             position: 'relative',
             zIndex: 2,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '1.25rem',
             width: '100%',
-            maxWidth: '340px',
-            margin: '2.5rem auto',
+            display: 'flex',
+            justifyContent: 'center',
+            margin: '2.5rem 0',
             padding: '0 1rem',
             marginBottom: 'auto'
           }}>
-            {/* Botón Cuentos */}
-            <button 
-              onClick={() => {
-                setCurrentView('cuentos')
-                window.scrollTo(0, 0)
-              }}
-              style={{
-                aspectRatio: '1',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '20px',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                color: '#ffffff',
-                cursor: 'pointer',
-                boxShadow: '0 12px 35px rgba(0,0,0,0.4)',
-                backdropFilter: 'blur(12px)',
-                textAlign: 'center',
-                outline: 'none'
-              }}
-            >
-              <span style={{ fontSize: '2.2rem' }}>🌿</span>
-              <span style={{ fontFamily: 'Cinzel, serif', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.05em' }}>Cuentos</span>
-              <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.25 }}>Historias mágicas interactivas</span>
-            </button>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '1.25rem',
+              width: '100%',
+              maxWidth: '340px'
+            }}>
+              {/* Botón Cuentos */}
+              <button 
+                onClick={() => {
+                  setCurrentView('cuentos')
+                  window.scrollTo(0, 0)
+                }}
+                style={{
+                  aspectRatio: '1',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '20px',
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  boxShadow: '0 12px 35px rgba(0,0,0,0.4)',
+                  backdropFilter: 'blur(12px)',
+                  textAlign: 'center',
+                  outline: 'none'
+                }}
+              >
+                <span style={{ fontSize: '2.2rem' }}>🌿</span>
+                <span style={{ fontFamily: 'Cinzel, serif', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.05em' }}>Cuentos</span>
+                <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.25 }}>Historias mágicas interactivas</span>
+              </button>
 
-            {/* Botón Juegos */}
-            <button 
-              onClick={() => {
-                alert('Tablero Joy estará disponible muy pronto con Ajedrez, Blackjack y más. ¡Sigue atento!')
-              }}
-              style={{
-                aspectRatio: '1',
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '20px',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                color: 'rgba(255, 255, 255, 0.6)',
-                cursor: 'pointer',
-                boxShadow: '0 12px 35px rgba(0,0,0,0.3)',
-                backdropFilter: 'blur(10px)',
-                textAlign: 'center',
-                outline: 'none',
-                position: 'relative'
-              }}
-            >
-              <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(124, 106, 247, 0.2)', border: '1px solid rgba(124, 106, 247, 0.4)', color: '#b8aeff', fontSize: '0.55rem', fontWeight: 800, padding: '2px 6px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Próximamente</span>
-              <span style={{ fontSize: '2.2rem', opacity: 0.65 }}>🎲</span>
-              <span style={{ fontFamily: 'Cinzel, serif', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.05em' }}>Juegos</span>
-              <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', lineHeight: 1.25 }}>Tablero Joy en tu pantalla TV</span>
-            </button>
+              {/* Botón Juegos */}
+              <button 
+                onClick={() => {
+                  alert('Tablero Joy estará disponible muy pronto con Ajedrez, Blackjack y más. ¡Sigue atento!')
+                }}
+                style={{
+                  aspectRatio: '1',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: '20px',
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  cursor: 'pointer',
+                  boxShadow: '0 12px 35px rgba(0,0,0,0.3)',
+                  backdropFilter: 'blur(10px)',
+                  textAlign: 'center',
+                  outline: 'none',
+                  position: 'relative'
+                }}
+              >
+                <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(124, 106, 247, 0.2)', border: '1px solid rgba(124, 106, 247, 0.4)', color: '#b8aeff', fontSize: '0.55rem', fontWeight: 800, padding: '2px 6px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Próximamente</span>
+                <span style={{ fontSize: '2.2rem', opacity: 0.65 }}>🎲</span>
+                <span style={{ fontFamily: 'Cinzel, serif', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.05em' }}>Juegos</span>
+                <span style={{ fontFamily: 'Nunito', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', lineHeight: 1.25 }}>Tablero Joy en tu pantalla TV</span>
+              </button>
+            </div>
           </div>
 
           {/* Luciérnagas */}
