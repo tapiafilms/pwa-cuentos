@@ -270,31 +270,6 @@ export default function Home() {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
           
-          {/* Botón Saltar Intro */}
-          <button
-            onClick={handleIntroEnded}
-            style={{
-              position: 'absolute',
-              top: '1.5rem',
-              right: '1.5rem',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              color: '#ffffff',
-              fontSize: '0.8rem',
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 700,
-              cursor: 'pointer',
-              backdropFilter: 'blur(8px)',
-              transition: 'all 0.2s',
-              zIndex: 100000
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)' }}
-          >
-            Saltar ✕
-          </button>
         </div>
       )}
       <style>{`
@@ -449,6 +424,7 @@ export default function Home() {
           .story-desc { max-width: 100% !important; }
           .story-btns { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: center !important; width: 100% !important; gap: 0.5rem !important; }
           .story-btns button { flex: 1; justify-content: center !important; padding: 10px 8px !important; font-size: 0.72rem !important; }
+          .tablet-only-btn { display: none !important; }
           .nav-link { display: none; }
           .nav-inner { padding: 1rem 1.25rem !important; }
           .hero-logo-area { padding: 2rem 1.5rem !important; }
@@ -1261,15 +1237,15 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
         </div>
       )}
 
-      <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: cuento.id === 1 ? 'center' : 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
+      <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
         {/* COLUMNA IZQUIERDA: texto */}
         <div className="story-text" style={{ 
-          flex: cuento.id === 1 ? '1 1 100%' : '0 0 42%', 
-          maxWidth: cuento.id === 1 ? '600px' : '400px',
-          margin: cuento.id === 1 ? '0 auto' : '0',
-          textAlign: cuento.id === 1 ? 'center' : 'left',
-          alignItems: cuento.id === 1 ? 'center' : 'flex-start',
+          flex: '1 1 100%', 
+          maxWidth: '600px',
+          margin: '0 auto',
+          textAlign: 'center',
+          alignItems: 'center',
           display: 'flex', 
           flexDirection: 'column', 
           gap: '1.1rem', 
@@ -1303,34 +1279,11 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
             <button onClick={onOpenTV} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 16px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {hasSession ? 'Proyectar en TV' : 'Ver en TV'}
             </button>
-            <button onClick={() => window.location.href = `/cuento/${cuento.id}`} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <button onClick={() => window.location.href = `/cuento/${cuento.id}`} className="tablet-only-btn" style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               Abrir cuento
             </button>
           </div>
         </div>
-
-        {/* COLUMNA DERECHA: card QR + pills (No se muestra en el cuento 1) */}
-        {cuento.id !== 1 && (
-          <div className="story-right" style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
-
-            {/* Card con efecto ripple SOLO para el cuento 2 */}
-            {cuento.id === 2 ? (
-              <div className="ripple-subtle story-card" style={{ width: 200, height: 200, borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)', background: `url('${cuento.bgImage}') center/cover` }} />
-            ) : (
-              <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
-            )}
-
-            {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
-            <div className="story-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end' }}>
-            {['TE HABLA', 'TE ESCUCHA', 'TE ENSEÑA'].map((label, i) => (
-              <div key={label} className="story-pill" style={{ display: 'flex', alignItems: 'center', gap: 10, background: cuento.glow, borderRadius: 8, padding: '10px 20px', minWidth: 180, boxShadow: `0 4px 20px ${cuento.glow}44`, transform: visible ? 'translateX(0)' : 'translateX(30px)', opacity: visible ? 1 : 0, transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.1}s` }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />
-                <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', color: 'white' }}>{label}</span>
-              </div>
-            ))}
-            </div>
-          </div>
-        )}
 
       </div>
     </section>
