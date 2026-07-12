@@ -203,21 +203,25 @@ export default function Home() {
     const sessionCode = codeToUse || tvSessionCode
     if (!sessionCode) return
     
-    const channel = supabase.channel(`session:${sessionCode}`)
-    channel.subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await channel.send({
-          type: 'broadcast',
-          event: 'start_chess'
-        })
-        localStorage.setItem('cuentajoy_session', sessionCode)
-        setTvSessionCode(sessionCode)
-        changeViewWithTransition('chess')
-        setTimeout(() => {
-          supabase.removeChannel(channel)
-        }, 1000)
-      }
-    })
+    localStorage.setItem('cuentajoy_session', sessionCode)
+    setTvSessionCode(sessionCode)
+    changeViewWithTransition('chess')
+
+    // Si no vinimos del modal de conexión, enviamos la señal de inicio de ajedrez por separado
+    if (!codeToUse) {
+      const channel = supabase.channel(`session:${sessionCode}`)
+      channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.send({
+            type: 'broadcast',
+            event: 'start_chess'
+          })
+          setTimeout(() => {
+            supabase.removeChannel(channel)
+          }, 1000)
+        }
+      })
+    }
   }
 
   const resetChessGame = async () => {
