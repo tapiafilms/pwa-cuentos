@@ -216,9 +216,6 @@ export default function Home() {
             type: 'broadcast',
             event: 'start_chess'
           })
-          setTimeout(() => {
-            supabase.removeChannel(channel)
-          }, 1000)
         }
       })
     }
@@ -1899,10 +1896,6 @@ function ChessTVModal({ onClose, onConnect }: {
           })
 
           onConnect(codeVal)
-          
-          setTimeout(() => {
-            supabase.removeChannel(channel)
-          }, 1000)
         }, 800)
       } else {
         setError('Error al conectar. Inténtalo de nuevo.')
