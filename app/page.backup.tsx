@@ -447,8 +447,8 @@ export default function Home() {
           .story-text { align-items: center !important; text-align: center !important; flex: 1 1 100% !important; max-width: 100% !important; }
           .section-num { display: none; }
           .story-desc { max-width: 100% !important; }
-          .story-btns { justify-content: center !important; width: 100% !important; }
-          .story-btns button { width: 100% !important; justify-content: center !important; }
+          .story-btns { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: center !important; width: 100% !important; gap: 0.5rem !important; }
+          .story-btns button { flex: 1; justify-content: center !important; padding: 10px 8px !important; font-size: 0.72rem !important; }
           .nav-link { display: none; }
           .nav-inner { padding: 1rem 1.25rem !important; }
           .hero-logo-area { padding: 2rem 1.5rem !important; }
@@ -520,39 +520,37 @@ export default function Home() {
       )}
 
       {/* NAV */}
+      {/* NAV / BOTÓN VOLVER FLOTANTE EN CATÁLOGO */}
       {currentView === 'cuentos' && (
-        <nav style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-          padding: '1rem 1.25rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'rgba(6,6,8,0.95)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          transition: 'all 0.4s ease',
-        }}>
-          <button 
-            onClick={() => {
-              setCurrentView('hub')
-              window.scrollTo(0, 0)
-            }} 
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#ffffff',
-              fontFamily: "'Nunito', sans-serif",
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6
-            }}
-          >
-            ← Volver al menú
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-cuentajoy.png" alt="Cuentajoy" style={{ height: 28, width: 'auto' }} />
-        </nav>
+        <button
+          onClick={() => {
+            setCurrentView('hub')
+            window.scrollTo(0, 0)
+          }}
+          style={{
+            position: 'fixed',
+            top: '12px',
+            left: '12px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '16px',
+            padding: '6px 12px',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.35)',
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: '0.65rem',
+            color: '#ffffff',
+            fontWeight: 800,
+            letterSpacing: '0.05em',
+            cursor: 'pointer'
+          }}
+        >
+          <span>← VOLVER</span>
+        </button>
       )}
 
       {/* HERO (Hub principal) */}
@@ -1263,10 +1261,22 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
         </div>
       )}
 
-      <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
+      <div className="story-inner" style={{ maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: cuento.id === 1 ? 'center' : 'space-between', gap: '3rem', position: 'relative', zIndex: 1 }}>
 
         {/* COLUMNA IZQUIERDA: texto */}
-        <div className="story-text" style={{ flex: '0 0 42%', display: 'flex', flexDirection: 'column', gap: '1.1rem', transform: visible ? 'translateX(0)' : 'translateX(-40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.1s' }}>
+        <div className="story-text" style={{ 
+          flex: cuento.id === 1 ? '1 1 100%' : '0 0 42%', 
+          maxWidth: cuento.id === 1 ? '600px' : '400px',
+          margin: cuento.id === 1 ? '0 auto' : '0',
+          textAlign: cuento.id === 1 ? 'center' : 'left',
+          alignItems: cuento.id === 1 ? 'center' : 'flex-start',
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '1.1rem', 
+          transform: visible ? 'translateX(0)' : 'translateX(-40px)', 
+          opacity: visible ? 1 : 0, 
+          transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.1s' 
+        }}>
 
           {/* Tag pill */}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 100, background: `${cuento.glow}22`, border: `1px solid ${cuento.glow}55`, color: cuento.accent, width: 'fit-content' }}>
@@ -1289,36 +1299,38 @@ function StorySection({ cuento, index, onOpenTV, hasSession }: {
           </p>
 
           {/* Botones */}
-          <div className="story-btns" style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-            <button onClick={onOpenTV} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer' }}>
-              {hasSession ? '📺 Proyectar en TV' : '📺 Ver en TV'}
+          <div className="story-btns" style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'nowrap', width: '100%' }}>
+            <button onClick={onOpenTV} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 16px', borderRadius: 8, background: cuento.glow, border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {hasSession ? 'Proyectar en TV' : 'Ver en TV'}
             </button>
-            <button onClick={() => window.location.href = `/cuento/${cuento.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer' }}>
-              Abrir cuento →
+            <button onClick={() => window.location.href = `/cuento/${cuento.id}`} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              Abrir cuento
             </button>
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: card QR + pills */}
-        <div className="story-right" style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
+        {/* COLUMNA DERECHA: card QR + pills (No se muestra en el cuento 1) */}
+        {cuento.id !== 1 && (
+          <div className="story-right" style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', transform: visible ? 'translateX(0)' : 'translateX(40px)', opacity: visible ? 1 : 0, transition: 'all 0.85s cubic-bezier(0.16,1,0.3,1) 0.25s' }}>
 
-          {/* Card con efecto ripple SOLO para el cuento 2 */}
-          {cuento.id === 2 ? (
-            <div className="ripple-subtle story-card" style={{ width: 200, height: 200, borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)', background: `url('${cuento.bgImage}') center/cover` }} />
-          ) : (
-            <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
-          )}
+            {/* Card con efecto ripple SOLO para el cuento 2 */}
+            {cuento.id === 2 ? (
+              <div className="ripple-subtle story-card" style={{ width: 200, height: 200, borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)', background: `url('${cuento.bgImage}') center/cover` }} />
+            ) : (
+              <div className="story-card" style={{ width: 200, height: 200, background: 'white', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }} />
+            )}
 
-          {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
-          <div className="story-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end' }}>
-          {['TE HABLA', 'TE ESCUCHA', 'TE ENSEÑA'].map((label, i) => (
-            <div key={label} className="story-pill" style={{ display: 'flex', alignItems: 'center', gap: 10, background: cuento.glow, borderRadius: 8, padding: '10px 20px', minWidth: 180, boxShadow: `0 4px 20px ${cuento.glow}44`, transform: visible ? 'translateX(0)' : 'translateX(30px)', opacity: visible ? 1 : 0, transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.1}s` }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />
-              <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', color: 'white' }}>{label}</span>
+            {/* Pills TE HABLA / TE ESCUCHA / TE ENSEÑA */}
+            <div className="story-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end' }}>
+            {['TE HABLA', 'TE ESCUCHA', 'TE ENSEÑA'].map((label, i) => (
+              <div key={label} className="story-pill" style={{ display: 'flex', alignItems: 'center', gap: 10, background: cuento.glow, borderRadius: 8, padding: '10px 20px', minWidth: 180, boxShadow: `0 4px 20px ${cuento.glow}44`, transform: visible ? 'translateX(0)' : 'translateX(30px)', opacity: visible ? 1 : 0, transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.1}s` }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />
+                <span style={{ fontFamily: 'Nunito', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', color: 'white' }}>{label}</span>
+              </div>
+            ))}
             </div>
-          ))}
           </div>
-        </div>
+        )}
 
       </div>
     </section>
