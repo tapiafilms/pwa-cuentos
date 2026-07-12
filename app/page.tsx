@@ -356,6 +356,8 @@ function DesktopLanding() {
           
           {/* Info Izquierda */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-genofy.png" alt="Genofy" style={{ height: '24px', width: 'auto', alignSelf: 'flex-start', opacity: 0.8 }} />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(124, 106, 247, 0.1)', border: '1px solid rgba(124, 106, 247, 0.2)', padding: '6px 16px', borderRadius: '30px', alignSelf: 'flex-start' }}>
               <div className="status-dot" style={{ margin: 0 }} />
               <span style={{ fontSize: '0.75rem', color: '#b8aeff', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Entretenimiento Multipantalla</span>
@@ -410,7 +412,7 @@ function DesktopLanding() {
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '4.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <span style={{ fontSize: '0.85rem', color: '#7c6af7', letterSpacing: '0.2em', fontWeight: 800, textTransform: 'uppercase' }}>El Portal Multipantalla</span>
-            <h2 className="title-display" style={{ fontSize: '2.6rem', fontWeight: 800, letterSpacing: '-0.01em' }}>¿Cómo empezar a jugar en 3 pasos?</h2>
+            <h2 className="title-display" style={{ fontSize: '2.6rem', fontWeight: 800, letterSpacing: '-0.01em' }}>¿Cómo iniciar en tres pasos?</h2>
             <div style={{ width: '40px', height: '3px', background: '#7c6af7', margin: '1rem auto 0', borderRadius: '2px' }} />
           </div>
 
