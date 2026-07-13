@@ -180,7 +180,17 @@ function TVPageInner() {
   const speakText = (text: string) => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance(text)
+
+      // Limpiar emojis y onomatopeyas del habla para que se entienda natural
+      const cleanedText = text
+        .replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '')
+        .replace(/\b(bip|bop|beep|boop|bit|bot)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+      const textToSpeak = cleanedText || text
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak)
       utterance.lang = 'es-ES'
       utterance.rate = 0.95
       utterance.pitch = 1.0
