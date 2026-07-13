@@ -853,26 +853,7 @@ export default function Home() {
             ← Volver
           </button>
 
-          <div style={{
-            position: 'fixed',
-            top: '12px',
-            right: '12px',
-            background: 'rgba(15, 23, 15, 0.65)',
-            border: '1px solid rgba(46, 204, 113, 0.3)',
-            borderRadius: '16px',
-            padding: '6px 12px',
-            zIndex: 10000,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            backdropFilter: 'blur(8px)',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.35)'
-          }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71' }} />
-            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.12em', color: '#2ecc71' }}>
-              TV: {tvSessionCode}
-            </span>
-          </div>
+
 
           {/* Título de la sección */}
           <div style={{ textAlign: 'center', marginBottom: '1.5rem', marginTop: '1rem' }}>
@@ -1038,36 +1019,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Historial de Comentarios / Log de la IA */}
-          <div style={{
-            width: '100%',
-            maxWidth: '340px',
-            marginTop: '1.25rem',
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            borderRadius: '16px',
-            padding: '12px 16px',
-            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5)',
-            flex: 1,
-            minHeight: '110px',
-            maxHeight: '140px',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}>
-            {aiTextLog.map((logText, idx) => (
-              <p key={idx} style={{
-                fontFamily: 'Nunito',
-                fontSize: '0.8rem',
-                color: idx === 0 ? '#ffffff' : 'rgba(255,255,255,0.35)',
-                lineHeight: 1.4,
-                fontWeight: idx === 0 ? 600 : 400
-              }}>
-                {idx === 0 ? '💬 ' : '• '} {logText}
-              </p>
-            ))}
-          </div>
+
 
           {/* Botón Reiniciar Partida */}
           <button
