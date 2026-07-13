@@ -1163,7 +1163,7 @@ function PlayingChessView({
   }
 
   const pieceUnicode: { [key: string]: string } = {
-    'wp': '♙', 'wn': '♘', 'wb': '♗', 'wr': '♖', 'wq': '♕', 'wk': '♔',
+    'wp': '♟', 'wn': '♞', 'wb': '♝', 'wr': '♜', 'wq': '♛', 'wk': '♚',
     'bp': '♟', 'bn': '♞', 'bb': '♝', 'br': '♜', 'bq': '♛', 'bk': '♚'
   }
 
@@ -1315,10 +1315,16 @@ function PlayingChessView({
                   <div key={squareName} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: bg, border: borderStyle, position: 'relative',
+                    overflow: 'hidden',
                     transition: 'background 0.3s ease'
                   }}>
                     {pieceChar && (
                       <span style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         fontSize: '3rem', color: pieceColor, textShadow: pieceShadow,
                         userSelect: 'none', zIndex: 2
                       }}>

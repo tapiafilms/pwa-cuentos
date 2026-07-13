@@ -928,7 +928,7 @@ export default function Home() {
                   let pieceColor = '#ffffff'
 
                   const pieceUnicodeMap: { [key: string]: string } = {
-                    'wp': '♙', 'wn': '♘', 'wb': '♗', 'wr': '♖', 'wq': '♕', 'wk': '♔',
+                    'wp': '♟', 'wn': '♞', 'wb': '♝', 'wr': '♜', 'wq': '♛', 'wk': '♚',
                     'bp': '♟', 'bn': '♞', 'bb': '♝', 'br': '♜', 'bq': '♛', 'bk': '♚'
                   }
 
@@ -986,6 +986,7 @@ export default function Home() {
                         background: bg,
                         border: borderStyle,
                         position: 'relative',
+                        overflow: 'hidden',
                         cursor: 'pointer'
                       }}
                     >
@@ -1003,7 +1004,12 @@ export default function Home() {
 
                       {pieceChar && (
                         <span style={{
-                          fontSize: '2.1rem',
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.95rem',
                           color: pieceColor,
                           userSelect: 'none',
                           zIndex: 2,
