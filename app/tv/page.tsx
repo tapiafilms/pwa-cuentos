@@ -1211,85 +1211,133 @@ function PlayingChessView({
 
   return (
     <div style={{
-      display: 'flex', width: '100%', height: '100%', padding: '2rem 4rem',
-      alignItems: 'center', justifyContent: 'space-between', zIndex: 10, position: 'relative'
+      width: '100vw',
+      height: '100vh',
+      backgroundImage: "url('/bg-ajedrez.png')",
+      backgroundSize: 'cover',
+      backgroundPosition: '20% center',
+      backgroundRepeat: 'no-repeat',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 6% 0 6%',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      {/* Columna Izquierda: Oponente IA */}
+      {/* Overlay gradiente oscuro para asegurar contraste del tablero y globo */}
       <div style={{
-        flex: '0 0 45%', height: '100%', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: '2rem',
-        borderRight: '1px solid rgba(255,255,255,0.03)'
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.8) 100%)',
+        zIndex: 1
+      }} />
+
+      {/* Columna Izquierda: Globo de diálogo flotando al lado del avatar */}
+      <div style={{
+        flex: '0 0 50%',
+        height: '100%',
+        position: 'relative',
+        zIndex: 2
       }}>
-        <div style={{
-          position: 'relative', width: 220, height: 220,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
+        {aiSpeakingText && (
           <div style={{
-            position: 'absolute', inset: -20, border: `2px dashed ${avatarColor}44`,
-            borderRadius: '50%', animation: 'spin 12s linear infinite'
-          }} />
-          <div style={{
-            position: 'absolute', inset: -10, border: `1.5px solid ${avatarColor}22`,
-            borderRadius: '50%', animation: 'spin-reverse 8s linear infinite'
-          }} />
-
-          <div style={{
-            width: 140, height: 140, borderRadius: '50%',
-            background: `radial-gradient(circle, ${avatarColor}ee 0%, ${avatarColor}66 60%, transparent 80%)`,
-            boxShadow: `0 0 50px ${avatarColor}, 0 0 100px ${avatarColor}55`,
-            transition: 'all 0.3s ease',
-            transform: `scale(${scaleFactor})`,
-            animation: `pulseAvatar ${pulseSpeed} ease-in-out infinite`
-          }} />
-
-          <div style={{
-            position: 'absolute', display: 'flex', gap: 28, top: '40%'
+            position: 'absolute',
+            left: '42%',
+            top: '32%',
+            transform: 'translate(-50%, -50%)',
+            background: 'rgba(10, 10, 15, 0.9)',
+            border: `2px solid ${avatarColor}`,
+            borderRadius: '24px 24px 24px 4px',
+            padding: '1.25rem 1.75rem',
+            maxWidth: '380px',
+            boxShadow: `0 20px 40px rgba(0,0,0,0.65), 0 0 25px ${avatarColor}33`,
+            animation: 'bubbleAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px'
           }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fff', boxShadow: '0 0 8px #fff' }} />
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fff', boxShadow: '0 0 8px #fff' }} />
-          </div>
-          <div style={{
-            position: 'absolute', width: 44, height: avatarState === 'speaking' ? 12 : 3,
-            background: '#fff', borderRadius: 10, top: '62%', transition: 'all 0.15s ease'
-          }} />
-        </div>
-
-        <div style={{ textAlign: 'center', maxWidth: '85%' }}>
-          <h2 style={{ fontFamily: 'Cinzel', fontSize: '1.8rem', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>JOY IA</h2>
-          <span style={{
-            fontFamily: 'Nunito', fontSize: '0.75rem', letterSpacing: '0.15em',
-            color: avatarColor, textTransform: 'uppercase', fontWeight: 800
-          }}>
-            {avatarState === 'thinking' ? 'Pensando jugada...' : avatarState === 'speaking' ? 'Hablando...' : 'Oponente listo'}
-          </span>
-
-          {aiSpeakingText && (
-            <div style={{
-              marginTop: '1.5rem', background: 'rgba(15, 15, 23, 0.85)',
-              border: `1.5px solid ${avatarColor}aa`, borderRadius: '18px',
-              padding: '1rem 1.25rem', boxShadow: `0 10px 30px rgba(0,0,0,0.5), 0 0 15px ${avatarColor}22`,
-              animation: 'bubbleAppear 0.3s ease forwards'
+            <span style={{
+              fontFamily: 'Nunito',
+              fontSize: '0.8rem',
+              color: avatarColor,
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em'
             }}>
-              <p style={{ fontFamily: 'Nunito', fontSize: '1.25rem', color: '#ffffff', lineHeight: 1.4, fontWeight: 600 }}>
-                "{aiSpeakingText}"
-              </p>
-            </div>
-          )}
-        </div>
+              Joy IA
+            </span>
+            <p style={{
+              fontFamily: 'Nunito',
+              fontSize: '1.3rem',
+              color: '#ffffff',
+              lineHeight: 1.45,
+              fontWeight: 600
+            }}>
+              "{aiSpeakingText}"
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Columna Derecha: Tablero Gigante */}
+      {/* Columna Derecha: Panel del Tablero 2D */}
       <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'
+        flex: '0 0 45%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '2rem',
+        zIndex: 2,
+        position: 'relative'
       }}>
+        {/* Indicador de Turno */}
         <div style={{
-          padding: '10px', background: 'rgba(15, 15, 25, 0.4)',
-          border: '3px solid rgba(124, 106, 247, 0.25)', borderRadius: '16px',
-          boxShadow: '0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(124, 106, 247, 0.15)'
+          background: 'rgba(10, 10, 15, 0.75)',
+          border: `1.5px solid ${turn === 'w' ? 'rgba(255,255,255,0.15)' : avatarColor + '77'}`,
+          borderRadius: '20px',
+          padding: '12px 28px',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+          animation: 'fadeIn 0.5s ease'
         }}>
           <div style={{
-            display: 'grid', gridTemplateRows: 'repeat(8, 70px)', gridTemplateColumns: 'repeat(8, 70px)',
-            background: '#0a0a0f'
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            background: turn === 'w' ? '#ffffff' : avatarColor,
+            boxShadow: turn === 'w' ? '0 0 10px #ffffff' : `0 0 10px ${avatarColor}`
+          }} />
+          <span style={{
+            fontFamily: 'Nunito',
+            fontSize: '1.1rem',
+            fontWeight: 800,
+            color: '#ffffff',
+            letterSpacing: '0.05em'
+          }}>
+            {turn === 'w' ? 'Tu Turno (Blancas)' : 'Pensando Joy IA...'}
+          </span>
+        </div>
+
+        {/* Tablero de Ajedrez */}
+        <div style={{
+          padding: '12px',
+          background: 'rgba(10, 10, 15, 0.75)',
+          border: `2.5px solid ${avatarColor}55`,
+          borderRadius: '24px',
+          boxShadow: `0 20px 50px rgba(0,0,0,0.7), 0 0 30px ${avatarColor}15`,
+          backdropFilter: 'blur(12px)'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateRows: 'repeat(8, 70px)',
+            gridTemplateColumns: 'repeat(8, 70px)',
+            background: '#07070a',
+            borderRadius: '12px',
+            overflow: 'hidden'
           }}>
             {board.map((row, rIdx) => 
               row.map((col, cIdx) => {
@@ -1298,7 +1346,7 @@ function PlayingChessView({
                 const isLastMove = lastMove && (lastMove.from === squareName || lastMove.to === squareName)
                 const isCheck = inCheck === squareName
                 
-                let bg = isLight ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.02)'
+                let bg = isLight ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.01)'
                 let borderStyle = 'none'
 
                 if (isLastMove) {
