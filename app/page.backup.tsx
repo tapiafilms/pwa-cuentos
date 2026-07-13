@@ -928,7 +928,7 @@ export default function Home() {
                   let pieceColor = '#ffffff'
 
                   const pieceUnicodeMap: { [key: string]: string } = {
-                    'wp': '♟', 'wn': '♞', 'wb': '♝', 'wr': '♜', 'wq': '♛', 'wk': '♚',
+                    'wp': '♙', 'wn': '♘', 'wb': '♗', 'wr': '♖', 'wq': '♕', 'wk': '♔',
                     'bp': '♟', 'bn': '♞', 'bb': '♝', 'br': '♜', 'bq': '♛', 'bk': '♚'
                   }
 
