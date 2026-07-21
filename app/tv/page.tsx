@@ -255,7 +255,7 @@ function TVPageInner() {
     } catch (e) {
       console.error('Error fetching AI comment:', e)
     }
-    return "Muevo mi pieza. Tu turno."
+    return "He movido mi pieza. Tu turno."
   }
 
   const getPlayerMovePrompt = (move: any): string => {
@@ -278,12 +278,12 @@ function TVPageInner() {
     
     if (move.captured) {
       const capturedName = pieceNames[move.captured] || 'pieza'
-      return `Muevo mi ${pieceName} a ${move.to} y capturo tu ${capturedName}. Di 1 frase muy corta de máximo 8 palabras sin emojis ni signos de exclamación.`
+      return `Ya he movido mi ${pieceName} a ${move.to} y capturé tu ${capturedName}. Di 1 frase muy corta pasándole el turno al humano. Sin emojis ni signos. PROHIBIDO decir que es mi turno.`
     }
     if (move.san.includes('+')) {
-      return `Muevo mi ${pieceName} a ${move.to} dando jaque. Di 1 frase muy corta de máximo 8 palabras sin emojis ni signos de exclamación.`
+      return `Ya he movido mi ${pieceName} a ${move.to} dando jaque. Di 1 frase muy corta pasándole el turno al humano. Sin emojis ni signos. PROHIBIDO decir que es mi turno.`
     }
-    return `Muevo mi ${pieceName} a ${move.to}. Di 1 frase muy corta pasando el turno de máximo 8 palabras sin emojis ni signos de exclamación.`
+    return `Ya he movido mi ${pieceName} a ${move.to}. Di 1 frase muy corta pasándole el turno al humano de máximo 8 palabras. Sin emojis ni signos. PROHIBIDO decir que es mi turno.`
   }
 
   const handlePlayerChessMove = (from: string, to: string, activeChan: any) => {
