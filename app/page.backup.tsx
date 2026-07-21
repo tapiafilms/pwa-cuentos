@@ -1743,14 +1743,37 @@ function TVModal({ cuento, onClose }: {
           onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}>✕</button>
 
         {/* Header */}
-        <div style={{ marginBottom: '1.75rem', textAlign: 'left' }}>
-          <span style={{ fontSize: '2rem' }}>{cuento.emoji}</span>
-          <h3 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.4rem', fontWeight: 700, color: 'white', marginTop: 8, whiteSpace: 'pre-line', lineHeight: 1.2 }}>
-            Conectar {cuento.title.replace('\n', ' ')}
-          </h3>
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
-            Escribe el código que aparece en la pantalla de la TV
-          </p>
+        <div style={{ marginBottom: '1.25rem', textAlign: 'left' }}>
+          {/* Banner de TV no vinculada */}
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '14px',
+            padding: '12px 14px',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '10px',
+            textAlign: 'left'
+          }}>
+            <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>📺</span>
+            <div>
+              <h4 style={{ fontFamily: 'Nunito', fontSize: '0.88rem', fontWeight: 800, color: '#fca5a5', margin: 0 }}>
+                No hay ninguna TV o pantalla vinculada
+              </h4>
+              <p style={{ fontFamily: 'Nunito', fontSize: '0.76rem', color: 'rgba(255, 255, 255, 0.75)', margin: '4px 0 0 0', lineHeight: 1.35 }}>
+                1. Abre la app en tu TV o pantalla.<br />
+                2. Ingresa abajo el código de 4 letras que ves en la TV.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.8rem' }}>{cuento.emoji}</span>
+            <h3 style={{ fontFamily: "'Beau Rivage', cursive", fontSize: '1.4rem', fontWeight: 700, color: 'white', margin: 0, whiteSpace: 'pre-line', lineHeight: 1.2 }}>
+              Conectar {cuento.title.replace('\n', ' ')}
+            </h3>
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
@@ -1885,7 +1908,7 @@ function ChessTVModal({ onClose, onConnect }: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '1.5rem',
+        gap: '1.25rem',
         position: 'relative'
       }}>
         <button 
@@ -1905,14 +1928,35 @@ function ChessTVModal({ onClose, onConnect }: {
           ✕
         </button>
 
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '2.5rem' }}>⚔️</span>
-          <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>
+        {/* Banner de TV no vinculada */}
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.12)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: '14px',
+          padding: '12px 14px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '10px',
+          textAlign: 'left',
+          width: '100%'
+        }}>
+          <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>📺</span>
+          <div>
+            <h4 style={{ fontFamily: 'Nunito', fontSize: '0.88rem', fontWeight: 800, color: '#fca5a5', margin: 0 }}>
+              No hay ninguna TV o pantalla vinculada
+            </h4>
+            <p style={{ fontFamily: 'Nunito', fontSize: '0.76rem', color: 'rgba(255, 255, 255, 0.75)', margin: '4px 0 0 0', lineHeight: 1.35 }}>
+              1. Abre la app en tu TV o pantalla.<br />
+              2. Ingresa abajo el código de 4 letras que ves en la TV.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+          <span style={{ fontSize: '2rem' }}>⚔️</span>
+          <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.35rem', fontWeight: 700, color: 'white', margin: 0 }}>
             Conectar Ajedrez
           </h2>
-          <p style={{ fontFamily: 'Nunito', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>
-            Ingresa el código de 4 letras que aparece en tu pantalla de TV para iniciar la partida.
-          </p>
         </div>
 
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
