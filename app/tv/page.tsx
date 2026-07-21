@@ -63,14 +63,14 @@ function TVPageInner() {
   // Estado para la respuesta de la Inteligencia Artificial
   const [aiResponse, setAiResponse] = useState<{ question: string; answer: string } | null>(null)
 
-  // Ajedrez Estado
+  // Ajedrez Estado del Avatar (4 estados en video)
   const chessRef = useRef<any>(null)
   const [chessBoard, setChessBoard] = useState<any[][]>([])
   const [chessLastMove, setChessLastMove] = useState<{ from: string; to: string } | null>(null)
   const [chessInCheck, setChessInCheck] = useState<string | null>(null)
   const [chessTurn, setChessTurn] = useState<'w' | 'b'>('w')
   const [aiSpeakingText, setAiSpeakingText] = useState<string | null>(null)
-  const [avatarState, setAvatarState] = useState<'idle' | 'thinking' | 'speaking' | 'smug' | 'angry' | 'won' | 'lost'>('idle')
+  const [avatarState, setAvatarState] = useState<'waiting' | 'surprised' | 'moving' | 'speaking'>('waiting')
   const [channelRef, setChannelRef] = useState<any>(null)
 
   // Capa de transición cinematográfica (fundido a negro)
@@ -214,7 +214,7 @@ function TVPageInner() {
       }
       
       utterance.onstart = () => setAvatarState('speaking')
-      utterance.onend = () => setAvatarState('idle')
+      utterance.onend = () => setAvatarState('waiting')
       
       window.speechSynthesis.speak(utterance)
     }
@@ -304,14 +304,15 @@ function TVPageInner() {
         return
       }
 
-      setAvatarState('thinking')
+      // El contrincante movió una pieza -> Avatar reacciona con 'surprised'
+      setAvatarState('surprised')
       const promptMsg = getPlayerMovePrompt(move)
       fetchAiComment(promptMsg).then((comment) => {
         setAiSpeakingText(comment)
         speakText(comment)
       })
 
-      // Simular tiempo de "pensamiento" de la IA
+      // Simular tiempo de "pensamiento" / movimiento de la IA
       setTimeout(() => {
         makeAIMove(activeChan)
       }, 2500)
@@ -325,6 +326,9 @@ function TVPageInner() {
     if (!chessRef.current) return
 
     try {
+      // Joy IA realiza la jugada -> Avatar cambia a 'moving' (moviendo pieza)
+      setAvatarState('moving')
+
       const moves = chessRef.current.moves({ verbose: true })
       if (moves.length === 0) return
 
@@ -395,14 +399,14 @@ function TVPageInner() {
     let comment = ''
     if (chessRef.current.isCheckmate()) {
       if (chessRef.current.turn() === 'w') {
-        setAvatarState('won')
+        setAvatarState('speaking')
         comment = "¡Jaque mate! He ganado la partida. La Inteligencia Artificial es insuperable. ¡Inténtalo de nuevo!"
       } else {
-        setAvatarState('lost')
+        setAvatarState('surprised')
         comment = "¡¿Qué?! ¡¿Jaque mate?! Esto es imposible... Debo haber tenido una falla en mis algoritmos..."
       }
     } else if (chessRef.current.isDraw()) {
-      setAvatarState('idle')
+      setAvatarState('waiting')
       comment = "La partida ha terminado en tablas. Un empate digno, pero la próxima vez te venceré."
     }
 
@@ -1163,6 +1167,99 @@ function BackgroundAmbientEffects({ cuentoId, glow }: { cuentoId: number; glow: 
   )
 }
 
+type AvatarVideoState = 'waiting' | 'surprised' | 'moving' | 'speaking'
+
+const AVATAR_VIDEOS: Record<AvatarVideoState, { src: string; label: string; emoji: string }> = {
+  waiting: { src: '/avatar-waiting.mp4', label: 'Esperando', emoji: '🤖' },
+  surprised: { src: '/avatar-surprised.mp4', label: 'Sorprendido', emoji: '😲' },
+  moving: { src: '/avatar-moving.mp4', label: 'Moviendo Pieza', emoji: '♟️' },
+  speaking: { src: '/avatar-speaking.mp4', label: 'Hablando', emoji: '💬' },
+}
+
+function AvatarVideoPlayer({ avatarState }: { avatarState: AvatarVideoState }) {
+  const [hasVideoError, setHasVideoError] = useState<Record<string, boolean>>({})
+
+  return (
+    <div style={{
+      width: '100%',
+      height: '100%',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden'
+    }}>
+      {(['waiting', 'surprised', 'moving', 'speaking'] as AvatarVideoState[]).map((stateKey) => {
+        const info = AVATAR_VIDEOS[stateKey]
+        const isActive = avatarState === stateKey
+        const isError = hasVideoError[stateKey]
+
+        if (isError && isActive) {
+          return (
+            <div key={stateKey} style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem',
+              color: 'white',
+              fontFamily: "'Nunito', sans-serif",
+              textAlign: 'center',
+              padding: '2rem',
+              animation: 'fadeIn 0.4s ease'
+            }}>
+              <div style={{
+                width: '180px',
+                height: '180px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(124, 106, 247, 0.4) 0%, rgba(10, 10, 15, 0.85) 70%)',
+                border: '2px solid rgba(124, 106, 247, 0.6)',
+                boxShadow: '0 0 40px rgba(124, 106, 247, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '4.5rem'
+              }}>
+                {info.emoji}
+              </div>
+              <div>
+                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b8aeff' }}>Avatar: {info.label}</span>
+                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
+                  Coloca <code style={{ color: '#7c6af7', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px' }}>public{info.src}</code> para cargar este video
+                </p>
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <video
+            key={stateKey}
+            src={info.src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            onError={() => {
+              setHasVideoError(prev => ({ ...prev, [stateKey]: true }))
+            }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: isActive && !isError ? 1 : 0,
+              transition: 'opacity 0.4s ease-in-out',
+              pointerEvents: 'none'
+            }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
 function PlayingChessView({ 
   board, 
   lastMove, 
@@ -1176,7 +1273,7 @@ function PlayingChessView({
   inCheck: string | null
   turn: 'w' | 'b'
   aiSpeakingText: string | null
-  avatarState: 'idle' | 'thinking' | 'speaking' | 'smug' | 'angry' | 'won' | 'lost'
+  avatarState: AvatarVideoState
 }) {
   const getSquareName = (r: number, c: number) => {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -1190,36 +1287,9 @@ function PlayingChessView({
   }
 
   let avatarColor = '#7c6af7'
-  let avatarGlow = 'rgba(124, 106, 247, 0.5)'
-  let pulseSpeed = '3s'
-  let scaleFactor = '1'
-
-  if (avatarState === 'thinking') {
-    avatarColor = '#2196f3'
-    avatarGlow = 'rgba(33, 150, 243, 0.6)'
-    pulseSpeed = '1.2s'
-  } else if (avatarState === 'speaking') {
-    avatarColor = '#00bcd4'
-    avatarGlow = 'rgba(0, 188, 212, 0.7)'
-    pulseSpeed = '0.4s'
-    scaleFactor = '1.08'
-  } else if (avatarState === 'angry') {
-    avatarColor = '#f44336'
-    avatarGlow = 'rgba(244, 67, 54, 0.8)'
-    pulseSpeed = '0.2s'
-  } else if (avatarState === 'smug') {
-    avatarColor = '#4caf50'
-    avatarGlow = 'rgba(76, 175, 80, 0.7)'
-    pulseSpeed = '0.8s'
-  } else if (avatarState === 'won') {
-    avatarColor = '#ffd54f'
-    avatarGlow = 'rgba(255, 213, 79, 0.8)'
-    pulseSpeed = '1.5s'
-  } else if (avatarState === 'lost') {
-    avatarColor = '#9e9e9e'
-    avatarGlow = 'rgba(158, 158, 158, 0.4)'
-    pulseSpeed = '4s'
-  }
+  if (avatarState === 'surprised') avatarColor = '#ff9800'
+  else if (avatarState === 'moving') avatarColor = '#2196f3'
+  else if (avatarState === 'speaking') avatarColor = '#00bcd4'
 
   return (
     <div style={{
@@ -1244,29 +1314,37 @@ function PlayingChessView({
         zIndex: 1
       }} />
 
-      {/* Columna Izquierda: Globo de diálogo flotando al lado del avatar */}
+      {/* Columna Izquierda: Reproductor de Video del Avatar + Globo de Diálogo */}
       <div style={{
         flex: '0 0 50%',
         height: '100%',
         position: 'relative',
-        zIndex: 2
+        zIndex: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
+        {/* Componente de Video del Avatar */}
+        <AvatarVideoPlayer avatarState={avatarState} />
+
         {aiSpeakingText && (
           <div style={{
             position: 'absolute',
             left: '42%',
             top: '32%',
             transform: 'translate(-50%, -50%)',
-            background: 'rgba(10, 10, 15, 0.9)',
+            background: 'rgba(10, 10, 15, 0.92)',
             border: `2px solid ${avatarColor}`,
             borderRadius: '24px 24px 24px 4px',
             padding: '1.25rem 1.75rem',
             maxWidth: '380px',
-            boxShadow: `0 20px 40px rgba(0,0,0,0.65), 0 0 25px ${avatarColor}33`,
+            boxShadow: `0 20px 40px rgba(0,0,0,0.65), 0 0 25px ${avatarColor}44`,
             animation: 'bubbleAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
             display: 'flex',
             flexDirection: 'column',
-            gap: '6px'
+            gap: '6px',
+            backdropFilter: 'blur(10px)',
+            zIndex: 10
           }}>
             <span style={{
               fontFamily: 'Nunito',
