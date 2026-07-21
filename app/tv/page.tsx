@@ -360,7 +360,7 @@ function TVPageInner() {
       // 2. Iniciar el video 'moving' del Avatar
       setAvatarState('moving')
 
-      // 3. Mover la pieza en el tablero 700ms después, justo cuando el avatar desplaza la mano en el video
+      // 3. Mover la pieza en el tablero 1600ms después (cuando el avatar desplaza la mano en el video que inicia desde 0.0s)
       setTimeout(() => {
         if (!chessRef.current) return
         chessRef.current.move({ from: aiMove.from, to: aiMove.to })
@@ -389,15 +389,15 @@ function TVPageInner() {
           return
         }
 
-        // 4. Esperar 1.8s adicionales (2.5s total de video) para que termine la acción de movimiento e inicie el habla
+        // 4. Esperar 1.2s adicionales para que complete la acción el video e inicie el habla
         const promptMsg = getAIMovePrompt(aiMove)
         setTimeout(() => {
           fetchAiComment(promptMsg).then((comment) => {
             setAiSpeakingText(comment)
             speakText(comment)
           })
-        }, 1800)
-      }, 700)
+        }, 1200)
+      }, 1600)
 
     } catch (e) {
       console.error('Error calculando jugada de la IA:', e)
@@ -1189,6 +1189,18 @@ const AVATAR_VIDEOS: Record<AvatarVideoState, { src: string; label: string; emoj
 
 function AvatarVideoPlayer({ avatarState }: { avatarState: AvatarVideoState }) {
   const [hasVideoError, setHasVideoError] = useState<Record<string, boolean>>({})
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({})
+
+  // Reiniciar el video activo a 0.0s cada vez que cambia el estado del avatar
+  useEffect(() => {
+    const currentVideo = videoRefs.current[avatarState]
+    if (currentVideo) {
+      try {
+        currentVideo.currentTime = 0
+        currentVideo.play().catch(() => {})
+      } catch (e) {}
+    }
+  }, [avatarState])
 
   return (
     <div style={{
@@ -1246,6 +1258,9 @@ function AvatarVideoPlayer({ avatarState }: { avatarState: AvatarVideoState }) {
         return (
           <video
             key={stateKey}
+            ref={(el) => {
+              videoRefs.current[stateKey] = el
+            }}
             src={info.src}
             autoPlay
             loop
