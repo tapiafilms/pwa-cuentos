@@ -311,16 +311,11 @@ function TVPageInner() {
       } else {
         setAvatarState('waiting')
       }
-      const promptMsg = getPlayerMovePrompt(move)
-      fetchAiComment(promptMsg).then((comment) => {
-        setAiSpeakingText(comment)
-        speakText(comment)
-      })
 
-      // Simular tiempo de "pensamiento" / movimiento de la IA
+      // No hablar antes del movimiento. Esperar 1.2s, mover la pieza y luego hablar.
       setTimeout(() => {
         makeAIMove(activeChan)
-      }, 2500)
+      }, 1200)
 
     } catch (e) {
       console.error('Error aplicando jugada del jugador:', e)
