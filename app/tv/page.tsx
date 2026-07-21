@@ -1321,91 +1321,82 @@ function PlayingChessView({
     <div style={{
       width: '100vw',
       height: '100vh',
-      backgroundImage: "url('/bg-ajedrez.png')",
-      backgroundSize: 'cover',
-      backgroundPosition: '20% center',
-      backgroundRepeat: 'no-repeat',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 6% 0 6%',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      background: '#07070a'
     }}>
-      {/* Overlay gradiente oscuro para asegurar contraste del tablero y globo */}
+      {/* 1. Video del Avatar a Pantalla Completa (Full Screen Centrado) */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.8) 100%)',
-        zIndex: 1
-      }} />
-
-      {/* Columna Izquierda: Reproductor de Video del Avatar + Globo de Diálogo */}
-      <div style={{
-        flex: '0 0 50%',
-        height: '100%',
-        position: 'relative',
-        zIndex: 2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        zIndex: 0
       }}>
-        {/* Componente de Video del Avatar */}
         <AvatarVideoPlayer avatarState={avatarState} />
-
-        {aiSpeakingText && (
-          <div style={{
-            position: 'absolute',
-            left: '50%',
-            bottom: '8%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(10, 10, 15, 0.92)',
-            border: `2px solid ${avatarColor}`,
-            borderRadius: '24px 24px 24px 4px',
-            padding: '1.25rem 1.75rem',
-            maxWidth: '380px',
-            boxShadow: `0 20px 40px rgba(0,0,0,0.65), 0 0 25px ${avatarColor}44`,
-            animation: 'bubbleAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px',
-            backdropFilter: 'blur(10px)',
-            zIndex: 10
-          }}>
-            <span style={{
-              fontFamily: 'Nunito',
-              fontSize: '0.8rem',
-              color: avatarColor,
-              fontWeight: 800,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em'
-            }}>
-              Joy IA
-            </span>
-            <p style={{
-              fontFamily: 'Nunito',
-              fontSize: '1.3rem',
-              color: '#ffffff',
-              lineHeight: 1.45,
-              fontWeight: 600
-            }}>
-              "{aiSpeakingText}"
-            </p>
-          </div>
-        )}
       </div>
 
-      {/* Columna Derecha: Panel del Tablero 2D */}
+      {/* 2. Sombra y Gradiente sutil para legibilidad de la interfaz */}
       <div style={{
-        flex: '0 0 45%',
-        height: '100%',
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%)',
+        zIndex: 1,
+        pointerEvents: 'none'
+      }} />
+
+      {/* 3. Tarjeta de Diálogo de la IA (Lado Inferior Izquierdo) */}
+      {aiSpeakingText && (
+        <div style={{
+          position: 'absolute',
+          left: '5%',
+          bottom: '8%',
+          background: 'rgba(10, 10, 15, 0.92)',
+          border: `2px solid ${avatarColor}`,
+          borderRadius: '24px 24px 24px 4px',
+          padding: '1.25rem 1.75rem',
+          maxWidth: '420px',
+          boxShadow: `0 20px 40px rgba(0,0,0,0.65), 0 0 25px ${avatarColor}44`,
+          animation: 'bubbleAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '6px',
+          backdropFilter: 'blur(12px)',
+          zIndex: 3
+        }}>
+          <span style={{
+            fontFamily: 'Nunito',
+            fontSize: '0.8rem',
+            color: avatarColor,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em'
+          }}>
+            Joy IA
+          </span>
+          <p style={{
+            fontFamily: 'Nunito',
+            fontSize: '1.25rem',
+            color: '#ffffff',
+            lineHeight: 1.45,
+            fontWeight: 600,
+            margin: 0
+          }}>
+            "{aiSpeakingText}"
+          </p>
+        </div>
+      )}
+
+      {/* 4. Panel del Tablero 2D (Lado Derecho Centrado) */}
+      <div style={{
+        position: 'absolute',
+        right: '5%',
+        top: '50%',
+        transform: 'translateY(-50%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '2rem',
-        zIndex: 2,
-        position: 'relative'
+        gap: '1.5rem',
+        zIndex: 2
       }}>
         {/* Indicador de Turno */}
         <div style={{
