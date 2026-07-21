@@ -473,21 +473,41 @@ function CuentoPageInner() {
     }
   }
 
-  // Sincronizar estado inicial al conectar el remoto
+  const [isTvDisconnected, setIsTvDisconnected] = useState(false)
+  const lastHeartbeatRef = useRef<number>(Date.now())
+
+  // Sincronizar estado inicial al conectar el remoto y monitorear latidos
   useEffect(() => {
     if (!isRemote || !session) return
+    lastHeartbeatRef.current = Date.now()
+
     const channel = supabase.channel(`session:${session}`)
-    channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        // Enviar estado inicial
-        channel.send({
-          type: 'broadcast',
-          event: 'remote_ready',
-          payload: { cuentoId: id }
-        })
+    channel
+      .on('broadcast', { event: 'tv_heartbeat' }, () => {
+        lastHeartbeatRef.current = Date.now()
+        setIsTvDisconnected(false)
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // Enviar estado inicial
+          channel.send({
+            type: 'broadcast',
+            event: 'remote_ready',
+            payload: { cuentoId: id }
+          })
+        }
+      })
+
+    const checkInterval = setInterval(() => {
+      if (Date.now() - lastHeartbeatRef.current > 7500) {
+        setIsTvDisconnected(true)
       }
-    })
-    return () => { supabase.removeChannel(channel) }
+    }, 2500)
+
+    return () => {
+      clearInterval(checkInterval)
+      supabase.removeChannel(channel)
+    }
   }, [isRemote, session, id])
 
   const syncState = async (paraIndex: number, showBifurcation: boolean, choice: 'A' | 'B' | null) => {
@@ -831,8 +851,8 @@ function CuentoPageInner() {
             <span style={{ fontSize: '1.5rem' }}>{cuento.emoji}</span>
             <div>
               <h1 style={{ fontSize: '0.95rem', fontWeight: 800, letterSpacing: '0.02em' }}>{cuento.title.replace('\n', ' ')}</h1>
-              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span className="pulse-dot" /> CONTROL REMOTO ACTIVO
+              <p style={{ fontSize: '0.72rem', color: isTvDisconnected ? '#fca5a5' : 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span className="pulse-dot" style={{ background: isTvDisconnected ? '#ef4444' : '#4ade80', boxShadow: isTvDisconnected ? '0 0 10px #ef4444' : '0 0 10px #4ade80' }} /> {isTvDisconnected ? 'TV DESCONECTADA' : 'CONTROL REMOTO ACTIVO'}
               </p>
             </div>
           </div>
@@ -840,6 +860,46 @@ function CuentoPageInner() {
             Salir ✕
           </button>
         </header>
+
+        {/* Banner de TV Desconectada */}
+        {isTvDisconnected && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.92)',
+            color: 'white',
+            padding: '12px 16px',
+            margin: '0.75rem 1rem 0 1rem',
+            borderRadius: '14px',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            zIndex: 20
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.2rem' }}>📺</span>
+              <span>TV desvinculada o reiniciada</span>
+            </div>
+            <button
+              onClick={handleBackToHome}
+              style={{
+                background: 'white',
+                color: '#ef4444',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: '10px',
+                fontWeight: 800,
+                fontSize: '0.75rem',
+                cursor: 'pointer'
+              }}
+            >
+              Reconectar
+            </button>
+          </div>
+        )}
 
         {/* Panel Central de Lectura */}
         <main className="remote-main">

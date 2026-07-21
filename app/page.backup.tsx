@@ -256,6 +256,36 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const [showDisconnectedNotice, setShowDisconnectedNotice] = useState(false)
+  const lastHeartbeatRef = useRef<number>(Date.now())
+
+  // Monitorear conexión con la TV mediante latidos (heartbeat)
+  useEffect(() => {
+    if (!tvSessionCode) return
+
+    lastHeartbeatRef.current = Date.now()
+    const channel = supabase.channel(`session:${tvSessionCode}`)
+
+    channel
+      .on('broadcast', { event: 'tv_heartbeat' }, () => {
+        lastHeartbeatRef.current = Date.now()
+      })
+      .subscribe()
+
+    const checkInterval = setInterval(() => {
+      if (Date.now() - lastHeartbeatRef.current > 7500) {
+        disconnectSession()
+        setShowDisconnectedNotice(true)
+        setTimeout(() => setShowDisconnectedNotice(false), 5000)
+      }
+    }, 2500)
+
+    return () => {
+      clearInterval(checkInterval)
+      supabase.removeChannel(channel)
+    }
+  }, [tvSessionCode])
+
   // Comprobar si hay una sesión activa en URL o LocalStorage al cargar la página
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -324,6 +354,32 @@ export default function Home() {
 
   return (
     <div style={{ background: '#0c0d10', overflowX: 'hidden' }}>
+      {showDisconnectedNotice && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(239, 68, 68, 0.95)',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '16px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          zIndex: 999999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          fontFamily: "'Nunito', sans-serif",
+          fontSize: '0.85rem',
+          fontWeight: 700,
+          border: '1px solid rgba(255,255,255,0.2)',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <span style={{ fontSize: '1.2rem' }}>📺</span>
+          <span>La TV se ha desvinculado o reiniciado.</span>
+        </div>
+      )}
+
       {/* Capa negra protectora inicial en móviles para evitar el flash del home */}
       <div
         className="mobile-only-cover"

@@ -107,6 +107,8 @@ function TVPageInner() {
     const channel = supabase.channel(`session:${codeVal}`)
     setChannelRef(channel)
 
+    let heartbeatInterval: NodeJS.Timeout | null = null
+
     channel
       .on('broadcast', { event: 'tv_ready' }, () => {
         // El celular se enlazó
@@ -154,6 +156,15 @@ function TVPageInner() {
       .subscribe((status, err) => {
         console.log('TV Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {
+          // Emisión periódica de latido de vida (heartbeat) cada 3 segundos
+          heartbeatInterval = setInterval(() => {
+            channel.send({
+              type: 'broadcast',
+              event: 'tv_heartbeat',
+              payload: { timestamp: Date.now() }
+            }).catch(() => {})
+          }, 3000)
+
           // Si iniciamos con un session param, significa que ya estaba enlazado
           if (sessionParam) {
             setState('waiting_cuento')
@@ -173,6 +184,7 @@ function TVPageInner() {
     }
 
     return () => {
+      if (heartbeatInterval) clearInterval(heartbeatInterval)
       supabase.removeChannel(channel)
     }
   }, [sessionParam])
