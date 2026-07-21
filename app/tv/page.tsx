@@ -305,8 +305,12 @@ function TVPageInner() {
         return
       }
 
-      // El contrincante movió una pieza -> Avatar reacciona con 'surprised'
-      setAvatarState('surprised')
+      // El contrincante movió una pieza -> Avatar reacciona con 'surprised' SOLO si pierde una pieza (captura)
+      if (move.captured) {
+        setAvatarState('surprised')
+      } else {
+        setAvatarState('waiting')
+      }
       const promptMsg = getPlayerMovePrompt(move)
       fetchAiComment(promptMsg).then((comment) => {
         setAiSpeakingText(comment)
@@ -1331,9 +1335,9 @@ function PlayingChessView({
         {aiSpeakingText && (
           <div style={{
             position: 'absolute',
-            left: '42%',
-            top: '32%',
-            transform: 'translate(-50%, -50%)',
+            left: '50%',
+            bottom: '8%',
+            transform: 'translateX(-50%)',
             background: 'rgba(10, 10, 15, 0.92)',
             border: `2px solid ${avatarColor}`,
             borderRadius: '24px 24px 24px 4px',
