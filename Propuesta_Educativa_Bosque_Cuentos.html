@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Propuesta Pedagógica y Comercial — Bosque de Cuentos: Aula Activa</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Nunito:wght@300;400;600;700&display=swap');
+
+    :root {
+      --primary: #1E4D28;
+      --primary-dark: #14351b;
+      --primary-light: #e8f5e9;
+      --accent: #F9C74F;
+      --accent-dark: #dca018;
+      --text: #2D3748;
+      --text-muted: #718096;
+      --bg: #ffffff;
+      --bg-alt: #f7fafc;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-alt);
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 40px auto;
+      background: var(--bg);
+      padding: 60px 80px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    h1.brand-title, h2.section-title {
+      font-family: 'Bubblegum Sans', cursive;
+      letter-spacing: 0.5px;
+    }
+
+    /* Portada */
+    .cover {
+      text-align: center;
+      padding: 80px 0 100px 0;
+      border-bottom: 2px solid var(--primary-light);
+      margin-bottom: 50px;
+    }
+
+    .logo-placeholder {
+      font-size: 56px;
+      margin-bottom: 20px;
+    }
+
+    .cover h1 {
+      font-size: 38px;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .cover h2 {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 0;
+    }
+
+    .metadata-box {
+      margin-top: 60px;
+      background-color: var(--bg-alt);
+      padding: 25px;
+      border-radius: 8px;
+      border-left: 4px solid var(--accent);
+      text-align: left;
+      display: inline-block;
+      min-width: 320px;
+    }
+
+    .metadata-box p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .metadata-box strong {
+      color: #111;
+    }
+
+    /* Secciones */
+    .section {
+      margin-bottom: 45px;
+    }
+
+    .section h2 {
+      font-size: 24px;
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 8px;
+      margin-top: 40px;
+    }
+
+    .section h3 {
+      font-size: 18px;
+      color: var(--primary);
+      margin-top: 25px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #4a5568;
+      text-align: justify;
+    }
+
+    ul, ol {
+      font-size: 15px;
+      color: #4a5568;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tablas */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #fbfbfb;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background-color: var(--bg-alt);
+    }
+
+    /* Alertas / Cajas */
+    .alert-box {
+      background-color: var(--primary-light);
+      border: 1px solid rgba(30, 77, 40, 0.2);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .alert-box h4 {
+      margin-top: 0;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+    }
+
+    .alert-box p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Estilos de Impresión (PDF) */
+    @media print {
+      body {
+        background-color: #fff;
+        color: #000;
+      }
+      .container {
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        max-width: 100%;
+        border: none;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .metadata-box {
+        border: 1px solid #ccc;
+      }
+      th {
+        background-color: #f0f0f0 !important;
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- PORTADA -->
+    <div class="cover">
+      <div class="logo-placeholder">🌲🦊🌲</div>
+      <h1 class="brand-title">BOSQUE DE CUENTOS</h1>
+      <h2>Plataforma Tecnológica de Aprendizaje Socioemocional y Fomento Lector</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 16px; margin-top: 20px;">
+        Propuesta Pedagógica y Comercial — Programa "Aula Activa"
+      </p>
+
+      <div class="metadata-box">
+        <p><strong>Destinatario:</strong> Corporaciones Municipales / DAEM / Directores de Colegios</p>
+        <p><strong>Ciclo Objetivo:</strong> Educación Parvularia y Primer Ciclo Básico (4 a 8 años)</p>
+        <p><strong>Vía de Financiamiento:</strong> Ley SEP (Subvención Escolar Preferencial) — PME</p>
+        <p><strong>Preparado por:</strong> Equipo Cuenta Joy / Tecnología Educativa</p>
+        <p><strong>Fecha de Emisión:</strong> Julio 2026</p>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: INTRODUCCIÓN -->
+    <div class="section">
+      <h2 class="section-title">1. Fundamento Pedagógico y del Proyecto</h2>
+      <p>
+        El desarrollo socioemocional temprano es fundamental para el aprendizaje cognitivo y la convivencia escolar. Las **Bases Curriculares de la Educación Parvularia** y las del primer ciclo básico dictadas por el **MINEDUC** destacan la necesidad transversal de que los niños identifiquen, expresen y regulen sus emociones (como el miedo, la frustración y la alegría).
+      </p>
+      <p>
+        <strong>"Bosque de Cuentos: Aula Activa"</strong> es una plataforma interactiva de **doble pantalla** que reinventa la hora del cuento en el aula. Utiliza la pantalla del Smart TV o Proyector del aula para mostrar la historia y un personaje animado en tiempo real, mientras que la educadora controla el flujo y la voz del personaje mediante una PWA en su dispositivo móvil. El sistema integra Inteligencia Artificial avanzada (Claude 3.5 y ElevenLabs) para permitir que los niños dialoguen de forma oral con el personaje del cuento, respondiendo a sus preguntas y guiando dinámicas socioemocionales colectivas.
+      </p>
+      <div class="alert-box">
+        <h4>Alineación Curricular Mineduc</h4>
+        <ul>
+          <li><strong>Identidad y Autonomía:</strong> Reconocimiento de emociones y superación de dificultades (valentía, empatía).</li>
+          <li><strong>Comunicación Integral:</strong> Comprensión de textos narrativos orales y desarrollo del lenguaje verbal mediante diálogo directo.</li>
+          <li><strong>Interacción con el Entorno:</strong> Uso de herramientas tecnológicas para explorar ideas y responder preguntas de manera activa.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN 2: CARACTERÍSTICAS TÉCNICAS -->
+    <div class="section">
+      <h2 class="section-title">2. Características del Sistema "Aula Activa"</h2>
+      
+      <h3>2.1. Dinámica de Doble Pantalla Sincronizada</h3>
+      <p>
+        La educadora escanea un código QR en la Smart TV o proyector de la sala de clases desde su teléfono. A partir de ese momento, ambos dispositivos se sincronizan mediante **WebSockets en tiempo real**. El profesor pasa las páginas y activa actividades en la pantalla gigante sin moverse de su puesto y manteniendo la atención del aula.
+      </p>
+
+      <h3>2.2. Interacción por Voz con Luki el Zorrito</h3>
+      <p>
+        En momentos clave del cuento, la educadora activa el micrófono de su móvil para que un alumno o la clase completa le hagan una pregunta a **Luki**, el zorrito protagonista de la historia. Luki (animado fluidamente en Rive/Spine en la TV) escucha, piensa y **les responde con su propia voz infantil** de forma coherente con la historia, promoviendo el pensamiento reflexivo.
+      </p>
+
+      <h3>2.3. Cuento Inicial: "Luki y el Día Valiente"</h3>
+      <p>
+        Incluye el primer cuento interactivo enfocado en la **valentía frente a los miedos cotidianos**. Consta de 7 páginas ilustradas y animadas que abordan el miedo, la respiración profunda para calmarse, la superación de obstáculos (cruzar el río) y el afecto familiar como refugio seguro.
+      </p>
+
+      <h3>2.4. Guía Docente Digitalizada</h3>
+      <p>
+        El sistema provee una planificación clase a clase en PDF para la educadora, detallando los objetivos de aprendizaje MINEDUC, las dinámicas previas a la lectura, las preguntas sugeridas para hacerle a Luki y actividades manuales/socioemocionales de cierre.
+      </p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN 3: MARCO LEY SEP -->
+    <div class="section">
+      <h2 class="section-title">3. Viabilidad y Financiamiento vía Ley SEP</h2>
+      <p>
+        El financiamiento del proyecto por parte de los establecimientos municipales y particulares subvencionados se encuadra en los presupuestos de la **Ley SEP (Subvención Escolar Preferencial)** de Chile, debiendo incorporarse al **Plan de Mejoramiento Educativo (PME)** del colegio en las siguientes dimensiones:
+      </p>
+      
+      <h3>3.1. Dimensión: Gestión de Recursos (Sub-área: Recursos Pedagógicos)</h3>
+      <p>
+        Adquisición de herramientas de software y licencias educativas digitales destinadas a la mejora directa de los aprendizajes y fomento lector en los estudiantes prioritarios y de pre-básica.
+      </p>
+
+      <h3>3.2. Dimensión: Liderazgo Pedagógico</h3>
+      <p>
+        Recursos para la capacitación y perfeccionamiento de las educadoras de párvulos en el uso de metodologías interactivas y tecnologías aplicadas al aula para el desarrollo de competencias transversales.
+      </p>
+    </div>
+
+    <!-- SECCIÓN 4: COMERCIAL -->
+    <div class="section">
+      <h2 class="section-title">4. Propuesta Comercial</h2>
+      <p>
+        La propuesta se presenta bajo una modalidad de **Suscripción Anual de Plataforma (SaaS)** que habilita al colegio completo. El valor es exento de impuestos (NETO) y facturable a través de Mercado Público.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto de Cobro</th>
+            <th>Descripción de Servicios</th>
+            <th style="text-align: right;">Monto Neto (CLP)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Habilitación de Plataforma (Setup Inicial)</strong></td>
+            <td>
+              - Configuración del portal del colegio en Supabase.<br>
+              - Setup de cuentas de acceso para hasta 12 Educadoras/Profesores.<br>
+              - Entrega de material digital y guías de planificación docente.
+            </td>
+            <td style="text-align: right; vertical-align: top;">$1.200.000</td>
+          </tr>
+          <tr>
+            <td><strong>2. Licencia Anual SaaS "Aula Activa"</strong></td>
+            <td>
+              - Acceso ilimitado a la plataforma interactiva TV ↔ Móvil.<br>
+              - Procesamiento en la nube para diálogos de IA por voz (Whisper + Claude + ElevenLabs) para todas las salas del colegio durante el año escolar.<br>
+              - Actualizaciones de seguridad y parches técnicos correctivos.<br>
+              - Taller de capacitación remota de 2 horas para las educadoras.
+            </td>
+            <td style="text-align: right; vertical-align: top;">$1.800.000</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2">VALOR NETO TOTAL PROPUESTA ANUAL</td>
+            <td style="text-align: right;">$3.000.000</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: -10px;">
+        * Facturación exenta de IVA por concepto de servicios educativos y software de capacitación. 
+      </p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN 5: CRONOGRAMA -->
+    <div class="section">
+      <h2 class="section-title">5. Plan de Trabajo e Implementación</h2>
+      <p>
+        El despliegue del sistema se realiza en un plazo de **4 semanas** desde la emisión de la orden de compra municipal o del colegio:
+      </p>
+      <ul>
+        <li><strong>Semana 1: Configuración Técnica:</strong> Creación de bases de datos de salas, habilitación de perfiles docentes y verificación de redes WiFi en el colegio.</li>
+        <li><strong>Semana 2: Entrega de Materiales:</strong> Carga de la PWA docente y entrega de las planificaciones en PDF de "Luki y el Día Valiente".</li>
+        <li><strong>Semana 3: Capacitación Docente:</strong> Taller práctico remoto o presencial con las educadoras para ensayar el uso de la doble pantalla y la IA conversacional.</li>
+        <li><strong>Semana 4: Puesta en Marcha:</strong> Acompañamiento técnico remoto durante las primeras sesiones reales con alumnos en el aula.</li>
+      </ul>
+    </div>
+
+    <!-- SECCIÓN 6: FIRMA -->
+    <div class="section" style="margin-top: 60px; text-align: center;">
+      <p style="text-align: center;">___________________________________________</p>
+      <p style="text-align: center; font-weight: bold; margin-bottom: 0;">Equipo Cuenta Joy</p>
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 5px;">Tecnología para el Aprendizaje de la Convivencia Escolar</p>
+    </div>
+
+  </div>
+
+</body>
+</html>

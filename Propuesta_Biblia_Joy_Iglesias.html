@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Propuesta Técnica y Comercial — Biblia Joy: Escuela Dominical Activa</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      --primary: #1E3A8A;
+      --primary-dark: #0f172a;
+      --primary-light: #eff6ff;
+      --accent: #D97706;
+      --accent-light: #fef3c7;
+      --text: #334155;
+      --text-muted: #64748b;
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-alt);
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 40px auto;
+      background: var(--bg);
+      padding: 60px 80px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    /* Portada */
+    .cover {
+      text-align: center;
+      padding: 80px 0 100px 0;
+      border-bottom: 2px solid var(--primary-light);
+      margin-bottom: 50px;
+    }
+
+    .logo-placeholder {
+      font-size: 56px;
+      margin-bottom: 20px;
+    }
+
+    .cover h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .cover h2 {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 0;
+    }
+
+    .metadata-box {
+      margin-top: 60px;
+      background-color: var(--bg-alt);
+      padding: 25px;
+      border-radius: 8px;
+      border-left: 4px solid var(--accent);
+      text-align: left;
+      display: inline-block;
+      min-width: 320px;
+    }
+
+    .metadata-box p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .metadata-box strong {
+      color: #111;
+    }
+
+    /* Secciones */
+    .section {
+      margin-bottom: 45px;
+    }
+
+    .section h2 {
+      font-size: 22px;
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 8px;
+      color: #111;
+      margin-top: 40px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #334155;
+      text-align: justify;
+    }
+
+    ul, ol {
+      font-size: 15px;
+      color: #334155;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tablas */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #fbfbfb;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background-color: var(--bg-alt);
+    }
+
+    /* Alertas / Cajas */
+    .alert-box {
+      background-color: var(--accent-light);
+      border: 1px solid rgba(217, 119, 6, 0.2);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .alert-box h4 {
+      margin-top: 0;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .alert-box p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Estilos de Impresión (PDF) */
+    @media print {
+      body {
+        background-color: #fff;
+        color: #000;
+      }
+      .container {
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        max-width: 100%;
+        border: none;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .metadata-box {
+        border: 1px solid #ccc;
+      }
+      th {
+        background-color: #f0f0f0 !important;
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- PORTADA -->
+    <div class="cover">
+      <div class="logo-placeholder">📖✨🙏</div>
+      <h1>PROPUESTA TÉCNICA Y COMERCIAL</h1>
+      <h2>Biblia Joy — Plataforma Interactiva de Educación de la Fe</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 16px; margin-top: 20px;">
+        Solución Digital para Escuela Dominical y Catequesis Infantil
+      </p>
+
+      <div class="metadata-box">
+        <p><strong>Destinatario:</strong> Iglesias Cristianas y Católicas / Área de Educación de la Fe</p>
+        <p><strong>Uso Principal:</strong> Dinámicas en Sala y Devocionales Interactivos</p>
+        <p><strong>Modelo de Adquisición:</strong> Suscripción Anual de Licencia y Soporte B2B</p>
+        <p><strong>Autor:</strong> Equipo Cuenta Joy / Tecnología de Software</p>
+        <p><strong>Fecha de Emisión:</strong> Julio 2026</p>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: RESUMEN Y PROBLEMA -->
+    <div class="section">
+      <h2>1. Fundamentación del Proyecto</h2>
+      <p>
+        La transmisión de los valores de fe y las historias bíblicas a las nuevas generaciones enfrenta el desafío de captar la atención de niños acostumbrados a la alta estimulación digital de tablets y pantallas. Las clases de **Escuela Dominical** y **Catequesis** a menudo carecen de herramientas tecnológicas modernas que enganchen a los menores (de 4 a 9 años) sin restar valor al mensaje espiritual.
+      </p>
+      <p>
+        <strong>"Biblia Joy"</strong> es una plataforma interactiva basada en tecnología PWA de doble pantalla. Permite a los profesores proyectar pasajes bíblicos animados en la Smart TV o proyector de la sala de la iglesia, controlando todo desde su propio teléfono celular. 
+      </p>
+      <p>
+        La innovación clave reside en la **conversación interactiva**: mediante Inteligencia Artificial (Claude 3.5), los niños pueden dialogar por voz con personajes bíblicos o testigos (por ejemplo, *Copito*, una simpática ovejita que viaja a través del tiempo), quienes responden con una voz infantil natural y expresiva (ElevenLabs) reforzando valores cristianos y enseñanzas morales de forma lúdica y segura.
+      </p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN 2: FUNCIONALIDADES -->
+    <div class="section">
+      <h2>2. Funcionalidades del Sistema</h2>
+      
+      <h3>2.1. Doble Pantalla Sincronizada y Segura</h3>
+      <p>
+        El profesor escanea un código QR dinámico desde la TV del salón de clases. El celular actúa inmediatamente como control remoto (PWA, sin descargas previas), facilitando que el docente dirija la clase de pie, interactuando activamente con los niños y controlando lo que se muestra en pantalla.
+      </p>
+
+      <h3>2.2. Biblioteca de Cuentos Bíblicos Interactivos</h3>
+      <p>
+        El sistema cuenta con un catálogo de historias animadas con ilustraciones premium adaptadas para niños de 4 a 9 años, incluyendo:
+      </p>
+      <ul>
+        <li><strong>El Arca de Noé:</strong> El valor de la obediencia, la paciencia y el cuidado de la creación.</li>
+        <li><strong>La Oveja Perdida:</strong> El amor incondicional y el cuidado del pastor.</li>
+        <li><strong>David y el Gigante:</strong> La fe, el coraje y la confianza frente a las dificultades.</li>
+      </ul>
+
+      <h3>2.3. Asistente IA Conversacional por Voz</h3>
+      <p>
+        Durante el cuento, el profesor activa el micrófono en el celular. Los niños pueden hacer preguntas abiertas: *"¿Luki/Copito, por qué David no le tuvo miedo al gigante?"*. La IA responde con un filtro teológico estricto, en lenguaje infantil sencillo y adaptado (máximo dos frases), orientando siempre las respuestas a las enseñanzas de fe del pasaje.
+      </p>
+    </div>
+
+    <!-- SECCIÓN 3: SEGURIDAD, ACCESOS Y ESCALABILIDAD -->
+    <div class="section">
+      <h2>3. Seguridad, Control de Accesos y Escalabilidad</h2>
+      <p>
+        Para resguardar el licenciamiento comercial y asegurar que el sistema soporte picos de uso masivos de forma económica y robusta, la arquitectura incluye las siguientes medidas:
+      </p>
+      
+      <h3>3.1. Mecanismos de Seguridad y Licencias</h3>
+      <ul>
+        <li><strong>Sincronización por QR con Caducidad:</strong> La Smart TV nunca posee una URL estática de acceso directo. Solo muestra un código QR cifrado que expira cada 2 minutos. La única forma de iniciar el cuento es escaneándolo desde un smartphone autenticado.</li>
+        <li><strong>Autenticación de Cuentas (Supabase Auth):</strong> Cada profesor cuenta con un acceso de usuario provisto por la administración de la iglesia. Las credenciales están encriptadas y el sistema bloquea sesiones concurrentes abusivas para evitar compartir cuentas.</li>
+        <li><strong>Validación de Red Local (IP Check):</strong> El backend verifica que el celular y la TV estén en la misma red local (mismo router/WiFi de la iglesia), impidiendo sincronizaciones remotas no autorizadas.</li>
+      </ul>
+
+      <h3>3.2. Optimización y Resistencia al Tráfico de IA</h3>
+      <ul>
+        <li><strong>Caché de Respuestas de Audio:</strong> Para preguntas recurrentes de los niños (ej: "¿cómo te llamas?", "¿por qué cruzaste el río?"), el backend almacena en caché la respuesta de texto y el archivo de voz MP3 generado por ElevenLabs. Si otra sala hace la misma pregunta, se sirve el audio al instante. Esto reduce la latencia a milisegundos, baja a cero el costo de las APIs y previene caídas.</li>
+        <li><strong>Control de Flujo (Rate Limiting):</strong> Se limita el número de preguntas por sesión (máximo 3 por página del cuento o 1 consulta cada 10 segundos) para evitar el abuso o saturación involuntaria del micrófono.</li>
+        <li><strong>Encolamiento de Mensajes:</strong> En momentos de alta demanda dominical simultánea, las solicitudes de audio se gestionan en una cola rápida y secuencial en el servidor para evitar la saturación de los endpoints de las APIs de Anthropic y OpenAI.</li>
+      </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN 4: COMERCIAL -->
+    <div class="section">
+      <h2>4. Propuesta Comercial</h2>
+      <p>
+        La propuesta económica está estructurada en un pago único de setup de cuentas más una suscripción anual de soporte y hosting, dimensionado para ser accesible al presupuesto operativo de cualquier iglesia mediana.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto de Cobro</th>
+            <th>Detalle del Servicio Habilitado</th>
+            <th style="text-align: right;">Monto Neto (CLP)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Habilitación de Sistema (Setup)</strong></td>
+            <td>
+              - Configuración de la cuenta multi-tenant para la parroquia/iglesia.<br>
+              - Alta de perfiles para hasta 6 coordinadores/profesores.<br>
+              - Carga del sistema de tokens efímeros para las salas dominicales.
+            </td>
+            <td style="text-align: right; vertical-align: top;">$250.000</td>
+          </tr>
+          <tr>
+            <td><strong>2. Licencia Anual SaaS "Biblia Joy"</strong></td>
+            <td>
+              - Licencia activa de uso de la biblioteca de historias bíblicas.<br>
+              - Procesamiento en la nube de IA por voz (STT y TTS de ElevenLabs).<br>
+              - Actualizaciones técnicas periódicas del sistema.<br>
+              - Soporte técnico vía chat y correo de lunes a viernes.
+            </td>
+            <td style="text-align: right; vertical-align: top;">$180.000<br><small style="color: var(--text-muted);">($15.000 / mes)</small></td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2">TOTAL PROPUESTA ANUAL</td>
+            <td style="text-align: right;">$430.000</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: -10px;">
+        * Valores exentos de IVA. Facturación anual completa al inicio del servicio.
+      </p>
+    </div>
+
+    <!-- SECCIÓN 5: CRONOGRAMA -->
+    <div class="section">
+      <h2>5. Cronograma de Implementación</h2>
+      <p>
+        La plataforma se habilita en un plazo de **3 semanas** desde la confirmación de la adquisición:
+      </p>
+      <ul>
+        <li><strong>Semana 1: Configuración Técnica:</strong> Setup de base de datos de salas, habilitación de perfiles docentes y pruebas de conectividad de los Smart TVs de la iglesia.</li>
+        <li><strong>Semana 2: Entrega de Accesos:</strong> Activación de la PWA del profesor y guías de narración dominical.</li>
+        <li><strong>Semana 3: Inducción Práctica:</strong> Breve sesión formativa para el equipo de Escuela Dominical/Catequesis para el correcto uso de la doble pantalla y la IA conversacional.</li>
+      </ul>
+    </div>
+
+    <!-- SECCIÓN 6: FIRMA -->
+    <div class="section" style="margin-top: 60px; text-align: center;">
+      <p style="text-align: center;">___________________________________________</p>
+      <p style="text-align: center; font-weight: bold; margin-bottom: 0;">Equipo Biblia Joy</p>
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 5px;">Tecnología aplicada a la Formación y la Educación de la Fe</p>
+    </div>
+
+  </div>
+
+</body>
+</html>

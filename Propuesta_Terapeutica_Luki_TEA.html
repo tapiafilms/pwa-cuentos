@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Propuesta Técnica y Clínica — Luki Interactivo: Terapia Infantil y Neurodiversidad</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      --primary: #008080; /* Teal terapéutico y relajante */
+      --primary-dark: #004d4d;
+      --primary-light: #e6f2f2;
+      --accent: #9b5de5; /* Lila para neurodiversidad */
+      --accent-light: #f5eeff;
+      --text: #2d3748;
+      --text-muted: #718096;
+      --bg: #ffffff;
+      --bg-alt: #f7fafc;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-alt);
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 40px auto;
+      background: var(--bg);
+      padding: 60px 80px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    /* Portada */
+    .cover {
+      text-align: center;
+      padding: 80px 0 100px 0;
+      border-bottom: 2px solid var(--primary-light);
+      margin-bottom: 50px;
+    }
+
+    .logo-placeholder {
+      font-size: 56px;
+      margin-bottom: 20px;
+    }
+
+    .cover h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .cover h2 {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 0;
+    }
+
+    .metadata-box {
+      margin-top: 60px;
+      background-color: var(--bg-alt);
+      padding: 25px;
+      border-radius: 8px;
+      border-left: 4px solid var(--accent);
+      text-align: left;
+      display: inline-block;
+      min-width: 320px;
+    }
+
+    .metadata-box p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .metadata-box strong {
+      color: #111;
+    }
+
+    /* Secciones */
+    .section {
+      margin-bottom: 45px;
+    }
+
+    .section h2 {
+      font-size: 22px;
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 8px;
+      color: #111;
+      margin-top: 40px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #334155;
+      text-align: justify;
+    }
+
+    ul, ol {
+      font-size: 15px;
+      color: #334155;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tablas */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #fbfbfb;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background-color: var(--bg-alt);
+    }
+
+    /* Alertas / Cajas */
+    .alert-box {
+      background-color: var(--accent-light);
+      border: 1px solid rgba(155, 93, 229, 0.2);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .alert-box h4 {
+      margin-top: 0;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .alert-box p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Estilos de Impresión (PDF) */
+    @media print {
+      body {
+        background-color: #fff;
+        color: #000;
+      }
+      .container {
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        max-width: 100%;
+        border: none;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .metadata-box {
+        border: 1px solid #ccc;
+      }
+      th {
+        background-color: #f0f0f0 !important;
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- PORTADA -->
+    <div class="cover">
+      <div class="logo-placeholder">🦊💬✨</div>
+      <h1>PROPUESTA TÉCNICA Y CLÍNICA</h1>
+      <h2>Luki Interactivo — Tecnología de Apoyo para Fonoaudiología y Terapias TEA</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 16px; margin-top: 20px;">
+        Herramienta de Estimulación del Lenguaje e Identificación Emocional de Doble Pantalla
+      </p>
+
+      <div class="metadata-box">
+        <p><strong>Destinatario:</strong> Centros de Terapia Ocupacional / Clínicas / Fonoaudiólogos</p>
+        <p><strong>Foco Clínico:</strong> Trastornos del Lenguaje (TEL) y Espectro Autista (TEA)</p>
+        <p><strong>Modelo de Adquisición:</strong> Suscripción SaaS por Licencia de Consultorio</p>
+        <p><strong>Autor:</strong> Equipo Cuenta Joy / Área de Salud y Tecnología</p>
+        <p><strong>Fecha de Emisión:</strong> Julio 2026</p>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: INTRODUCCIÓN -->
+    <div class="section">
+      <h2>1. Justificación Clínica</h2>
+      <p>
+        Los niños dentro del **Espectro Autista (TEA)** o con **Trastornos Específicos del Lenguaje (TEL)** suelen experimentar ansiedad o bloqueos comunicativos frente a interacciones directas cara a cara con terapeutas adultos. La presión de la gesticulación y la exigencia verbal pueden resultar abrumadoras o estresantes.
+      </p>
+      <p>
+        Sin embargo, la investigación clínica demuestra que los niños se comunican de manera mucho más fluida, libre y espontánea con **personajes animados interactivos en una pantalla**. Los personajes son predecibles, amigables y no generan la presión social del juicio humano.
+      </p>
+      <p>
+        <strong>"Luki Interactivo"</strong> aprovecha la tecnología PWA de doble pantalla. El fonoaudiólogo o terapeuta controla la sesión desde su celular, mientras el niño dialoga directamente por voz con **Luki el zorrito** (animado en Rive en la pantalla gigante). Esto permite realizar ejercicios de habla, vocabulario y expresión emocional dentro de un entorno lúdico, seguro y de baja ansiedad.
+      </p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN 2: FUNCIONALIDADES CLÍNICAS -->
+    <div class="section">
+      <h2>2. Funcionalidades y Modos de Terapia</h2>
+      
+      <h3>2.1. Diálogo Asistido y Estímulo de Habla</h3>
+      <p>
+        Mediante Inteligencia Artificial conversacional por voz (Claude 3.5 + ElevenLabs), Luki está entrenado con directrices fonoaudiológicas para modular su velocidad de habla, usar un vocabulario simplificado de estructura clara, y guiar al niño a completar oraciones o repetir fonemas específicos mediante juegos verbales.
+      </p>
+
+      <h3>2.2. Módulo de Identificación y Regulación Emocional</h3>
+      <p>
+        Luki cuenta con animaciones fluidas que representan emociones (miedo, alegría, timidez, tristeza). El terapeuta puede gatillar un estado emocional en Luki (por ejemplo, *Luki con frío o asustado*) para pedirle al niño que le pregunte a Luki cómo se siente y cómo pueden ayudarlo, estimulando la empatía y la verbalización de sus propias emociones.
+      </p>
+
+      <h3>2.3. Refuerzo Positivo Sensorial</h3>
+      <p>
+        Cuando el niño responde o realiza su ejercicio de modulación, Luki reacciona con animaciones de celebración (salta de alegría, le da un abrazo a la pantalla o genera estrellas de colores), entregando un feedback visual reconfortante e inmediato que eleva la autoestima del niño y refuerza su conducta verbal.
+      </p>
+
+      <h3>2.4. Panel del Terapeuta (Dashboard de Sesión)</h3>
+      <p>
+        A través de la PWA del celular, el fonoaudiólogo puede ver transcripciones en tiempo real del habla del niño, registrar notas clínicas del desempeño verbal durante la sesión y almacenar estadísticas del progreso semanal.
+      </p>
+    </div>
+
+    <!-- SECCIÓN 3: PRIVACIDAD Y SEGURIDAD -->
+    <div class="section">
+      <h2>3. Seguridad de Datos Sensibles e Infantiles</h2>
+      <p>
+        Dado que se procesa información de salud infantil, la arquitectura garantiza la máxima protección y privacidad bajo la **Ley 19.628 de Protección de Datos Personales en Chile**:
+      </p>
+      <ul>
+        <li><strong>No almacenamiento de grabaciones de voz:</strong> Los audios del habla del niño son procesados de forma temporal en la RAM para el Speech-to-Text y se eliminan inmediatamente tras la transcripción. No se almacenan registros de audio en servidores externos.</li>
+        <li><strong>Cifrado HTTPS y SSL:</strong> Todo el tránsito de datos entre el celular del terapeuta, la Smart TV de la consulta y la base de datos de Supabase viaja encriptado.</li>
+        <li><strong>Acceso Seguro con Tokens Dinámicos:</strong> La Smart TV de la consulta se sincroniza usando un código QR con token temporal expirable (2 minutos). Si la sesión expira o se cierra la app, la TV queda bloqueada y no almacena ningún historial.</li>
+      </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN 4: PROPUESTA COMERCIAL -->
+    <div class="section">
+      <h2>4. Propuesta Comercial</h2>
+      <p>
+        El modelo comercial está adaptado para implementarse en consultas individuales de fonoaudiólogos o centros de terapia multidisciplinarios medianos.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto de Cobro</th>
+            <th>Detalle del Servicio Habilitado</th>
+            <th style="text-align: right;">Monto Neto (CLP)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Setup de Habilitación y Configuración</strong></td>
+            <td>
+              - Creación de la base de datos segura de pacientes en Supabase.<br>
+              - Configuración del portal administrativo del consultorio.<br>
+              - Entrega de guías de dinámicas clínicas clínicas con Luki.
+            </td>
+            <td style="text-align: right; vertical-align: top;">$350.000</td>
+          </tr>
+          <tr>
+            <td><strong>2. Suscripción Mensual por Profesional (SaaS)</strong></td>
+            <td>
+              - Licencia activa de uso de Luki Interactivo en box clínico.<br>
+              - Procesamiento en la nube de IA conversacional por voz (Whisper + Claude + ElevenLabs).<br>
+              - Soporte técnico ante incidentes de lunes a viernes.<br>
+              - Taller de inducción clínica de 2 horas.
+            </td>
+            <td style="text-align: right; vertical-align: top;">$45.000<br><small style="color: var(--text-muted);">Mensual</small></td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2">TOTAL SETUP + PRIMER AÑO COMPLETO</td>
+            <td style="text-align: right;">$890.000</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: -10px;">
+        * Valores netos exentos de IVA. Facturación por servicios informáticos de salud.
+      </p>
+    </div>
+
+    <!-- SECCIÓN 5: CRONOGRAMA -->
+    <div class="section">
+      <h2>5. Cronograma de Marcha Blanca</h2>
+      <p>
+        La implementación en el consultorio o clínica se realiza en un plazo de **3 semanas**:
+      </p>
+      <ul>
+        <li><strong>Semana 1: Alta en Nube y Configuración:</strong> Setup de perfiles del fonoaudiólogo, configuración del panel administrativo de pacientes y emparejamiento de pantallas de los box clínicos.</li>
+        <li><strong>Semana 2: Capacitación Clínica:</strong> Sesión práctica remota con los terapeutas para ensayar las dinámicas socioemocionales de Luki y el control desde el celular.</li>
+        <li><strong>Semana 3: Lanzamiento y Acompañamiento:</strong> Puesta en marcha en las sesiones reales con niños, con soporte técnico prioritario durante los primeros días de uso.</li>
+      </ul>
+    </div>
+
+    <!-- SECCIÓN 6: FIRMA -->
+    <div class="section" style="margin-top: 60px; text-align: center;">
+      <p style="text-align: center;">___________________________________________</p>
+      <p style="text-align: center; font-weight: bold; margin-bottom: 0;">Equipo Luki Interactivo</p>
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 5px;">Tecnología Avanzada para la Terapia e Integración Infantil</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
