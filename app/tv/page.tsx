@@ -328,9 +328,7 @@ function TVPageInner() {
     if (!chessRef.current) return
 
     try {
-      // Joy IA realiza la jugada -> Avatar cambia a 'moving' (moviendo pieza)
-      setAvatarState('moving')
-
+      // 1. Calcular la jugada óptima de la IA
       const moves = chessRef.current.moves({ verbose: true })
       if (moves.length === 0) return
 
@@ -358,40 +356,48 @@ function TVPageInner() {
       }
 
       const aiMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
-      chessRef.current.move({ from: aiMove.from, to: aiMove.to })
 
-      setChessBoard([...chessRef.current.board()])
-      setChessLastMove({ from: aiMove.from, to: aiMove.to })
-      setChessTurn(chessRef.current.turn())
-      
-      const inCheckSquare = chessRef.current.inCheck() ? findKingSquare(chessRef.current.turn()) : null
-      setChessInCheck(inCheckSquare)
+      // 2. Iniciar el video 'moving' del Avatar
+      setAvatarState('moving')
 
-      const targetChan = activeChan || channelRef
-      if (targetChan) {
-        targetChan.send({
-          type: 'broadcast',
-          event: 'chess_ai_move',
-          payload: {
-            fen: chessRef.current.fen(),
-            lastMove: { from: aiMove.from, to: aiMove.to }
-          }
-        })
-      }
-
-      if (chessRef.current.isGameOver()) {
-        handleGameOver(activeChan)
-        return
-      }
-
-      // Esperar 2.6s para que el video avatar-moving.mp4 se reproduzca completo antes de hablar
-      const promptMsg = getAIMovePrompt(aiMove)
+      // 3. Mover la pieza en el tablero 700ms después, justo cuando el avatar desplaza la mano en el video
       setTimeout(() => {
-        fetchAiComment(promptMsg).then((comment) => {
-          setAiSpeakingText(comment)
-          speakText(comment)
-        })
-      }, 2600)
+        if (!chessRef.current) return
+        chessRef.current.move({ from: aiMove.from, to: aiMove.to })
+
+        setChessBoard([...chessRef.current.board()])
+        setChessLastMove({ from: aiMove.from, to: aiMove.to })
+        setChessTurn(chessRef.current.turn())
+        
+        const inCheckSquare = chessRef.current.inCheck() ? findKingSquare(chessRef.current.turn()) : null
+        setChessInCheck(inCheckSquare)
+
+        const targetChan = activeChan || channelRef
+        if (targetChan) {
+          targetChan.send({
+            type: 'broadcast',
+            event: 'chess_ai_move',
+            payload: {
+              fen: chessRef.current.fen(),
+              lastMove: { from: aiMove.from, to: aiMove.to }
+            }
+          })
+        }
+
+        if (chessRef.current.isGameOver()) {
+          handleGameOver(activeChan)
+          return
+        }
+
+        // 4. Esperar 1.8s adicionales (2.5s total de video) para que termine la acción de movimiento e inicie el habla
+        const promptMsg = getAIMovePrompt(aiMove)
+        setTimeout(() => {
+          fetchAiComment(promptMsg).then((comment) => {
+            setAiSpeakingText(comment)
+            speakText(comment)
+          })
+        }, 1800)
+      }, 700)
 
     } catch (e) {
       console.error('Error calculando jugada de la IA:', e)
