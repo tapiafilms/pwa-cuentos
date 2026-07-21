@@ -312,10 +312,12 @@ function TVPageInner() {
         setAvatarState('waiting')
       }
 
-      // No hablar antes del movimiento. Esperar 1.2s, mover la pieza y luego hablar.
+      // Si hubo captura, dar 2.2s para el video de sorprendido; si no, 1.0s
+      const delayBeforeAiMove = move.captured ? 2200 : 1000
+
       setTimeout(() => {
         makeAIMove(activeChan)
-      }, 1200)
+      }, delayBeforeAiMove)
 
     } catch (e) {
       console.error('Error aplicando jugada del jugador:', e)
@@ -382,11 +384,14 @@ function TVPageInner() {
         return
       }
 
+      // Esperar 2.6s para que el video avatar-moving.mp4 se reproduzca completo antes de hablar
       const promptMsg = getAIMovePrompt(aiMove)
-      fetchAiComment(promptMsg).then((comment) => {
-        setAiSpeakingText(comment)
-        speakText(comment)
-      })
+      setTimeout(() => {
+        fetchAiComment(promptMsg).then((comment) => {
+          setAiSpeakingText(comment)
+          speakText(comment)
+        })
+      }, 2600)
 
     } catch (e) {
       console.error('Error calculando jugada de la IA:', e)
