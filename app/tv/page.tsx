@@ -171,6 +171,14 @@ function TVPageInner() {
       .on('broadcast', { event: 'chess_clear_bubble' }, () => {
         setAiSpeakingText(null)
       })
+      .on('broadcast', { event: 'force_tv_reconnect' }, () => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+          window.speechSynthesis.cancel()
+        }
+        transitionTo('waiting_remote', () => {
+          setAiSpeakingText(null)
+        })
+      })
       .subscribe((status, err) => {
         console.log('TV Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {

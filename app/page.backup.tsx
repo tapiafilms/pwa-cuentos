@@ -407,7 +407,6 @@ export default function Home() {
       if (Date.now() - lastHeartbeatRef.current > 7500) {
         disconnectSession()
         setShowDisconnectedNotice(true)
-        setTimeout(() => setShowDisconnectedNotice(false), 5000)
       }
     }, 2500)
 
@@ -491,23 +490,84 @@ export default function Home() {
           top: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(239, 68, 68, 0.95)',
+          background: 'rgba(239, 68, 68, 0.96)',
           color: 'white',
-          padding: '12px 20px',
+          padding: '12px 18px',
           borderRadius: '16px',
           boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
           zIndex: 999999,
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: '12px',
           fontFamily: "'Nunito', sans-serif",
-          fontSize: '0.85rem',
+          fontSize: '0.82rem',
           fontWeight: 700,
           border: '1px solid rgba(255,255,255,0.2)',
           backdropFilter: 'blur(10px)'
         }}>
-          <span style={{ fontSize: '1.2rem' }}>📺</span>
-          <span>La TV se ha desvinculado o reiniciado.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.2rem' }}>📺</span>
+            <span>TV desvinculada o reiniciada</span>
+          </div>
+          <button
+            onClick={async () => {
+              // 1. Intentar enviar una señal realtime a la TV para que regrese a la pantalla de código
+              if (activeChannel) {
+                await activeChannel.send({
+                  type: 'broadcast',
+                  event: 'force_tv_reconnect'
+                }).catch(() => {})
+              }
+              if (tvSessionCode) {
+                const tempChan = supabase.channel(`session:${tvSessionCode}`)
+                tempChan.subscribe(async (status) => {
+                  if (status === 'SUBSCRIBED') {
+                    await tempChan.send({
+                      type: 'broadcast',
+                      event: 'force_tv_reconnect'
+                    }).catch(() => {})
+                    supabase.removeChannel(tempChan)
+                  }
+                })
+              }
+
+              // 2. Desvincular localmente
+              disconnectSession()
+              setShowDisconnectedNotice(false)
+
+              // 3. Volver al hub si estamos en ajedrez
+              if (currentView === 'chess') {
+                changeViewWithTransition('hub')
+              }
+            }}
+            style={{
+              background: 'white',
+              color: '#ef4444',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '10px',
+              fontWeight: 800,
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Reconectar
+          </button>
+          <button 
+            onClick={() => setShowDisconnectedNotice(false)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255,255,255,0.6)',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              padding: '0 4px'
+            }}
+          >
+            ✕
+          </button>
         </div>
       )}
 
