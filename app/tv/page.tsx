@@ -316,7 +316,7 @@ function TVPageInner() {
       const delayBeforeAiMove = move.captured ? 2200 : 1000
 
       setTimeout(() => {
-        makeAIMove(activeChan)
+        makeAIMove(activeChan, !!move.captured)
       }, delayBeforeAiMove)
 
     } catch (e) {
@@ -324,7 +324,7 @@ function TVPageInner() {
     }
   }
 
-  const makeAIMove = (activeChan: any) => {
+  const makeAIMove = (activeChan: any, isSurprised: boolean) => {
     if (!chessRef.current) return
 
     try {
@@ -357,10 +357,15 @@ function TVPageInner() {
 
       const aiMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
 
-      // 2. Iniciar el video 'moving' del Avatar
-      setAvatarState('moving')
+      // 2. Iniciar el video 'moving' del Avatar solo si no estaba sorprendido
+      if (!isSurprised) {
+        setAvatarState('moving')
+      }
 
-      // 3. Mover la pieza en el tablero 1600ms después (cuando el avatar desplaza la mano en el video que inicia desde 0.0s)
+      // Si se sorprendió, el movimiento de la pieza en el video ocurre a los 8.5s (8500ms - 2200ms de retraso inicial)
+      const boardMoveDelay = isSurprised ? 6300 : 1600
+
+      // 3. Mover la pieza en el tablero
       setTimeout(() => {
         if (!chessRef.current) return
         chessRef.current.move({ from: aiMove.from, to: aiMove.to })
@@ -389,15 +394,17 @@ function TVPageInner() {
           return
         }
 
-        // 4. Esperar 1.2s adicionales para que complete la acción el video e inicie el habla
+        // 4. Retraso para que complete la acción el video e inicie el habla
+        // 10000ms total para sorprendido (8500ms + 1500ms desde el inicio del video), 2800ms total para movimiento normal (1600ms + 1200ms)
+        const speakDelay = isSurprised ? 1500 : 1200
         const promptMsg = getAIMovePrompt(aiMove)
         setTimeout(() => {
           fetchAiComment(promptMsg).then((comment) => {
             setAiSpeakingText(comment)
             speakText(comment)
           })
-        }, 1200)
-      }, 1600)
+        }, speakDelay)
+      }, boardMoveDelay)
 
     } catch (e) {
       console.error('Error calculando jugada de la IA:', e)
