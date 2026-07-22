@@ -317,7 +317,13 @@ function TVPageInner() {
 
     try {
       const move = chessRef.current.move({ from, to })
-      if (!move) return
+      if (!move) {
+        console.warn('TV handlePlayerChessMove: Move returned null or failed!', from, to)
+        return
+      }
+
+      console.log('TV handlePlayerChessMove: Successfully applied move:', move)
+      console.log('TV handlePlayerChessMove: move.captured status:', move.captured)
 
       setChessBoard([...chessRef.current.board()])
       setChessLastMove({ from, to })
@@ -333,6 +339,7 @@ function TVPageInner() {
 
       // El contrincante movió una pieza -> Avatar reacciona con 'surprised' SOLO si pierde una pieza (captura)
       if (move.captured) {
+        console.log('TV handlePlayerChessMove: Capture detected! Setting avatarState to surprised.')
         setAvatarState('surprised')
       } else {
         setAvatarState('waiting')
@@ -1222,15 +1229,23 @@ function AvatarVideoPlayer({ avatarState }: { avatarState: AvatarVideoState }) {
   const info = AVATAR_VIDEOS[avatarState]
 
   useEffect(() => {
+    // Resetear el estado de error ante cualquier cambio de estado del avatar
+    setHasVideoError(false)
+
     const video = videoRef.current
     if (video) {
+      console.log('TV AvatarVideoPlayer: loading source:', info.src, 'for state:', avatarState)
       try {
         video.load()
         video.currentTime = 0
-        video.play().catch(() => {})
+        video.play()
+          .then(() => console.log('TV AvatarVideoPlayer: play() promise resolved for:', info.src))
+          .catch((err) => console.error('TV AvatarVideoPlayer: play() promise rejected for:', info.src, err))
       } catch (e) {
-        console.error('Error playing video:', e)
+        console.error('TV AvatarVideoPlayer: Exception playing video:', e)
       }
+    } else {
+      console.warn('TV AvatarVideoPlayer: videoRef.current is null for state:', avatarState)
     }
   }, [avatarState])
 
