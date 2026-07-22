@@ -1216,101 +1216,82 @@ const AVATAR_VIDEOS: Record<AvatarVideoState, { src: string; label: string; emoj
 }
 
 function AvatarVideoPlayer({ avatarState }: { avatarState: AvatarVideoState }) {
-  const [hasVideoError, setHasVideoError] = useState<Record<string, boolean>>({})
-  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({})
+  const [hasVideoError, setHasVideoError] = useState(false)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
-  // Reiniciar el video activo a 0.0s cada vez que cambia el estado del avatar
+  const info = AVATAR_VIDEOS[avatarState]
+
   useEffect(() => {
-    const currentVideo = videoRefs.current[avatarState]
-    if (currentVideo) {
+    const video = videoRef.current
+    if (video) {
       try {
-        currentVideo.currentTime = 0
-        currentVideo.play().catch(() => {})
-      } catch (e) {}
+        video.load()
+        video.currentTime = 0
+        video.play().catch(() => {})
+      } catch (e) {
+        console.error('Error playing video:', e)
+      }
     }
   }, [avatarState])
 
+  if (hasVideoError) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1rem',
+        color: 'white',
+        fontFamily: "'Nunito', sans-serif",
+        textAlign: 'center',
+        padding: '2rem',
+        animation: 'fadeIn 0.4s ease'
+      }}>
+        <div style={{
+          width: '180px',
+          height: '180px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(124, 106, 247, 0.4) 0%, rgba(10, 10, 15, 0.85) 70%)',
+          border: '2px solid rgba(124, 106, 247, 0.6)',
+          boxShadow: '0 0 40px rgba(124, 106, 247, 0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '4.5rem'
+        }}>
+          {info.emoji}
+        </div>
+        <div>
+          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b8aeff' }}>Avatar: {info.label}</span>
+          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
+            Coloca <code style={{ color: '#7c6af7', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px' }}>public{info.src}</code> para cargar este video
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      position: 'relative',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden'
-    }}>
-      {(['waiting', 'surprised', 'moving', 'speaking'] as AvatarVideoState[]).map((stateKey) => {
-        const info = AVATAR_VIDEOS[stateKey]
-        const isActive = avatarState === stateKey
-        const isError = hasVideoError[stateKey]
-
-        if (isError && isActive) {
-          return (
-            <div key={stateKey} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1rem',
-              color: 'white',
-              fontFamily: "'Nunito', sans-serif",
-              textAlign: 'center',
-              padding: '2rem',
-              animation: 'fadeIn 0.4s ease'
-            }}>
-              <div style={{
-                width: '180px',
-                height: '180px',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(124, 106, 247, 0.4) 0%, rgba(10, 10, 15, 0.85) 70%)',
-                border: '2px solid rgba(124, 106, 247, 0.6)',
-                boxShadow: '0 0 40px rgba(124, 106, 247, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '4.5rem'
-              }}>
-                {info.emoji}
-              </div>
-              <div>
-                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b8aeff' }}>Avatar: {info.label}</span>
-                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
-                  Coloca <code style={{ color: '#7c6af7', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px' }}>public{info.src}</code> para cargar este video
-                </p>
-              </div>
-            </div>
-          )
-        }
-
-        return (
-          <video
-            key={stateKey}
-            ref={(el) => {
-              videoRefs.current[stateKey] = el
-            }}
-            src={info.src}
-            autoPlay
-            loop
-            muted
-            playsInline
-            onError={() => {
-              setHasVideoError(prev => ({ ...prev, [stateKey]: true }))
-            }}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: isActive && !isError ? 1 : 0,
-              transition: 'opacity 0.4s ease-in-out',
-              pointerEvents: 'none'
-            }}
-          />
-        )
-      })}
-    </div>
+    <video
+      ref={videoRef}
+      src={info.src}
+      autoPlay
+      loop
+      muted
+      playsInline
+      onError={() => {
+        setHasVideoError(true)
+      }}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        pointerEvents: 'none'
+      }}
+    />
   )
 }
 
