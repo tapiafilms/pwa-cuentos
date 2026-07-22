@@ -153,6 +153,24 @@ function TVPageInner() {
       .on('broadcast', { event: 'chess_reset' }, () => {
         handleChessReset()
       })
+      .on('broadcast', { event: 'chess_question' }, async ({ payload }) => {
+        const { question } = payload
+        if (!question) return
+        setAvatarState('speaking')
+        const comment = await fetchAiComment(question)
+        setAiSpeakingText(comment)
+        speakText(comment)
+
+        // Enviar la respuesta de vuelta al celular para que la agregue a su historial local
+        channel.send({
+          type: 'broadcast',
+          event: 'chess_ai_response',
+          payload: { question, response: comment }
+        }).catch((err: any) => console.error('Error sending chess_ai_response:', err))
+      })
+      .on('broadcast', { event: 'chess_clear_bubble' }, () => {
+        setAiSpeakingText(null)
+      })
       .subscribe((status, err) => {
         console.log('TV Realtime subscription status:', status, err)
         if (status === 'SUBSCRIBED') {
@@ -394,16 +412,11 @@ function TVPageInner() {
           return
         }
 
-        // 4. Retraso para que complete la acción el video e inicie el habla
-        // 10000ms total para sorprendido (8500ms + 1500ms desde el inicio del video), 2800ms total para movimiento normal (1600ms + 1200ms)
-        const speakDelay = isSurprised ? 1500 : 1200
-        const promptMsg = getAIMovePrompt(aiMove)
+        // 4. Retornar al estado 'waiting' una vez que finaliza el video de movimiento/sorpresa
+        const returnToWaitingDelay = isSurprised ? 1500 : 7000
         setTimeout(() => {
-          fetchAiComment(promptMsg).then((comment) => {
-            setAiSpeakingText(comment)
-            speakText(comment)
-          })
-        }, speakDelay)
+          setAvatarState('waiting')
+        }, returnToWaitingDelay)
       }, boardMoveDelay)
 
     } catch (e) {
@@ -451,8 +464,8 @@ function TVPageInner() {
       setChessLastMove(null)
       setChessInCheck(null)
       setChessTurn('w')
-      setAiSpeakingText("Partida reiniciada. Tú juegas con las blancas. Haz tu primer movimiento.")
-      speakText("Partida reiniciada. Tú juegas con las blancas. Haz tu primer movimiento.")
+      setAiSpeakingText(null)
+      setAvatarState('waiting')
     }
   }
 

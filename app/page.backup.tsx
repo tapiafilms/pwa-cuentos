@@ -99,6 +99,23 @@ export default function Home() {
   const [activeChannel, setActiveChannel] = useState<any>(null)
   const [showChessModal, setShowChessModal] = useState(false)
 
+  // Ajedrez control de voz y chat
+  const [isListening, setIsListening] = useState(false)
+  const [micSupported, setMicSupported] = useState(false)
+  const [chatInput, setChatInput] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const recognitionRef = useRef<any>(null)
+
+  // Configurar detección de reconocimiento de voz
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (SpeechRecognition) {
+        setMicSupported(true)
+      }
+    }
+  }, [])
+
   // Detección de dispositivo móvil para mostrar video de introducción
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -176,6 +193,14 @@ export default function Home() {
         setAiTextLog(prev => [payload.comment, ...prev])
         setIsAiThinking(false)
       })
+      .on('broadcast', { event: 'chess_ai_response' }, ({ payload }) => {
+        setAiTextLog(prev => [
+          `Tú: "${payload.question}"`,
+          `Joy IA: "${payload.response}"`,
+          ...prev
+        ])
+        setAiLoading(false)
+      })
       .subscribe((status) => {
         console.log('Mobile Chess Channel status:', status)
       })
@@ -248,6 +273,112 @@ export default function Home() {
       })
     }
     changeViewWithTransition('hub')
+  }
+
+  const startListening = () => {
+    if (typeof window === 'undefined') return
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      setMicSupported(false)
+      return
+    }
+
+    try {
+      setIsListening(true)
+      setAiLoading(true)
+
+      const rec = new SpeechRecognition()
+      recognitionRef.current = rec
+      
+      const userLang = navigator.language || 'es-ES'
+      rec.lang = userLang
+      rec.interimResults = true
+      rec.maxAlternatives = 1
+      rec.continuous = false
+
+      let finalTransformed = ''
+
+      rec.onstart = () => {
+        setIsListening(true)
+      }
+
+      rec.onresult = (event: any) => {
+        let interimTranscript = ''
+        let finalTranscript = ''
+        
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript
+          } else {
+            interimTranscript += transcript
+          }
+        }
+
+        const text = finalTranscript || interimTranscript
+        if (text && text.trim() !== '') {
+          finalTransformed = text.trim()
+        }
+
+        if (finalTranscript) {
+          rec.stop()
+        }
+      }
+
+      rec.onend = () => {
+        setIsListening(false)
+        if (finalTransformed.trim()) {
+          handleAskContrincante(finalTransformed.trim())
+        } else {
+          setAiLoading(false)
+        }
+      }
+
+      rec.onerror = (e: any) => {
+        console.error('Speech recognition error:', e)
+        setIsListening(false)
+        setAiLoading(false)
+      }
+
+      rec.start()
+    } catch (err) {
+      console.error('Error starting speech recognition:', err)
+      setIsListening(false)
+      setAiLoading(false)
+    }
+  }
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+    }
+    setIsListening(false)
+  }
+
+  const handleAskContrincante = (text: string) => {
+    if (!text.trim()) return
+    setAiLoading(true)
+    
+    // Agregar localmente la pregunta en el log para mostrar respuesta inmediata en la lista del celular
+    setAiTextLog(prev => [
+      `Tú: "${text}"`,
+      ...prev
+    ])
+
+    // Enviar el evento realtime al canal
+    if (activeChannel) {
+      activeChannel.send({
+        type: 'broadcast',
+        event: 'chess_question',
+        payload: { question: text }
+      }).catch((err: any) => {
+        console.error('Error sending chess_question realtime:', err)
+        setAiLoading(false)
+      })
+    } else {
+      setAiLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -1082,6 +1213,178 @@ export default function Home() {
           </div>
 
 
+
+          {/* Panel para Preguntar a la IA / Hablar con el Micrófono */}
+          <div style={{
+            width: '100%',
+            maxWidth: '340px',
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            borderRadius: '16px',
+            padding: '1rem',
+            marginTop: '1.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'Nunito', fontSize: '0.72rem', fontWeight: 800, color: '#b8aeff', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Preguntar a Joy IA:
+              </span>
+              {aiLoading && (
+                <span style={{ fontSize: '0.65rem', color: '#b8aeff', animation: 'pulseRecord 1.5s ease infinite', fontFamily: 'Nunito', fontWeight: 700 }}>
+                  Joy pensando...
+                </span>
+              )}
+            </div>
+
+            {micSupported ? (
+              <div>
+                {isListening ? (
+                  <button
+                    onClick={stopListening}
+                    style={{
+                      width: '100%',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      fontFamily: 'Nunito',
+                      cursor: 'pointer',
+                      boxShadow: '0 0 15px rgba(239, 68, 68, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white', display: 'inline-block', animation: 'pulseRecord 1s infinite' }} />
+                    DETENER GRABACIÓN
+                  </button>
+                ) : (
+                  <button
+                    onClick={startListening}
+                    disabled={aiLoading}
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #7c6af7 0%, #6350e4 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      fontFamily: 'Nunito',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 15px rgba(124, 106, 247, 0.25)',
+                      opacity: aiLoading ? 0.6 : 1,
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    🎙️ PREGUNTAR POR VOZ
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: 0, fontFamily: 'Nunito' }}>
+                Reconocimiento de voz no disponible en este dispositivo.
+              </p>
+            )}
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (chatInput.trim()) {
+                  handleAskContrincante(chatInput)
+                  setChatInput('')
+                }
+              }}
+              style={{ display: 'flex', gap: '8px', width: '100%' }}
+            >
+              <input
+                type="text"
+                placeholder="Escribe tu pregunta..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                disabled={aiLoading}
+                style={{
+                  flex: 1,
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  padding: '10px 14px',
+                  color: 'white',
+                  fontSize: '0.8rem',
+                  fontFamily: 'Nunito',
+                  outline: 'none'
+                }}
+              />
+              <button
+                type="submit"
+                disabled={aiLoading || !chatInput.trim()}
+                style={{
+                  background: '#7c6af7',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '10px 16px',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  fontFamily: 'Nunito',
+                  cursor: 'pointer',
+                  opacity: (aiLoading || !chatInput.trim()) ? 0.5 : 1,
+                  transition: 'opacity 0.2s'
+                }}
+              >
+                Enviar
+              </button>
+            </form>
+          </div>
+
+          {/* Historial de conversación / Log */}
+          {aiTextLog.length > 0 && (
+            <div style={{
+              width: '100%',
+              maxWidth: '340px',
+              marginTop: '0.75rem',
+              background: 'rgba(255, 255, 255, 0.01)',
+              border: '1px solid rgba(255, 255, 255, 0.04)',
+              borderRadius: '12px',
+              padding: '10px',
+              maxHeight: '120px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}>
+              {aiTextLog.map((log, idx) => {
+                const isUser = log.startsWith('Tú:')
+                const isJoy = log.startsWith('Joy IA:')
+                let color = 'rgba(255,255,255,0.4)'
+                let fontWeight = 400
+                if (isUser) {
+                  color = '#ffffff'
+                  fontWeight = 600
+                } else if (isJoy) {
+                  color = '#b8aeff'
+                  fontWeight = 600
+                }
+                return (
+                  <p key={idx} style={{ margin: 0, fontFamily: 'Nunito', fontSize: '0.72rem', color, fontWeight, lineHeight: 1.3 }}>
+                    {log}
+                  </p>
+                )
+              })}
+            </div>
+          )}
 
           {/* Botón Reiniciar Partida */}
           <button
