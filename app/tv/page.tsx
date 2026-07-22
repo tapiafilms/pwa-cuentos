@@ -1347,7 +1347,7 @@ function PlayingChessView({
       {aiSpeakingText && (
         <div style={{
           position: 'absolute',
-          left: '5%',
+          left: '17%',
           bottom: '8%',
           background: 'rgba(10, 10, 15, 0.92)',
           border: `2px solid ${avatarColor}`,
